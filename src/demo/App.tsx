@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import {
   StrickerCircleDieline,
   StrickerRectangleDieline,
-  StrickerTuckEndBoxDieline,
+  Becf_10803_dieline,
   formatDielineDisplayValue,
 } from "../index";
 import type { DielineCanvasHandle, DisplayUnit } from "../types";
@@ -118,7 +118,7 @@ export const App = () => {
             onMeasure={setMeasuredBounds}
           />
         ) : (
-          <StrickerTuckEndBoxDieline
+          <Becf_10803_dieline
             ref={canvasRef}
             attribute={{ length: tuckLength, width: tuckWidth, height: tuckHeight }}
             displayUnit={displayUnit}

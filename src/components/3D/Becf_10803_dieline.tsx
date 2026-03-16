@@ -13,8 +13,17 @@ const DEFAULT_CLOSURE_PANEL_MM = 45;
 const DEFAULT_DUST_FLAP_MM = 32;
 const DEFAULT_GLUE_WIDTH_MM = 12;
 const DEFAULT_TUCK_FLAP_MM = 15;
+const ADVANCED_DIMENSIONS_TRIGGER = {
+  closurePanel: 35,
+  dustFlap: 32,
+  glueWidth: 12,
+  tuckFlap: 15,
+} as const;
+const DIMENSION_MATCH_EPSILON = 0.001;
 
 const normalize = (value: number) => (Number.isFinite(value) && value > 0 ? value : 1);
+const matchesDimensionValue = (value: number, expected: number) =>
+  Math.abs(value - expected) <= DIMENSION_MATCH_EPSILON;
 
 const toScenePoints = (
   points: Point[],
@@ -111,7 +120,7 @@ const createRoundedBottomClosurePanel = (
 const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
   formatDielineDisplayValue(valueMm, displayUnit).replace(" ", "");
 
-export const StrickerTuckEndBoxDieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
+export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
   function TuckEndBoxDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const displayUnit = canvasProps.displayUnit ?? "mm";
     const showDimensions = canvasProps.showDimensions ?? true;
@@ -123,6 +132,12 @@ export const StrickerTuckEndBoxDieline = forwardRef<DielineCanvasHandle, TuckEnd
     const dustFlap = attribute.dustFlap ?? DEFAULT_DUST_FLAP_MM;
     const tuckFlap = attribute.tuckFlap ?? DEFAULT_TUCK_FLAP_MM;
     const closurePanel = attribute.closurePanel ?? DEFAULT_CLOSURE_PANEL_MM;
+    const advancedDimensionsEnabled =
+      showDimensions
+      && matchesDimensionValue(closurePanel, ADVANCED_DIMENSIONS_TRIGGER.closurePanel)
+      && matchesDimensionValue(dustFlap, ADVANCED_DIMENSIONS_TRIGGER.dustFlap)
+      && matchesDimensionValue(glueWidth, ADVANCED_DIMENSIONS_TRIGGER.glueWidth)
+      && matchesDimensionValue(tuckFlap, ADVANCED_DIMENSIONS_TRIGGER.tuckFlap);
     const bounds = measureTuckEndBoxBounds({
       length,
       width,
@@ -165,10 +180,20 @@ export const StrickerTuckEndBoxDieline = forwardRef<DielineCanvasHandle, TuckEnd
           const gapSize = Math.max(4, layout.tickSize * 0.45);
           const labelFontSize = Math.max(11, Math.min(layout.widthFontSize * 0.78, 18));
           const dimensionTick = Math.max(10, layout.tickSize * 0.7);
+          const advancedDimensionTick = Math.max(8, layout.tickSize * 0.52);
+          const advancedLabelFontSize = Math.max(10, labelFontSize * 0.88);
           const dimensionY = pxY(y2 + closurePanel * 0.46);
           const dimensionTextY = dimensionY - Math.max(14, layout.widthFontSize * 0.55);
           const rightDimensionX = pxX(x4 - width * 0.24);
           const heightLabelX = rightDimensionX + Math.max(14, layout.heightFontSize * 0.85);
+          const glueDimensionY = pxY((y1 + y2) / 2);
+          const glueTextY = glueDimensionY - Math.max(12, advancedLabelFontSize * 1.05);
+          const tuckDimensionX = pxX(x2 + length * 0.34);
+          const closureDimensionX = pxX(x2 + length * 0.68);
+          const dustDimensionX = pxX(x3 + width * 0.54);
+          const tuckTextX = tuckDimensionX - Math.max(12, advancedLabelFontSize * 0.9);
+          const closureTextX = closureDimensionX + Math.max(12, advancedLabelFontSize * 0.9);
+          const dustTextX = dustDimensionX + Math.max(12, advancedLabelFontSize * 0.9);
 
           const topClosurePanel = createRoundedTopClosurePanel(
             x2,
@@ -340,6 +365,46 @@ export const StrickerTuckEndBoxDieline = forwardRef<DielineCanvasHandle, TuckEnd
                   ))}
                 </>
               )}
+              {advancedDimensionsEnabled && (
+                <>
+                  {[
+                    [pxX(0), glueDimensionY, pxX(x0), glueDimensionY],
+                    [tuckDimensionX, pxY(0), tuckDimensionX, pxY(y0)],
+                    [closureDimensionX, pxY(y0), closureDimensionX, pxY(y1)],
+                    [dustDimensionX, pxY(topDustY), dustDimensionX, pxY(y1)],
+                  ].map(([xStart, yStart, xEnd, yEnd], index) => (
+                    <Line
+                      key={`advanced-dimension-${index}`}
+                      points={[
+                        createScenePoint(xStart, yStart, 2.8),
+                        createScenePoint(xEnd, yEnd, 2.8),
+                      ]}
+                      color={DIMENSION_COLOR}
+                      lineWidth={1.3}
+                    />
+                  ))}
+                  {[
+                    [pxX(0), glueDimensionY - advancedDimensionTick / 2, pxX(0), glueDimensionY + advancedDimensionTick / 2],
+                    [pxX(x0), glueDimensionY - advancedDimensionTick / 2, pxX(x0), glueDimensionY + advancedDimensionTick / 2],
+                    [tuckDimensionX - advancedDimensionTick / 2, pxY(0), tuckDimensionX + advancedDimensionTick / 2, pxY(0)],
+                    [tuckDimensionX - advancedDimensionTick / 2, pxY(y0), tuckDimensionX + advancedDimensionTick / 2, pxY(y0)],
+                    [closureDimensionX - advancedDimensionTick / 2, pxY(y0), closureDimensionX + advancedDimensionTick / 2, pxY(y0)],
+                    [closureDimensionX - advancedDimensionTick / 2, pxY(y1), closureDimensionX + advancedDimensionTick / 2, pxY(y1)],
+                    [dustDimensionX - advancedDimensionTick / 2, pxY(topDustY), dustDimensionX + advancedDimensionTick / 2, pxY(topDustY)],
+                    [dustDimensionX - advancedDimensionTick / 2, pxY(y1), dustDimensionX + advancedDimensionTick / 2, pxY(y1)],
+                  ].map(([xStart, yStart, xEnd, yEnd], index) => (
+                    <Line
+                      key={`advanced-dimension-tick-${index}`}
+                      points={[
+                        createScenePoint(xStart, yStart, 2.8),
+                        createScenePoint(xEnd, yEnd, 2.8),
+                      ]}
+                      color={DIMENSION_COLOR}
+                      lineWidth={1.3}
+                    />
+                  ))}
+                </>
+              )}
               {showDimensions && showLabels && (
                 <>
                   <Text
@@ -372,6 +437,53 @@ export const StrickerTuckEndBoxDieline = forwardRef<DielineCanvasHandle, TuckEnd
                     rotation={[0, 0, Math.PI / 2]}
                   >
                     {getDimensionText(height, displayUnit)}
+                  </Text>
+                </>
+              )}
+              {advancedDimensionsEnabled && showLabels && (
+                <>
+                  <Text
+                    position={[pxX(x0 / 2), -glueTextY, 3]}
+                    color={DIMENSION_COLOR}
+                    fontSize={advancedLabelFontSize}
+                    anchorX="center"
+                    anchorY="middle"
+                    textAlign="center"
+                  >
+                    {getDimensionText(glueWidth, displayUnit)}
+                  </Text>
+                  <Text
+                    position={[tuckTextX, -pxY(y0 / 2), 3]}
+                    color={DIMENSION_COLOR}
+                    fontSize={advancedLabelFontSize}
+                    anchorX="center"
+                    anchorY="middle"
+                    textAlign="center"
+                    rotation={[0, 0, Math.PI / 2]}
+                  >
+                    {getDimensionText(tuckFlap, displayUnit)}
+                  </Text>
+                  <Text
+                    position={[closureTextX, -pxY((y0 + y1) / 2), 3]}
+                    color={DIMENSION_COLOR}
+                    fontSize={advancedLabelFontSize}
+                    anchorX="center"
+                    anchorY="middle"
+                    textAlign="center"
+                    rotation={[0, 0, Math.PI / 2]}
+                  >
+                    {getDimensionText(closurePanel, displayUnit)}
+                  </Text>
+                  <Text
+                    position={[dustTextX, -pxY((topDustY + y1) / 2), 3]}
+                    color={DIMENSION_COLOR}
+                    fontSize={advancedLabelFontSize}
+                    anchorX="center"
+                    anchorY="middle"
+                    textAlign="center"
+                    rotation={[0, 0, Math.PI / 2]}
+                  >
+                    {getDimensionText(dustFlap, displayUnit)}
                   </Text>
                 </>
               )}
