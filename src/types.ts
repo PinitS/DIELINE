@@ -8,9 +8,10 @@ export type TuckEndBoxAttributes = {
   length: number;
   width: number;
   height: number;
-  glueFlap?: number;
-  topFlap?: number;
+  closurePanel?: number;
   dustFlap?: number;
+  glueWidth?: number;
+  tuckFlap?: number;
 };
 
 export type DielineBounds = {

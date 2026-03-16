@@ -21,20 +21,16 @@ export const measureRectangleBounds = (
   };
 };
 
-export const TUCK_END_BOX_GLUE_RATIO = 0.25;
-export const TUCK_END_BOX_DUST_RATIO = 0.5;
-export const TUCK_END_BOX_TUCK_RATIO = 0.84;
-
 export const measureTuckEndBoxBounds = (
   attribute: TuckEndBoxAttributes,
 ): DielineBounds => {
   const length = normalize(attribute.length);
   const width = normalize(attribute.width);
   const height = normalize(attribute.height);
-  const glueFlap = attribute.glueFlap ?? width * TUCK_END_BOX_GLUE_RATIO;
-  const dustFlap = attribute.dustFlap ?? width * TUCK_END_BOX_DUST_RATIO;
-  const topFlap = attribute.topFlap ?? width * TUCK_END_BOX_TUCK_RATIO;
-  const overallWidthMm = length + width + length + width + glueFlap;
-  const overallHeightMm = topFlap + dustFlap + height + dustFlap + topFlap;
+  const glueWidth = normalize(attribute.glueWidth ?? 1);
+  const closurePanel = normalize(attribute.closurePanel ?? 1);
+  const tuckFlap = normalize(attribute.tuckFlap ?? 1);
+  const overallWidthMm = length + width + length + width + glueWidth;
+  const overallHeightMm = tuckFlap + closurePanel + height + closurePanel + tuckFlap;
   return { overallWidthMm, overallHeightMm };
 };
