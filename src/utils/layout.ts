@@ -14,11 +14,7 @@ export const createCanvasLayout = (bounds: DielineBounds) => {
   const bottomPad = 80;
   const drawWidth = VIEWBOX_WIDTH - leftPad - rightPad;
   const drawHeight = VIEWBOX_HEIGHT - topPad - bottomPad;
-  const fitScale = Math.min(
-    drawWidth / bounds.overallWidthMm,
-    drawHeight / bounds.overallHeightMm,
-  );
-  const scale = Math.min(DEFAULT_MM_TO_PX, fitScale);
+  const scale = DEFAULT_MM_TO_PX;
 
   const shapeWidthPx = bounds.overallWidthMm * scale;
   const shapeHeightPx = bounds.overallHeightMm * scale;
