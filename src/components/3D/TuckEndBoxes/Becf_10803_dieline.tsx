@@ -250,8 +250,8 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
             [
               { x: pxX(x3), y: pxY(y2) },
               { x: pxX(x4), y: pxY(y2) },
-              { x: pxX(x4 - dustInset), y: pxY(bottomDustY) },
-              { x: pxX(x3), y: pxY(bottomDustY) },
+              { x: pxX(x4), y: pxY(bottomDustY) },
+              { x: pxX(x3 + dustInset), y: pxY(bottomDustY) },
               { x: pxX(x3), y: pxY(y2) },
             ],
             [
