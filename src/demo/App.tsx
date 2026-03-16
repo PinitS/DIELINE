@@ -7,6 +7,13 @@ import {
 } from "../index";
 import type { DielineCanvasHandle, DisplayUnit } from "../types";
 
+const ADVANCED_DIMENSION_PRESET = {
+  closurePanel: 35,
+  dustFlap: 32,
+  glueWidth: 12,
+  tuckFlap: 15,
+} as const;
+
 export const App = () => {
   const canvasRef = useRef<DielineCanvasHandle | null>(null);
   const [shapeType, setShapeType] = useState<"circle" | "rectangle" | "tuckEndBox">("circle");
@@ -16,11 +23,20 @@ export const App = () => {
   const [tuckLength, setTuckLength] = useState(100);
   const [tuckWidth, setTuckWidth] = useState(50);
   const [tuckHeight, setTuckHeight] = useState(150);
+  const [tuckClosurePanel, setTuckClosurePanel] = useState<number>(ADVANCED_DIMENSION_PRESET.closurePanel);
+  const [tuckDustFlap, setTuckDustFlap] = useState<number>(ADVANCED_DIMENSION_PRESET.dustFlap);
+  const [tuckGlueWidth, setTuckGlueWidth] = useState<number>(ADVANCED_DIMENSION_PRESET.glueWidth);
+  const [tuckFlap, setTuckFlap] = useState<number>(ADVANCED_DIMENSION_PRESET.tuckFlap);
   const [displayUnit, setDisplayUnit] = useState<DisplayUnit>("mm");
   const [showDimensions, setShowDimensions] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [measuredBounds, setMeasuredBounds] = useState({ overallWidthMm: 0, overallHeightMm: 0 });
   const [refSnapshot, setRefSnapshot] = useState({ width: 0, height: 0 });
+  const advancedDimensionsActive =
+    tuckClosurePanel === ADVANCED_DIMENSION_PRESET.closurePanel
+    && tuckDustFlap === ADVANCED_DIMENSION_PRESET.dustFlap
+    && tuckGlueWidth === ADVANCED_DIMENSION_PRESET.glueWidth
+    && tuckFlap === ADVANCED_DIMENSION_PRESET.tuckFlap;
 
   return (
     <div className="demo-shell">
@@ -72,6 +88,18 @@ export const App = () => {
             <label className="field">C : height (mm)
               <input type="number" min={1} step={1} value={tuckHeight} onChange={(e) => setTuckHeight(Number(e.target.value) || 1)} />
             </label>
+            <label className="field">closurePanel (mm)
+              <input type="number" min={1} step={1} value={tuckClosurePanel} onChange={(e) => setTuckClosurePanel(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">dustFlap (mm)
+              <input type="number" min={1} step={1} value={tuckDustFlap} onChange={(e) => setTuckDustFlap(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">glueWidth (mm)
+              <input type="number" min={1} step={1} value={tuckGlueWidth} onChange={(e) => setTuckGlueWidth(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">tuckFlap (mm)
+              <input type="number" min={1} step={1} value={tuckFlap} onChange={(e) => setTuckFlap(Number(e.target.value) || 1)} />
+            </label>
           </div>
         )}
 
@@ -120,7 +148,15 @@ export const App = () => {
         ) : (
           <Becf_10803_dieline
             ref={canvasRef}
-            attribute={{ length: tuckLength, width: tuckWidth, height: tuckHeight }}
+            attribute={{
+              length: tuckLength,
+              width: tuckWidth,
+              height: tuckHeight,
+              closurePanel: tuckClosurePanel,
+              dustFlap: tuckDustFlap,
+              glueWidth: tuckGlueWidth,
+              tuckFlap,
+            }}
             displayUnit={displayUnit}
             width="100%"
             height={720}

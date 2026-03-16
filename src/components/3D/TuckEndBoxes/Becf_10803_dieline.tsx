@@ -1,9 +1,9 @@
 import { Line, Text } from "@react-three/drei";
 import { forwardRef } from "react";
-import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../types";
-import { measureTuckEndBoxBounds } from "../../utils/measure";
-import { formatDielineDisplayValue } from "../../utils/units";
-import { BaseDielineCanvas } from "../BaseDielineCanvas";
+import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
+import { measureTuckEndBoxBounds } from "../../../utils/measure";
+import { formatDielineDisplayValue } from "../../../utils/units";
+import { BaseDielineCanvas } from "../../BaseDielineCanvas";
 
 type Point = { x: number; y: number };
 
@@ -118,7 +118,7 @@ const createRoundedBottomClosurePanel = (
 };
 
 const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
-  formatDielineDisplayValue(valueMm, displayUnit).replace(" ", "");
+  formatDielineDisplayValue(valueMm, displayUnit);
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
   function TuckEndBoxDieline({ attribute, onMeasure, ...canvasProps }, ref) {
@@ -182,18 +182,22 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           const dimensionTick = Math.max(10, layout.tickSize * 0.7);
           const advancedDimensionTick = Math.max(8, layout.tickSize * 0.52);
           const advancedLabelFontSize = Math.max(10, labelFontSize * 0.88);
+          const verticalLabelOffset = Math.max(14, labelFontSize * 0.9);
+          const advancedVerticalLabelOffset = Math.max(12, advancedLabelFontSize * 0.92);
+          const verticalLabelPadding = Math.max(8, labelFontSize * 0.7);
+          const advancedVerticalLabelPadding = Math.max(7, advancedLabelFontSize * 0.72);
           const dimensionY = pxY(y2 + closurePanel * 0.46);
           const dimensionTextY = dimensionY - Math.max(14, layout.widthFontSize * 0.55);
-          const rightDimensionX = pxX(x4 - width * 0.24);
-          const heightLabelX = rightDimensionX + Math.max(14, layout.heightFontSize * 0.85);
+          const rightDimensionX = pxX(x3 + width * 0.68);
           const glueDimensionY = pxY((y1 + y2) / 2);
           const glueTextY = glueDimensionY - Math.max(12, advancedLabelFontSize * 1.05);
           const tuckDimensionX = pxX(x2 + length * 0.34);
           const closureDimensionX = pxX(x2 + length * 0.68);
-          const dustDimensionX = pxX(x3 + width * 0.54);
-          const tuckTextX = tuckDimensionX - Math.max(12, advancedLabelFontSize * 0.9);
-          const closureTextX = closureDimensionX + Math.max(12, advancedLabelFontSize * 0.9);
-          const dustTextX = dustDimensionX + Math.max(12, advancedLabelFontSize * 0.9);
+          const dustDimensionX = pxX(x3 + width * 0.56);
+          const heightLabelX = Math.max(pxX(x3) + verticalLabelPadding, rightDimensionX - verticalLabelOffset);
+          const tuckLabelX = Math.max(pxX(x2) + advancedVerticalLabelPadding, tuckDimensionX - advancedVerticalLabelOffset);
+          const closureLabelX = Math.max(pxX(x2) + advancedVerticalLabelPadding, closureDimensionX - advancedVerticalLabelOffset);
+          const dustLabelX = Math.max(pxX(x3) + advancedVerticalLabelPadding, dustDimensionX - advancedVerticalLabelOffset);
 
           const topClosurePanel = createRoundedTopClosurePanel(
             x2,
@@ -453,7 +457,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     {getDimensionText(glueWidth, displayUnit)}
                   </Text>
                   <Text
-                    position={[tuckTextX, -pxY(y0 / 2), 3]}
+                    position={[tuckLabelX, -pxY(y0 / 2), 3]}
                     color={DIMENSION_COLOR}
                     fontSize={advancedLabelFontSize}
                     anchorX="center"
@@ -464,7 +468,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     {getDimensionText(tuckFlap, displayUnit)}
                   </Text>
                   <Text
-                    position={[closureTextX, -pxY((y0 + y1) / 2), 3]}
+                    position={[closureLabelX, -pxY((y0 + y1) / 2), 3]}
                     color={DIMENSION_COLOR}
                     fontSize={advancedLabelFontSize}
                     anchorX="center"
@@ -475,7 +479,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     {getDimensionText(closurePanel, displayUnit)}
                   </Text>
                   <Text
-                    position={[dustTextX, -pxY((topDustY + y1) / 2), 3]}
+                    position={[dustLabelX, -pxY((topDustY + y1) / 2), 3]}
                     color={DIMENSION_COLOR}
                     fontSize={advancedLabelFontSize}
                     anchorX="center"
