@@ -1,0 +1,138 @@
+import { useRef, useState } from "react";
+import {
+  StrickerCircleDieline,
+  StrickerRectangleDieline,
+  StrickerTuckEndBoxDieline,
+  formatDielineDisplayValue,
+} from "../index";
+import type { DielineCanvasHandle, DisplayUnit } from "../types";
+
+export const App = () => {
+  const canvasRef = useRef<DielineCanvasHandle | null>(null);
+  const [shapeType, setShapeType] = useState<"circle" | "rectangle" | "tuckEndBox">("circle");
+  const [circleSize, setCircleSize] = useState(90);
+  const [rectWidth, setRectWidth] = useState(120);
+  const [rectHeight, setRectHeight] = useState(80);
+  const [tuckLength, setTuckLength] = useState(100);
+  const [tuckWidth, setTuckWidth] = useState(50);
+  const [tuckHeight, setTuckHeight] = useState(150);
+  const [displayUnit, setDisplayUnit] = useState<DisplayUnit>("mm");
+  const [showDimensions, setShowDimensions] = useState(true);
+  const [showLabels, setShowLabels] = useState(true);
+  const [measuredBounds, setMeasuredBounds] = useState({ overallWidthMm: 0, overallHeightMm: 0 });
+  const [refSnapshot, setRefSnapshot] = useState({ width: 0, height: 0 });
+
+  return (
+    <div className="demo-shell">
+      <aside className="control-panel">
+        <div>
+          <p className="eyebrow">react-dieline</p>
+          <h1>React Three Fiber dieline demo</h1>
+          <p className="muted">Drag the canvas to pan. All entered dimensions are in millimeters.</p>
+        </div>
+
+        <div className="section-grid">
+          <label className="field">Dieline type
+            <select value={shapeType} onChange={(e) => setShapeType(e.target.value as "circle" | "rectangle" | "tuckEndBox")}>
+              <option value="circle">Circle</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="tuckEndBox">Tuck End Box</option>
+            </select>
+          </label>
+          <label className="field">Display unit
+            <select value={displayUnit} onChange={(e) => setDisplayUnit(e.target.value as DisplayUnit)}>
+              <option value="mm">mm</option>
+              <option value="cm">cm</option>
+              <option value="in">in</option>
+            </select>
+          </label>
+        </div>
+
+        {shapeType === "circle" ? (
+          <label className="field">Circle size (mm)
+            <input type="number" min={1} step={1} value={circleSize} onChange={(e) => setCircleSize(Number(e.target.value) || 1)} />
+          </label>
+        ) : shapeType === "rectangle" ? (
+          <div className="section-grid">
+            <label className="field">Rectangle width (mm)
+              <input type="number" min={1} step={1} value={rectWidth} onChange={(e) => setRectWidth(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">Rectangle height (mm)
+              <input type="number" min={1} step={1} value={rectHeight} onChange={(e) => setRectHeight(Number(e.target.value) || 1)} />
+            </label>
+          </div>
+        ) : (
+          <div className="section-grid">
+            <label className="field">A : length (mm)
+              <input type="number" min={1} step={1} value={tuckLength} onChange={(e) => setTuckLength(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">B : width (mm)
+              <input type="number" min={1} step={1} value={tuckWidth} onChange={(e) => setTuckWidth(Number(e.target.value) || 1)} />
+            </label>
+            <label className="field">C : height (mm)
+              <input type="number" min={1} step={1} value={tuckHeight} onChange={(e) => setTuckHeight(Number(e.target.value) || 1)} />
+            </label>
+          </div>
+        )}
+
+        <div className="toggle-row">
+          <button type="button" onClick={() => setShowDimensions((v) => !v)}>{showDimensions ? "Hide" : "Show"} dimension lines</button>
+          <button type="button" onClick={() => setShowLabels((v) => !v)}>{showLabels ? "Hide" : "Show"} labels</button>
+          <button type="button" onClick={() => setRefSnapshot({ width: canvasRef.current?.getOverallWidth() ?? 0, height: canvasRef.current?.getOverallHeight() ?? 0 })}>Read size from ref API</button>
+        </div>
+
+        <div className="summary-card">
+          <h2>Measured bounds</h2>
+          <p>{`Overall width: ${formatDielineDisplayValue(measuredBounds.overallWidthMm, displayUnit)}`}</p>
+          <p>{`Overall height: ${formatDielineDisplayValue(measuredBounds.overallHeightMm, displayUnit)}`}</p>
+          <p>{`Ref width (mm): ${refSnapshot.width.toFixed(2)}`}</p>
+          <p>{`Ref height (mm): ${refSnapshot.height.toFixed(2)}`}</p>
+        </div>
+      </aside>
+
+      <section className="canvas-panel">
+        {shapeType === "circle" ? (
+          <StrickerCircleDieline
+            ref={canvasRef}
+            attribute={{ size: circleSize }}
+            displayUnit={displayUnit}
+            width="100%"
+            height={720}
+            showDimensions={showDimensions}
+            showLabels={showLabels}
+            widthLabel="Overall Width"
+            heightLabel="Overall Height"
+            onMeasure={setMeasuredBounds}
+          />
+        ) : shapeType === "rectangle" ? (
+          <StrickerRectangleDieline
+            ref={canvasRef}
+            attribute={{ width: rectWidth, height: rectHeight }}
+            displayUnit={displayUnit}
+            width="100%"
+            height={720}
+            showDimensions={showDimensions}
+            showLabels={showLabels}
+            widthLabel="Overall Width"
+            heightLabel="Overall Height"
+            onMeasure={setMeasuredBounds}
+          />
+        ) : (
+          <StrickerTuckEndBoxDieline
+            ref={canvasRef}
+            attribute={{ length: tuckLength, width: tuckWidth, height: tuckHeight }}
+            displayUnit={displayUnit}
+            width="100%"
+            height={720}
+            showDimensions={showDimensions}
+            showLabels={showLabels}
+            widthLabel="Overall Width"
+            heightLabel="Overall Height"
+            onMeasure={setMeasuredBounds}
+          />
+        ) }
+      </section>
+    </div>
+  );
+};
+

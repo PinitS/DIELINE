@@ -1,0 +1,57 @@
+{
+  "name": "react-dieline",
+  "version": "0.1.0",
+  "description": "React Three Fiber dieline component library with pannable canvas and measurement labels.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build:lib": "tsup",
+    "build:demo": "vite build --outDir demo-dist",
+    "build": "npm run build:lib && npm run build:demo",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "keywords": [
+    "react",
+    "react-three-fiber",
+    "dieline",
+    "packaging",
+    "measurement"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.14"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "three": "^0.183.2"
+  }
+}
