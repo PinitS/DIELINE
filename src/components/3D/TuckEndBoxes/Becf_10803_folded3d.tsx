@@ -1,4 +1,4 @@
-import { Edges, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { DoubleSide, Shape, ShapeGeometry, Vector2 } from "three";
@@ -37,7 +37,6 @@ const PanelMesh = ({ points, color }: PanelMeshProps) => {
   return (
     <mesh geometry={geometry}>
       <meshStandardMaterial color={color} side={DoubleSide} roughness={0.82} metalness={0.02} />
-      <Edges color="#334155" threshold={12} />
     </mesh>
   );
 };
@@ -61,53 +60,55 @@ const FoldedTuckEndBoxModel = ({ attribute, frame = 0 }: Pick<TuckEndBoxDielineP
   const bottomDustLeft = useMemo(() => localizePoints(panels.bottomDustLeft, guides.x1, guides.y2), [guides.x1, guides.y2, panels.bottomDustLeft]);
   const bottomDustRight = useMemo(() => localizePoints(panels.bottomDustRight, guides.x3, guides.y2), [guides.x3, guides.y2, panels.bottomDustRight]);
 
+  const panelColor = "#cbd5e1";
+
   return (
     <group position={[-resolved.length / 2, resolved.height / 2, resolved.width / 2]}>
-      <PanelMesh points={front} color="#cbd5e1" />
+      <PanelMesh points={front} color={panelColor} />
 
       <group rotation={[0, angles.glueTab, 0]}>
-        <PanelMesh points={glueTab} color="#94a3b8" />
+        <PanelMesh points={glueTab} color={panelColor} />
       </group>
 
       <group position={[resolved.length, 0, 0]} rotation={[0, angles.sideRight, 0]}>
-        <PanelMesh points={sideRight} color="#bfdbfe" />
+        <PanelMesh points={sideRight} color={panelColor} />
 
         <group rotation={[angles.topDustLeft, 0, 0]}>
-          <PanelMesh points={topDustLeft} color="#dbeafe" />
+          <PanelMesh points={topDustLeft} color={panelColor} />
         </group>
 
         <group position={[0, -resolved.height, 0]} rotation={[angles.bottomDustLeft, 0, 0]}>
-          <PanelMesh points={bottomDustLeft} color="#dbeafe" />
+          <PanelMesh points={bottomDustLeft} color={panelColor} />
         </group>
 
         <group position={[resolved.width, 0, 0]} rotation={[0, angles.back, 0]}>
-          <PanelMesh points={back} color="#e2e8f0" />
+          <PanelMesh points={back} color={panelColor} />
 
           <group rotation={[angles.topClosure, 0, 0]}>
-            <PanelMesh points={topClosure} color="#fde68a" />
+            <PanelMesh points={topClosure} color={panelColor} />
             <group position={[0, resolved.closurePanel, 0]} rotation={[angles.topTuck, 0, 0]}>
-              <PanelMesh points={topTuck} color="#fef3c7" />
+              <PanelMesh points={topTuck} color={panelColor} />
             </group>
           </group>
 
           <group position={[resolved.length, 0, 0]} rotation={[0, angles.sideLeft, 0]}>
-            <PanelMesh points={sideLeft} color="#bfdbfe" />
+            <PanelMesh points={sideLeft} color={panelColor} />
 
             <group rotation={[angles.topDustRight, 0, 0]}>
-              <PanelMesh points={topDustRight} color="#dbeafe" />
+              <PanelMesh points={topDustRight} color={panelColor} />
             </group>
 
             <group position={[0, -resolved.height, 0]} rotation={[angles.bottomDustRight, 0, 0]}>
-              <PanelMesh points={bottomDustRight} color="#dbeafe" />
+              <PanelMesh points={bottomDustRight} color={panelColor} />
             </group>
           </group>
         </group>
       </group>
 
       <group position={[0, -resolved.height, 0]} rotation={[angles.bottomClosure, 0, 0]}>
-        <PanelMesh points={bottomClosure} color="#fde68a" />
+        <PanelMesh points={bottomClosure} color={panelColor} />
         <group position={[0, -resolved.closurePanel, 0]} rotation={[angles.bottomTuck, 0, 0]}>
-          <PanelMesh points={bottomTuck} color="#fef3c7" />
+          <PanelMesh points={bottomTuck} color={panelColor} />
         </group>
       </group>
     </group>

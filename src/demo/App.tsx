@@ -6,7 +6,7 @@ import { DemoControlSection } from "./components/DemoControlSection";
 import type { DemoViewMode } from "./demoTypes";
 
 const ADVANCED_DIMENSION_PRESET = {
-  closurePanel: 35,
+  closurePanel: 50,
   dustFlap: 32,
   glueWidth: 12,
   tuckFlap: 15,

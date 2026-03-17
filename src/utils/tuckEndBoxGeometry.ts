@@ -21,7 +21,7 @@ export type TuckEndBoxFoldAngles = {
   bottomTuck: number;
 };
 
-export const TUCK_END_BOX_FOLD_FRAME_COUNT = 24;
+export const TUCK_END_BOX_FOLD_FRAME_COUNT = 360;
 
 export const TUCK_END_BOX_FOLD_SEQUENCE = [
   "Raise the body strip into a tube.",
@@ -245,17 +245,28 @@ export const getTuckEndBoxFoldAngles = (frame: number): TuckEndBoxFoldAngles => 
   const currentFrame = clampFrame(frame);
 
   return {
-    sideRight: -toRadians(90) * stageProgress(currentFrame, 0, 4),
-    back: -toRadians(90) * stageProgress(currentFrame, 2, 6),
-    sideLeft: -toRadians(90) * stageProgress(currentFrame, 4, 8),
-    glueTab: toRadians(95) * stageProgress(currentFrame, 5, 9),
-    topDustLeft: toRadians(95) * stageProgress(currentFrame, 9, 11),
-    topDustRight: -toRadians(95) * stageProgress(currentFrame, 9, 11),
-    bottomDustLeft: -toRadians(95) * stageProgress(currentFrame, 11, 13),
-    bottomDustRight: toRadians(95) * stageProgress(currentFrame, 11, 13),
-    topClosure: toRadians(110) * stageProgress(currentFrame, 13, 16),
-    topTuck: toRadians(155) * stageProgress(currentFrame, 16, 18),
-    bottomClosure: -toRadians(110) * stageProgress(currentFrame, 18, 21),
-    bottomTuck: -toRadians(155) * stageProgress(currentFrame, 21, 23),
+    // 1. GLUE Area พับมาที่ 90 องศา (frame 0-30)
+    glueTab: toRadians(90) * stageProgress(currentFrame, 0, 30),
+    // 2. REAR PANEL พับเข้ามาหา SIDE PANEL (frame 30-60)
+    back: -toRadians(90) * stageProgress(currentFrame, 30, 60),
+    // 3. SIDE PANEL ขวาพับเข้ามาหา FRONT PANEL (frame 60-90)
+    sideRight: -toRadians(90) * stageProgress(currentFrame, 60, 90),
+    // 4. SIDE PANEL ซ้ายพับเข้ามาหา FRONT PANEL (frame 90-120)
+    sideLeft: -toRadians(90) * stageProgress(currentFrame, 90, 120),
+    // 5. DUST FLAP พับเข้ามาในกล่อง (frame 120-150)
+    // Top dust flaps: ซ้ายหมุนไปขวา, ขวาหมุนไปซ้าย
+    topDustLeft: toRadians(90) * stageProgress(currentFrame, 120, 150),
+    topDustRight: toRadians(90) * stageProgress(currentFrame, 120, 150),
+    // Bottom dust flaps: ซ้ายหมุนไปขวา, ขวาหมุนไปซ้าย
+    bottomDustLeft: -toRadians(90) * stageProgress(currentFrame, 120, 150),
+    bottomDustRight: -toRadians(90) * stageProgress(currentFrame, 120, 150),
+    // 6. TOP TUCK (frame 150-180)
+    topTuck: toRadians(90) * stageProgress(currentFrame, 150, 180),
+    // 6.1 TOP CLOSURE (frame 180-210)
+    topClosure: toRadians(90) * stageProgress(currentFrame, 180, 210),
+    // 7. BOTTOM TUCK (frame 210-300)
+    bottomTuck: -toRadians(90) * stageProgress(currentFrame, 210, 300),
+    // 7.1 BOTTOM CLOSURE (frame 300-360) - เริ่มที่ 0 แล้วค่อยไป -90
+    bottomClosure: -toRadians(90) * stageProgress(currentFrame, 300, 359),
   };
 };
