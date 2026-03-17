@@ -161,7 +161,7 @@ export const App = () => {
 
   return (
     <div className="demo-shell">
-      <aside className="control-panel">
+      <aside className="control-panel" >
         <div>
           <p className="eyebrow">react-dieline</p>
           <h1>React Three Fiber dieline demo</h1>
@@ -245,7 +245,7 @@ export const App = () => {
         />
       </aside>
 
-      <section className="canvas-panel">
+      <section className="canvas-panel" >
         <DemoCanvas
           canvasRef={canvasRef}
           viewMode={viewMode}
