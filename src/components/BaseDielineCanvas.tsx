@@ -477,8 +477,6 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
     ]);
 
     useImperativeHandle(ref, () => ({
-      getOverallWidth: () => bounds.overallWidthMm,
-      getOverallHeight: () => bounds.overallHeightMm,
       getOverall: () => bounds,
       resetView: () => {
         if (!fitView()) {

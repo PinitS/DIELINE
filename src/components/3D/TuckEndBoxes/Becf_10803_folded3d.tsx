@@ -146,8 +146,6 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
     }, [bounds, onMeasure]);
 
     useImperativeHandle(ref, () => ({
-      getOverallWidth: () => bounds.overallWidthMm,
-      getOverallHeight: () => bounds.overallHeightMm,
       getOverall: () => bounds,
       resetView: () => {
         const controls = controlsRef.current;

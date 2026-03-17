@@ -214,8 +214,6 @@ function App() {
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `getOverallWidth()` | `number` | Overall width in mm |
-| `getOverallHeight()` | `number` | Overall height in mm |
 | `getOverall()` | `{ overallWidthMm: number, overallHeightMm: number }` | Both dimensions in mm |
 | `resetView()` | `void` | Reset pan/zoom to fit |
 
@@ -246,16 +244,6 @@ function App() {
   );
 }
 ```
-
-### Print Controller Methods
-
-| Method | Arguments | Description |
-|--------|-----------|-------------|
-| `createPrintSvg(options?)` | `{ displayUnit }` | Returns SVG document |
-| `openPrintPreview(options?)` | `{ title, displayUnit, autoPrint, marginMm }` | Opens browser print dialog |
-| `printToPdf(options?)` | `{ title, displayUnit, marginMm }` | Downloads as PDF |
-
----
 
 ## View Modes
 
