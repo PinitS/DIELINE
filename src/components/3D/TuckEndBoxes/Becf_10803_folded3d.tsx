@@ -36,7 +36,7 @@ const PanelMesh = ({ points, color }: PanelMeshProps) => {
 
   return (
     <mesh geometry={geometry}>
-      <meshStandardMaterial color={color} side={DoubleSide} roughness={0.82} metalness={0.02} />
+      <meshStandardMaterial color={color} side={DoubleSide} roughness={0.6} metalness={0.1} />
     </mesh>
   );
 };
@@ -167,11 +167,23 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
           ...style,
         }}
       >
-        <Canvas camera={{ position: initialCameraPosition, fov: 34, near: 0.1, far: 4000 }} style={{ width: "100%", height: "100%", display: "block" }}>
+        <Canvas camera={{ position: initialCameraPosition, fov: 34, near: 0.1, far: 4000 }} shadows style={{ width: "100%", height: "100%", display: "block" }}>
           <color attach="background" args={[backgroundColor]} />
-          <ambientLight intensity={1.35} />
-          <directionalLight position={[300, 260, 240]} intensity={1.1} />
-          <directionalLight position={[-240, -200, -220]} intensity={0.5} />
+          <ambientLight intensity={0.35} />
+          {/* Key Light - front right */}
+          <directionalLight
+            position={[200, 180, 150]}
+            intensity={1.4}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+            shadow-bias={-0.001}
+          />
+          {/* Fill Light - front left */}
+          <directionalLight position={[-180, 100, 120]} intensity={0.6} />
+          {/* Rim Light - back */}
+          <directionalLight position={[0, 80, -200]} intensity={0.5} />
+          {/* Top Soft Light */}
+          <directionalLight position={[0, 250, 0]} intensity={0.3} />
           <FoldedTuckEndBoxModel attribute={attribute} frame={frame} />
           <OrbitControls
             ref={controlsRef}
