@@ -73,11 +73,8 @@ export const DemoCanvas = ({
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
           texturePlacement={isTextureMode ? texturePlacement : undefined}
           onTexturePlacementChange={isTextureMode ? onTexturePlacementChange : undefined}
-          allowTextureTransform={false}
           showDimensions={isTextureMode ? false : showDimensions}
           showShapeLines
-          widthLabel="Overall Width"
-          heightLabel="Overall Height"
           onMeasure={onMeasure}
         />
       );
@@ -91,11 +88,8 @@ export const DemoCanvas = ({
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
           texturePlacement={isTextureMode ? texturePlacement : undefined}
           onTexturePlacementChange={isTextureMode ? onTexturePlacementChange : undefined}
-          allowTextureTransform={false}
           showDimensions={isTextureMode ? false : showDimensions}
           showShapeLines
-          widthLabel="Overall Width"
-          heightLabel="Overall Height"
           onMeasure={onMeasure}
         />
       );
@@ -120,11 +114,8 @@ export const DemoCanvas = ({
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
           texturePlacement={isTextureMode ? texturePlacement : undefined}
           onTexturePlacementChange={isTextureMode ? onTexturePlacementChange : undefined}
-          allowTextureTransform={false}
           showDimensions={isTextureMode ? false : showDimensions}
           showShapeLines
-          widthLabel="Overall Width"
-          heightLabel="Overall Height"
           onMeasure={onMeasure}
         />
       );

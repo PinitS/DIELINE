@@ -340,11 +340,8 @@ export const App = () => {
                   textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
-                  allowTextureTransform={false}
                   showDimensions={isTextureMode ? false : showDimensions}
                   showShapeLines
-                  widthLabel="Overall Width"
-                  heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
                 />
               );
@@ -358,11 +355,8 @@ export const App = () => {
                   textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
-                  allowTextureTransform={false}
                   showDimensions={isTextureMode ? false : showDimensions}
                   showShapeLines
-                  widthLabel="Overall Width"
-                  heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
                 />
               );
@@ -379,11 +373,8 @@ export const App = () => {
                   textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
-                  allowTextureTransform={false}
                   showDimensions={isTextureMode ? false : showDimensions}
                   showShapeLines
-                  widthLabel="Overall Width"
-                  heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
                 />
               );

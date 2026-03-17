@@ -112,7 +112,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
   function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
     const printController = useMemo(() => createDielinePrintController(
       { modelId: "tuckEndBox", attributes: attribute },
-      { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf" },
+      { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf", },
     ), [attribute, canvasProps.displayUnit]);
 
     if (renderMode === "folded3d") {
