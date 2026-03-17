@@ -4,7 +4,7 @@ export const DEFAULT_TUCK_END_BOX_ATTRIBUTES = {
   length: 100,
   width: 50,
   height: 150,
-  closurePanel: 45,
+  closurePanel: 50,
   dustFlap: 32,
   glueWidth: 12,
   tuckFlap: 15,

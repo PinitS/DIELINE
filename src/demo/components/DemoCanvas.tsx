@@ -70,8 +70,6 @@ export const DemoCanvas = ({
           ref={canvasRef}
           attribute={{ size: circleSize }}
           displayUnit={displayUnit}
-          width="100%"
-          height={720}
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
           texturePlacement={isTextureMode ? texturePlacement : undefined}
           onTexturePlacementChange={isTextureMode ? onTexturePlacementChange : undefined}
@@ -90,8 +88,6 @@ export const DemoCanvas = ({
           ref={canvasRef}
           attribute={{ width: rectWidth, height: rectHeight }}
           displayUnit={displayUnit}
-          width="100%"
-          height={720}
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
           texturePlacement={isTextureMode ? texturePlacement : undefined}
           onTexturePlacementChange={isTextureMode ? onTexturePlacementChange : undefined}
@@ -119,8 +115,6 @@ export const DemoCanvas = ({
             tuckFlap,
           }}
           displayUnit={displayUnit}
-          width="100%"
-          height={720}
           renderMode={isFolded3DMode ? "folded3d" : "dieline"}
           frame={isFolded3DMode ? tuckFrame : 0}
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
