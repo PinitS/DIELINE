@@ -165,13 +165,6 @@ export const App = () => {
         <div>
           <p className="eyebrow">react-dieline</p>
           <h1>React Three Fiber dieline demo</h1>
-          <p className="muted">
-            {isTextureMode
-              ? "Texture mode keeps dieline lines visible and hides only dimensions. Use the controls below to adjust the image placement."
-              : isFolded3DMode
-                ? "View 3D converts the tuck-end-box dieline into a folded model. Use the slider to scrub the fold sequence frame by frame."
-              : "Drag the canvas to pan. All entered dimensions are in millimeters."}
-          </p>
         </div>
 
         <div className="mode-toggle" aria-label="View mode toggle">
@@ -202,13 +195,8 @@ export const App = () => {
         <div className="summary-card">
           <h2>Model registry</h2>
           <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.dimensionType}`}</p>
-          <p>{`Export: ${selectedModelMetadata.exportName}`}</p>
-          <p>{`Attributes: ${selectedModelMetadata.attributes.map((attribute) => attribute.name).join(", ")}`}</p>
-          <p className="muted">View 3D is enabled automatically only for models from the `src/components/3D` folder.</p>
-
           <div className="toggle-row">
             <button type="button" onClick={exportModelJson}>Export model JSON</button>
-            <button type="button" onClick={() => setViewMode("3d")} disabled={!supports3DView}>View 3D</button>
           </div>
         </div>
 

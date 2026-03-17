@@ -115,7 +115,7 @@ const FoldedTuckEndBoxModel = ({ attribute, frame = 0 }: Pick<TuckEndBoxDielineP
 };
 
 export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
-  function Becf10803Folded3d({ attribute, onMeasure, width = "100%", height = 720, backgroundColor = "#d9d9d9", className, style, frame = 0 }, ref) {
+  function Becf10803Folded3d({ attribute, onMeasure, width = "100%", height = "100%", backgroundColor = "#d9d9d9", className, style, frame = 0 }, ref) {
     const controlsRef = useRef<OrbitControlsImpl | null>(null);
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = useMemo(() => measureTuckEndBoxBounds(geometry.resolved), [geometry.resolved]);

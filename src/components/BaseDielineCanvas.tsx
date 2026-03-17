@@ -337,7 +337,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
   function BaseDielineCanvas(props, ref) {
     const {
       width = "100%",
-      height = 720,
+      height = "100%",
       displayUnit = "mm",
       backgroundColor = "#d9d9d9",
       textureImageUrl,
