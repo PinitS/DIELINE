@@ -2,7 +2,7 @@ import { Line } from "@react-three/drei";
 import { forwardRef } from "react";
 import type { DielineCanvasHandle, RectangleDielineProps } from "../../types";
 import { measureRectangleBounds } from "../../utils/measure";
-import { BaseDielineCanvas, createTextureBounds, TexturedPolygonMesh } from "../BaseDielineCanvas";
+import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
 
 export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, RectangleDielineProps>(
   function RectangleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
@@ -14,7 +14,7 @@ export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, Rectangl
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        renderTextureOverlay={(layout, textureImageUrl) => (
+        renderTextureOverlay={(layout, textureImageUrl, textureBounds) => (
           <TexturedPolygonMesh
             imageUrl={textureImageUrl}
             points={[
@@ -23,22 +23,26 @@ export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, Rectangl
               { x: layout.rightX, y: layout.bottomY },
               { x: layout.leftX, y: layout.bottomY },
             ]}
-            textureBounds={createTextureBounds(layout)}
+            textureBounds={textureBounds}
           />
         )}
-        renderShape={(layout, shapeStrokeColor, createScenePoint) => (
-          <Line
-            points={[
-              createScenePoint(layout.leftX, layout.topY, 2),
-              createScenePoint(layout.rightX, layout.topY, 2),
-              createScenePoint(layout.rightX, layout.bottomY, 2),
-              createScenePoint(layout.leftX, layout.bottomY, 2),
-              createScenePoint(layout.leftX, layout.topY, 2),
-            ]}
-            color={shapeStrokeColor}
-            lineWidth={2}
-          />
-        )}
+        renderShape={(layout, shapeStrokeColor, createScenePoint, showShapeLines) => {
+          if (!showShapeLines) return null;
+
+          return (
+            <Line
+              points={[
+                createScenePoint(layout.leftX, layout.topY, 2),
+                createScenePoint(layout.rightX, layout.topY, 2),
+                createScenePoint(layout.rightX, layout.bottomY, 2),
+                createScenePoint(layout.leftX, layout.bottomY, 2),
+                createScenePoint(layout.leftX, layout.topY, 2),
+              ]}
+              color={shapeStrokeColor}
+              lineWidth={2}
+            />
+          );
+        }}
       />
     );
   },

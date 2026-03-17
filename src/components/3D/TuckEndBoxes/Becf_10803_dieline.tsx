@@ -4,7 +4,7 @@ import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from ".
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
 import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
 import { formatDielineDisplayValue } from "../../../utils/units";
-import { BaseDielineCanvas, createTextureBounds, TexturedPolygonMesh } from "../../BaseDielineCanvas";
+import { BaseDielineCanvas, TexturedPolygonMesh } from "../../BaseDielineCanvas";
 
 type Point = { x: number; y: number };
 
@@ -119,7 +119,6 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
       tuckFlap,
       closurePanel,
     } = resolveTuckEndBoxAttributes(attribute);
-    const advancedDimensionsEnabled = showDimensions;
     const bounds = measureTuckEndBoxBounds({
       length,
       width,
@@ -136,7 +135,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        renderTextureOverlay={(layout, textureImageUrl) => {
+        renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;
           const pxY = (mm: number) => layout.topY + mm * scale;
@@ -167,6 +166,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
             0,
             closureCornerRadius,
           );
+          
           const bottomClosurePanel = createRoundedBottomClosurePanel(
             x0,
             x1,
@@ -224,13 +224,13 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   key={`texture-${index}`}
                   imageUrl={textureImageUrl}
                   points={polygon}
-                  textureBounds={createTextureBounds(layout)}
+                  textureBounds={textureBounds}
                 />
               ))}
             </>
           );
         }}
-        renderShape={(layout, shapeStrokeColor, createScenePoint) => {
+        renderShape={(layout, shapeStrokeColor, createScenePoint, showShapeLines) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;
           const pxY = (mm: number) => layout.topY + mm * scale;
@@ -284,6 +284,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
             0,
             closureCornerRadius,
           );
+
           const bottomClosurePanel = createRoundedBottomClosurePanel(
             x0,
             x1,
@@ -369,7 +370,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
 
           return (
             <>
-              {cutSegments.map((segment, index) => (
+              {showShapeLines && cutSegments.map((segment, index) => (
                 <Line
                   key={`cut-${index}`}
                   points={toScenePoints(segment, createScenePoint)}
@@ -377,7 +378,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   lineWidth={2}
                 />
               ))}
-              {foldSegments.map((segment, index) => (
+              {showShapeLines && foldSegments.map((segment, index) => (
                 <Line
                   key={`fold-${index}`}
                   points={toScenePoints(segment, createScenePoint, 1.5)}
@@ -446,7 +447,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   ))}
                 </>
               )}
-              {advancedDimensionsEnabled && (
+              {showDimensions && (
                 <>
                   {[
                     [pxX(0), glueDimensionY, pxX(x0), glueDimensionY],
@@ -521,7 +522,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   </Text>
                 </>
               )}
-              {advancedDimensionsEnabled && (
+              {showDimensions && (
                 <>
                   <Text
                     position={[pxX(x0 / 2), -glueTextY, 3]}

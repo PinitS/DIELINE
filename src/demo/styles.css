@@ -54,6 +54,10 @@ h2 { font-size: 18px; margin-bottom: 12px; }
 .toggle-row { display: grid; gap: 10px; }
 .toggle-row button { cursor: pointer; transition: background 0.2s ease; }
 .toggle-row button:hover { background: #f8fafc; }
+.toggle-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .summary-card { display: grid; gap: 8px; padding: 18px; background: #f8fafc; border-radius: 18px; }
 .upload-card {
   display: grid;
@@ -81,8 +85,53 @@ h2 { font-size: 18px; margin-bottom: 12px; }
   line-height: 1.5;
   word-break: break-word;
 }
+.texture-actions {
+  gap: 14px;
+}
+.texture-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 10px;
+  align-items: center;
+}
+.texture-control-row input[type="range"] {
+  width: 100%;
+}
+.texture-number-input {
+  width: 100%;
+}
+.texture-meta-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.texture-meta-item {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  background: #fff;
+}
+.texture-meta-item span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.texture-meta-item strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+.texture-meta-item-wide {
+  grid-column: 1 / -1;
+}
 
 @media (max-width: 1080px) {
   .demo-shell { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .texture-meta-grid { grid-template-columns: 1fr; }
+  .texture-control-row { grid-template-columns: 1fr; }
 }
 

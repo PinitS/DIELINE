@@ -21,7 +21,13 @@ import {
   Vector2,
   type OrthographicCamera as ThreeOrthographicCamera,
 } from "three";
-import type { DielineBounds, DielineCanvasHandle, DielineMeasureCallback, SharedCanvasProps } from "../types";
+import type {
+  DielineBounds,
+  DielineCanvasHandle,
+  DielineMeasureCallback,
+  SharedCanvasProps,
+  TexturePlacement,
+} from "../types";
 import { createCanvasLayout, VIEWBOX_HEIGHT, VIEWBOX_WIDTH } from "../utils/layout";
 import { formatDielineDisplayValue } from "../utils/units";
 
@@ -37,8 +43,9 @@ type BaseDielineCanvasProps = SharedCanvasProps & {
     layout: DielineLayout,
     shapeStrokeColor: string,
     createScenePoint: (x: number, y: number, z?: number) => CanvasPoint,
+    showShapeLines: boolean,
   ) => ReactNode;
-  renderTextureOverlay?: (layout: DielineLayout, textureImageUrl: string) => ReactNode;
+  renderTextureOverlay?: (layout: DielineLayout, textureImageUrl: string, textureBounds: TextureBounds) => ReactNode;
 };
 
 const LINE_WIDTH = 1.4;
@@ -46,6 +53,8 @@ const VIEWBOX_ASPECT = VIEWBOX_WIDTH / VIEWBOX_HEIGHT;
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 64;
+const MIN_TEXTURE_SCALE = 0.1;
+const MAX_TEXTURE_SCALE = 8;
 const FIT_VIEW_PADDING = 24;
 
 type CanvasViewState = {
@@ -56,6 +65,14 @@ type CanvasViewState = {
 const createScenePoint = (x: number, y: number, z = 0): CanvasPoint => [x, -y, z];
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 const POINT_PRECISION = 4;
+const DEFAULT_TEXTURE_PLACEMENT: TexturePlacement = {
+  hasTexture: false,
+  imageWidth: 0,
+  imageHeight: 0,
+  offsetXRatio: 0,
+  offsetYRatio: 0,
+  scale: 1,
+};
 
 const getSceneDimensions = (aspect: number) => {
   if (!Number.isFinite(aspect) || aspect <= 0) {
@@ -177,6 +194,53 @@ export const createTextureBounds = (layout: DielineLayout): TextureBounds => ({
   height: layout.shapeHeightPx,
 });
 
+const normalizeTexturePlacement = (
+  placement: TexturePlacement | undefined,
+  hasTexture: boolean,
+): TexturePlacement => ({
+  hasTexture,
+  imageWidth: Number.isFinite(placement?.imageWidth) ? Math.max(0, placement?.imageWidth ?? 0) : 0,
+  imageHeight: Number.isFinite(placement?.imageHeight) ? Math.max(0, placement?.imageHeight ?? 0) : 0,
+  offsetXRatio: Number.isFinite(placement?.offsetXRatio) ? placement?.offsetXRatio ?? 0 : 0,
+  offsetYRatio: Number.isFinite(placement?.offsetYRatio) ? placement?.offsetYRatio ?? 0 : 0,
+  scale: clamp(
+    Number.isFinite(placement?.scale) ? placement?.scale ?? DEFAULT_TEXTURE_PLACEMENT.scale : DEFAULT_TEXTURE_PLACEMENT.scale,
+    MIN_TEXTURE_SCALE,
+    MAX_TEXTURE_SCALE,
+  ),
+});
+
+const resolveTextureBounds = (
+  bounds: TextureBounds,
+  placement: TexturePlacement,
+): TextureBounds => {
+  const offsetX = placement.offsetXRatio * bounds.width;
+  const offsetY = placement.offsetYRatio * bounds.height;
+
+  if (placement.imageWidth > 0 && placement.imageHeight > 0) {
+    const coverScale = Math.max(bounds.width / placement.imageWidth, bounds.height / placement.imageHeight);
+    const width = placement.imageWidth * coverScale * placement.scale;
+    const height = placement.imageHeight * coverScale * placement.scale;
+
+    return {
+      left: bounds.left + (bounds.width - width) / 2 + offsetX,
+      top: bounds.top + (bounds.height - height) / 2 + offsetY,
+      width,
+      height,
+    };
+  }
+
+  const width = bounds.width * placement.scale;
+  const height = bounds.height * placement.scale;
+
+  return {
+    left: bounds.left + (bounds.width - width) / 2 + offsetX,
+    top: bounds.top + (bounds.height - height) / 2 + offsetY,
+    width,
+    height,
+  };
+};
+
 export const TexturedPolygonMesh = ({
   imageUrl,
   points,
@@ -228,7 +292,15 @@ export const TexturedPolygonMesh = ({
   );
 };
 
-const DefaultTextureOverlay = ({ imageUrl, layout }: { imageUrl: string; layout: DielineLayout }) => (
+const DefaultTextureOverlay = ({
+  imageUrl,
+  layout,
+  textureBounds,
+}: {
+  imageUrl: string;
+  layout: DielineLayout;
+  textureBounds: TextureBounds;
+}) => (
   <TexturedPolygonMesh
     imageUrl={imageUrl}
     points={[
@@ -237,7 +309,7 @@ const DefaultTextureOverlay = ({ imageUrl, layout }: { imageUrl: string; layout:
       { x: layout.rightX, y: layout.bottomY },
       { x: layout.leftX, y: layout.bottomY },
     ]}
-    textureBounds={createTextureBounds(layout)}
+    textureBounds={textureBounds}
   />
 );
 
@@ -269,12 +341,16 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       displayUnit = "mm",
       backgroundColor = "#d9d9d9",
       textureImageUrl,
+      texturePlacement,
+      onTexturePlacementChange,
+      allowTextureTransform = false,
       shapeStrokeColor = "#ff2d2d",
       dimensionColor = "#111111",
       labelColor = "#111111",
       widthLabel = "Overall Width",
       heightLabel = "Overall Height",
       showDimensions = true,
+      showShapeLines = true,
       className,
       style,
       bounds,
@@ -293,6 +369,30 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       () => createCanvasLayout(bounds),
       [bounds.overallHeightMm, bounds.overallWidthMm],
     );
+    const baseTextureBounds = useMemo(
+      () => createTextureBounds(layout),
+      [layout.bottomY, layout.leftX, layout.rightX, layout.shapeHeightPx, layout.shapeWidthPx, layout.topY],
+    );
+    const resolvedTexturePlacement = useMemo(
+      () => normalizeTexturePlacement(texturePlacement, Boolean(textureImageUrl)),
+      [textureImageUrl, texturePlacement],
+    );
+    const textureBounds = useMemo(
+      () => resolveTextureBounds(baseTextureBounds, resolvedTexturePlacement),
+      [baseTextureBounds, resolvedTexturePlacement],
+    );
+    const textureTransformEnabled = Boolean(textureImageUrl) && allowTextureTransform && Boolean(onTexturePlacementChange);
+
+    const emitTexturePlacement = useCallback((nextPlacement: TexturePlacement | ((current: TexturePlacement) => TexturePlacement)) => {
+      if (!onTexturePlacementChange) return;
+
+      const basePlacement = normalizeTexturePlacement(texturePlacement, Boolean(textureImageUrl));
+      const computedPlacement = typeof nextPlacement === "function"
+        ? nextPlacement(basePlacement)
+        : nextPlacement;
+
+      onTexturePlacementChange(normalizeTexturePlacement(computedPlacement, Boolean(textureImageUrl)));
+    }, [onTexturePlacementChange, textureImageUrl, texturePlacement]);
 
     const fitView = useCallback(() => {
       const container = containerRef.current;
@@ -339,6 +439,40 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       };
     }, [fitView]);
 
+    useEffect(() => {
+      if (!hasInitializedViewRef.current) return;
+      fitView();
+    }, [fitView]);
+
+    useEffect(() => {
+      if (!textureImageUrl || !onTexturePlacementChange) return;
+      if (resolvedTexturePlacement.imageWidth > 0 && resolvedTexturePlacement.imageHeight > 0) return;
+
+      let cancelled = false;
+      const image = new Image();
+
+      image.onload = () => {
+        if (cancelled) return;
+        emitTexturePlacement({
+          ...resolvedTexturePlacement,
+          imageWidth: image.naturalWidth,
+          imageHeight: image.naturalHeight,
+        });
+      };
+
+      image.src = textureImageUrl;
+
+      return () => {
+        cancelled = true;
+        image.onload = null;
+      };
+    }, [
+      emitTexturePlacement,
+      onTexturePlacementChange,
+      resolvedTexturePlacement,
+      textureImageUrl,
+    ]);
+
     useImperativeHandle(ref, () => ({
       getOverallWidth: () => bounds.overallWidthMm,
       getOverallHeight: () => bounds.overallHeightMm,
@@ -357,6 +491,15 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       const handleWheel = (event: WheelEvent) => {
         event.preventDefault();
         event.stopPropagation();
+
+        if (textureTransformEnabled) {
+          const zoomFactor = Math.exp(-event.deltaY * 0.0015);
+          emitTexturePlacement((current) => ({
+            ...current,
+            scale: clamp(current.scale * zoomFactor, MIN_TEXTURE_SCALE, MAX_TEXTURE_SCALE),
+          }));
+          return;
+        }
 
         const rect = container.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
@@ -383,7 +526,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
 
       container.addEventListener("wheel", handleWheel, { passive: false });
       return () => container.removeEventListener("wheel", handleWheel);
-    }, []);
+    }, [emitTexturePlacement, textureTransformEnabled]);
 
     const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
       dragRef.current = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY };
@@ -399,6 +542,16 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       const deltaX = (event.clientX - dragRef.current.clientX) * (scene.width / rect.width) / zoom;
       const deltaY = (event.clientY - dragRef.current.clientY) * (scene.height / rect.height) / zoom;
       dragRef.current = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY };
+
+      if (textureTransformEnabled) {
+        emitTexturePlacement((current) => ({
+          ...current,
+          offsetXRatio: current.offsetXRatio + deltaX / Math.max(baseTextureBounds.width, 1),
+          offsetYRatio: current.offsetYRatio + deltaY / Math.max(baseTextureBounds.height, 1),
+        }));
+        return;
+      }
+
       setPan((value) => ({ x: value.x + deltaX, y: value.y + deltaY }));
     };
 
@@ -437,8 +590,8 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
           <group position={[-VIEWBOX_WIDTH / 2 + pan.x, VIEWBOX_HEIGHT / 2 - pan.y, 0]}>
             {textureImageUrl
               ? (renderTextureOverlay
-                  ? renderTextureOverlay(layout, textureImageUrl)
-                  : <DefaultTextureOverlay imageUrl={textureImageUrl} layout={layout} />)
+                  ? renderTextureOverlay(layout, textureImageUrl, textureBounds)
+                  : <DefaultTextureOverlay imageUrl={textureImageUrl} layout={layout} textureBounds={textureBounds} />)
               : null}
             {showDimensions && <>
               <Line points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topDimensionY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
@@ -461,7 +614,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
               <Text position={[layout.centerX, -layout.topLabelY, 3]} color={labelColor} fontSize={layout.widthFontSize} anchorX="center" anchorY="middle" textAlign="center">{widthText}</Text>
               <Text position={[layout.sideLabelX, -layout.centerY, 3]} color={labelColor} fontSize={layout.heightFontSize} anchorX="center" anchorY="middle" textAlign="center" rotation={[0, 0, Math.PI / 2]}>{heightText}</Text>
             </>}
-            {renderShape(layout, shapeStrokeColor, createScenePoint)}
+            {renderShape(layout, shapeStrokeColor, createScenePoint, showShapeLines)}
           </group>
         </Canvas>
       </div>

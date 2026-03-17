@@ -21,6 +21,15 @@ export type DielineBounds = {
 
 export type DielineMeasureCallback = (bounds: DielineBounds) => void;
 
+export type TexturePlacement = {
+  hasTexture: boolean;
+  imageWidth: number;
+  imageHeight: number;
+  offsetXRatio: number;
+  offsetYRatio: number;
+  scale: number;
+};
+
 export type DielineCanvasHandle = {
   getOverallWidth: () => number;
   getOverallHeight: () => number;
@@ -33,12 +42,16 @@ export type SharedCanvasProps = {
   displayUnit?: DisplayUnit;
   backgroundColor?: string;
   textureImageUrl?: string;
+  texturePlacement?: TexturePlacement;
+  onTexturePlacementChange?: (placement: TexturePlacement) => void;
+  allowTextureTransform?: boolean;
   shapeStrokeColor?: string;
   dimensionColor?: string;
   labelColor?: string;
   widthLabel?: string;
   heightLabel?: string;
   showDimensions?: boolean;
+  showShapeLines?: boolean;
   className?: string;
   style?: CSSProperties;
 };

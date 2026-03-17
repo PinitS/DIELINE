@@ -16,7 +16,7 @@ export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDieli
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        renderTextureOverlay={(layout, textureImageUrl) => {
+        renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const radius = layout.shapeWidthPx / 2;
           const points = Array.from({ length: CIRCLE_SEGMENTS }, (_, index) => {
             const angle = (index / CIRCLE_SEGMENTS) * Math.PI * 2;
@@ -30,11 +30,13 @@ export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDieli
             <TexturedPolygonMesh
               imageUrl={textureImageUrl}
               points={points}
-              textureBounds={createTextureBounds(layout)}
+              textureBounds={textureBounds}
             />
           );
         }}
-        renderShape={(layout, shapeStrokeColor, createScenePoint) => {
+        renderShape={(layout, shapeStrokeColor, createScenePoint, showShapeLines) => {
+          if (!showShapeLines) return null;
+
           const radius = layout.shapeWidthPx / 2;
           const points = Array.from({ length: CIRCLE_SEGMENTS + 1 }, (_, index) => {
             const angle = (index / CIRCLE_SEGMENTS) * Math.PI * 2;
