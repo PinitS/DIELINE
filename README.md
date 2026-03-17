@@ -11,8 +11,9 @@ React Three Fiber dieline component library for React.
 - Always formats labels to 2 decimals
 - Dynamic font sizing for overall width/height labels
 - Type-specific public API:
-  - `CircleDieline`
-  - `RectangleDieline`
+  - `StrickerCircleDieline`
+  - `StrickerRectangleDieline`
+  - `Becf_10803_dieline`
 - Named helpers:
   - `convertDielineMillimeters`
   - `formatDielineDisplayValue`
@@ -34,19 +35,20 @@ npm install react react-dom
 
 You choose the shape component directly.
 
-- Use `CircleDieline` for circles
-- Use `RectangleDieline` for rectangles
+- Use `StrickerCircleDieline` for circles
+- Use `StrickerRectangleDieline` for rectangles
+- Use `Becf_10803_dieline` for the tuck-end-box model
 
 All input dimensions are in **millimeters**.
 
 ## Basic usage
 
 ```tsx
-import { CircleDieline } from "react-dieline";
+import { StrickerCircleDieline } from "react-dieline";
 
 export function Example() {
   return (
-    <CircleDieline
+    <StrickerCircleDieline
       attribute={{ size: 90 }}
       displayUnit="mm"
       width={800}
@@ -59,15 +61,29 @@ export function Example() {
 ## Rectangle usage
 
 ```tsx
-import { RectangleDieline } from "react-dieline";
+import { StrickerRectangleDieline } from "react-dieline";
 
 export function Example() {
   return (
-    <RectangleDieline
+    <StrickerRectangleDieline
       attribute={{ width: 120, height: 80 }}
       displayUnit="cm"
       showDimensions
-      showLabels
+    />
+  );
+}
+```
+
+## Tuck-end-box usage
+
+```tsx
+import { Becf_10803_dieline } from "react-dieline";
+
+export function Example() {
+  return (
+    <Becf_10803_dieline
+      attribute={{ length: 100, width: 50, height: 150 }}
+      showDimensions
     />
   );
 }
@@ -75,8 +91,9 @@ export function Example() {
 
 ## Public exports
 
-- `CircleDieline`
-- `RectangleDieline`
+- `StrickerCircleDieline`
+- `StrickerRectangleDieline`
+- `Becf_10803_dieline`
 - `convertDielineMillimeters`
 - `formatDielineDisplayValue`
 
@@ -92,29 +109,60 @@ export function Example() {
 - `widthLabel?: string`
 - `heightLabel?: string`
 - `showDimensions?: boolean`
-- `showLabels?: boolean`
+  - Controls both dimension lines and dimension labels
+  - Default: `true`
 - `className?: string`
 - `style?: CSSProperties`
 - `onMeasure?: (bounds) => void`
 
 ## Shape-specific props
 
-### CircleDieline
+### StrickerCircleDieline
 
 ```tsx
-attribute: { size: number }
+attribute: { size?: number }
 ```
 
-### RectangleDieline
+Default `size`: `90`
+
+### StrickerRectangleDieline
 
 ```tsx
-attribute: { width: number; height: number }
+attribute: { width?: number; height?: number }
 ```
+
+Default `width`: `120`
+
+Default `height`: `80`
+
+### Becf_10803_dieline
+
+```tsx
+attribute: {
+  length?: number;
+  width?: number;
+  height?: number;
+  closurePanel?: number;
+  dustFlap?: number;
+  glueWidth?: number;
+  tuckFlap?: number;
+}
+```
+
+Defaults:
+
+- `length: 100`
+- `width: 50`
+- `height: 150`
+- `closurePanel: 45`
+- `dustFlap: 32`
+- `glueWidth: 12`
+- `tuckFlap: 15`
 
 ## Reading measurements via callback
 
 ```tsx
-<CircleDieline
+<StrickerCircleDieline
   attribute={{ size: 100 }}
   onMeasure={(bounds) => {
     console.log(bounds.overallWidthMm);
@@ -127,7 +175,7 @@ attribute: { width: number; height: number }
 
 ```tsx
 import { useRef } from "react";
-import { CircleDieline } from "react-dieline";
+import { StrickerCircleDieline } from "react-dieline";
 
 export function Example() {
   const ref = useRef<{
@@ -142,9 +190,9 @@ export function Example() {
         Read width
       </button>
       <button onClick={() => ref.current?.resetView()}>
-        Reset pan
+        Reset view
       </button>
-      <CircleDieline ref={ref} attribute={{ size: 120 }} />
+      <StrickerCircleDieline ref={ref} attribute={{ size: 120 }} />
     </>
   );
 }
@@ -157,6 +205,8 @@ export function Example() {
 - `resetView(): void`
 
 The ref API returns dimensions in **millimeters**.
+
+`resetView()` restores the fitted initial view.
 
 ## Helper usage
 

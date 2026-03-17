@@ -1,69 +1,61 @@
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent,
   type ReactNode,
 } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { Line, Text } from "@react-three/drei";
-import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
+import {
+  Float32BufferAttribute,
+  Shape,
+  ShapeGeometry,
+  SRGBColorSpace,
+  TextureLoader,
+  Vector2,
+  type OrthographicCamera as ThreeOrthographicCamera,
+} from "three";
 import type { DielineBounds, DielineCanvasHandle, DielineMeasureCallback, SharedCanvasProps } from "../types";
 import { createCanvasLayout, VIEWBOX_HEIGHT, VIEWBOX_WIDTH } from "../utils/layout";
 import { formatDielineDisplayValue } from "../utils/units";
 
 type DragState = { pointerId: number; clientX: number; clientY: number };
 type CanvasPoint = [number, number, number];
+export type DielineLayout = ReturnType<typeof createCanvasLayout>;
+export type TexturePolygonPoint = { x: number; y: number };
+export type TextureBounds = { left: number; top: number; width: number; height: number };
 type BaseDielineCanvasProps = SharedCanvasProps & {
   bounds: DielineBounds;
   onMeasure?: DielineMeasureCallback;
   renderShape: (
-    layout: ReturnType<typeof createCanvasLayout>,
+    layout: DielineLayout,
     shapeStrokeColor: string,
     createScenePoint: (x: number, y: number, z?: number) => CanvasPoint,
   ) => ReactNode;
+  renderTextureOverlay?: (layout: DielineLayout, textureImageUrl: string) => ReactNode;
 };
 
-const LINE_WIDTH = 2;
+const LINE_WIDTH = 1.4;
 const VIEWBOX_ASPECT = VIEWBOX_WIDTH / VIEWBOX_HEIGHT;
-const ARROW_HEAD_ANGLE = Math.PI / 6;
 const DEFAULT_ZOOM = 1;
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 64;
+const FIT_VIEW_PADDING = 24;
+
+type CanvasViewState = {
+  pan: { x: number; y: number };
+  zoom: number;
+};
 
 const createScenePoint = (x: number, y: number, z = 0): CanvasPoint => [x, -y, z];
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-
-const createArrowHeadSegments = (
-  tipX: number,
-  tipY: number,
-  dirX: number,
-  dirY: number,
-  length: number,
-  z = 1,
-): [CanvasPoint, CanvasPoint][] => {
-  const cos = Math.cos(ARROW_HEAD_ANGLE);
-  const sin = Math.sin(ARROW_HEAD_ANGLE);
-
-  const leftX = dirX * cos - dirY * sin;
-  const leftY = dirX * sin + dirY * cos;
-  const rightX = dirX * cos + dirY * sin;
-  const rightY = -dirX * sin + dirY * cos;
-
-  return [
-    [
-      createScenePoint(tipX, tipY, z),
-      createScenePoint(tipX + leftX * length, tipY + leftY * length, z),
-    ],
-    [
-      createScenePoint(tipX, tipY, z),
-      createScenePoint(tipX + rightX * length, tipY + rightY * length, z),
-    ],
-  ];
-};
+const POINT_PRECISION = 4;
 
 const getSceneDimensions = (aspect: number) => {
   if (!Number.isFinite(aspect) || aspect <= 0) {
@@ -75,6 +67,61 @@ const getSceneDimensions = (aspect: number) => {
   }
 
   return { width: VIEWBOX_WIDTH, height: VIEWBOX_WIDTH / aspect };
+};
+
+const getContentBounds = (
+  layout: DielineLayout,
+  showDimensions: boolean,
+) => {
+  let left = layout.leftX;
+  let right = layout.rightX;
+  let top = layout.topY;
+  let bottom = layout.bottomY;
+
+  if (showDimensions) {
+    left = Math.min(left, layout.leftDimensionX);
+    top = Math.min(top, layout.topDimensionY);
+    left = Math.min(left, layout.sideLabelX - layout.heightFontSize);
+    top = Math.min(top, layout.topLabelY - layout.widthFontSize);
+  }
+
+  return {
+    left: left - FIT_VIEW_PADDING,
+    right: right + FIT_VIEW_PADDING,
+    top: top - FIT_VIEW_PADDING,
+    bottom: bottom + FIT_VIEW_PADDING,
+  };
+};
+
+const getFittedViewState = (
+  containerWidth: number,
+  containerHeight: number,
+  layout: DielineLayout,
+  showDimensions: boolean,
+): CanvasViewState => {
+  if (!containerWidth || !containerHeight) {
+    return { pan: { x: 0, y: 0 }, zoom: DEFAULT_ZOOM };
+  }
+
+  const scene = getSceneDimensions(containerWidth / containerHeight);
+  const contentBounds = getContentBounds(layout, showDimensions);
+  const contentWidth = Math.max(contentBounds.right - contentBounds.left, 1);
+  const contentHeight = Math.max(contentBounds.bottom - contentBounds.top, 1);
+  const zoom = clamp(
+    Math.min(scene.width / contentWidth, scene.height / contentHeight),
+    MIN_ZOOM,
+    MAX_ZOOM,
+  );
+  const centerX = (contentBounds.left + contentBounds.right) / 2;
+  const centerY = (contentBounds.top + contentBounds.bottom) / 2;
+
+  return {
+    zoom,
+    pan: {
+      x: VIEWBOX_WIDTH / 2 - centerX,
+      y: VIEWBOX_HEIGHT / 2 - centerY,
+    },
+  };
 };
 
 const getWorldPointFromClient = (
@@ -94,6 +141,105 @@ const getWorldPointFromClient = (
     y: visibleHeight / 2 - yRatio * visibleHeight,
   };
 };
+
+const sanitizePolygonPoints = (points: TexturePolygonPoint[]) => {
+  if (points.length < 3) return points;
+
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (Math.abs(first.x - last.x) < 0.0001 && Math.abs(first.y - last.y) < 0.0001) {
+    return points.slice(0, -1);
+  }
+
+  return points;
+};
+
+const applyTextureUvs = (geometry: ShapeGeometry, bounds: TextureBounds) => {
+  const width = bounds.width || 1;
+  const height = bounds.height || 1;
+  const positions = geometry.getAttribute("position");
+  const uvs = new Float32Array(positions.count * 2);
+
+  for (let index = 0; index < positions.count; index += 1) {
+    const x = positions.getX(index);
+    const y = -positions.getY(index);
+    uvs[index * 2] = (x - bounds.left) / width;
+    uvs[index * 2 + 1] = 1 - (y - bounds.top) / height;
+  }
+
+  geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+};
+
+export const createTextureBounds = (layout: DielineLayout): TextureBounds => ({
+  left: layout.leftX,
+  top: layout.topY,
+  width: layout.shapeWidthPx,
+  height: layout.shapeHeightPx,
+});
+
+export const TexturedPolygonMesh = ({
+  imageUrl,
+  points,
+  textureBounds,
+  z = 0.5,
+}: {
+  imageUrl: string;
+  points: TexturePolygonPoint[];
+  textureBounds: TextureBounds;
+  z?: number;
+}) => {
+  const texture = useLoader(TextureLoader, imageUrl);
+  const pointSignature = points
+    .map(({ x, y }) => `${x.toFixed(POINT_PRECISION)},${y.toFixed(POINT_PRECISION)}`)
+    .join("|");
+
+  const geometry = useMemo(() => {
+    const polygonPoints = sanitizePolygonPoints(points);
+    if (polygonPoints.length < 3) return null;
+
+    const shape = new Shape(polygonPoints.map(({ x, y }) => new Vector2(x, -y)));
+    const nextGeometry = new ShapeGeometry(shape);
+    applyTextureUvs(nextGeometry, textureBounds);
+    return nextGeometry;
+  }, [
+    pointSignature,
+    points,
+    textureBounds.height,
+    textureBounds.left,
+    textureBounds.top,
+    textureBounds.width,
+  ]);
+
+  useEffect(() => {
+    texture.colorSpace = SRGBColorSpace;
+    texture.needsUpdate = true;
+  }, [texture]);
+
+  useEffect(() => () => {
+    geometry?.dispose();
+  }, [geometry]);
+
+  if (!geometry) return null;
+
+  return (
+    <mesh geometry={geometry} position={[0, 0, z]}>
+      <meshBasicMaterial map={texture} transparent opacity={1} toneMapped={false} depthWrite={false} />
+    </mesh>
+  );
+};
+
+const DefaultTextureOverlay = ({ imageUrl, layout }: { imageUrl: string; layout: DielineLayout }) => (
+  <TexturedPolygonMesh
+    imageUrl={imageUrl}
+    points={[
+      { x: layout.leftX, y: layout.topY },
+      { x: layout.rightX, y: layout.topY },
+      { x: layout.rightX, y: layout.bottomY },
+      { x: layout.leftX, y: layout.bottomY },
+    ]}
+    textureBounds={createTextureBounds(layout)}
+  />
+);
 
 const ResponsiveOrthographicCamera = ({ zoom }: { zoom: number }) => {
   const camera = useThree((state) => state.camera as ThreeOrthographicCamera);
@@ -122,39 +268,87 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       height = 720,
       displayUnit = "mm",
       backgroundColor = "#d9d9d9",
+      textureImageUrl,
       shapeStrokeColor = "#ff2d2d",
       dimensionColor = "#111111",
       labelColor = "#111111",
       widthLabel = "Overall Width",
       heightLabel = "Overall Height",
       showDimensions = true,
-      showLabels = true,
       className,
       style,
       bounds,
       onMeasure,
       renderShape,
+      renderTextureOverlay,
     } = props;
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const dragRef = useRef<DragState | null>(null);
+    const hasInitializedViewRef = useRef(false);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(DEFAULT_ZOOM);
     const [dragging, setDragging] = useState(false);
-    const layout = createCanvasLayout(bounds);
+    const layout = useMemo(
+      () => createCanvasLayout(bounds),
+      [bounds.overallHeightMm, bounds.overallWidthMm],
+    );
+
+    const fitView = useCallback(() => {
+      const container = containerRef.current;
+      if (!container) return false;
+
+      const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return false;
+
+      const nextView = getFittedViewState(
+        rect.width,
+        rect.height,
+        layout,
+        showDimensions,
+      );
+
+      setPan(nextView.pan);
+      setZoom(nextView.zoom);
+      return true;
+    }, [layout, showDimensions]);
 
     useEffect(() => {
       onMeasure?.(bounds);
     }, [bounds.overallHeightMm, bounds.overallWidthMm, onMeasure]);
 
+    useEffect(() => {
+      if (hasInitializedViewRef.current) return undefined;
+
+      let frameId = 0;
+
+      const fitWhenReady = () => {
+        if (hasInitializedViewRef.current) return;
+        if (fitView()) {
+          hasInitializedViewRef.current = true;
+          return;
+        }
+
+        frameId = window.requestAnimationFrame(fitWhenReady);
+      };
+
+      fitWhenReady();
+
+      return () => {
+        if (frameId) window.cancelAnimationFrame(frameId);
+      };
+    }, [fitView]);
+
     useImperativeHandle(ref, () => ({
       getOverallWidth: () => bounds.overallWidthMm,
       getOverallHeight: () => bounds.overallHeightMm,
       resetView: () => {
-        setPan({ x: 0, y: 0 });
-        setZoom(DEFAULT_ZOOM);
+        if (!fitView()) {
+          setPan({ x: 0, y: 0 });
+          setZoom(DEFAULT_ZOOM);
+        }
       },
-    }), [bounds.overallHeightMm, bounds.overallWidthMm]);
+    }), [bounds.overallHeightMm, bounds.overallWidthMm, fitView]);
 
     useEffect(() => {
       const container = containerRef.current;
@@ -217,12 +411,12 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
 
     const widthText = `${widthLabel} : ${formatDielineDisplayValue(bounds.overallWidthMm, displayUnit)}`;
     const heightText = `${heightLabel} : ${formatDielineDisplayValue(bounds.overallHeightMm, displayUnit)}`;
-    const arrowHeadLength = Math.max(8, layout.arrowSize * 0.58);
-    const arrowHeadSegments = [
-      ...createArrowHeadSegments(layout.leftX, layout.topDimensionY, 1, 0, arrowHeadLength),
-      ...createArrowHeadSegments(layout.rightX, layout.topDimensionY, -1, 0, arrowHeadLength),
-      ...createArrowHeadSegments(layout.leftDimensionX, layout.topY, 0, 1, arrowHeadLength),
-      ...createArrowHeadSegments(layout.leftDimensionX, layout.bottomY, 0, -1, arrowHeadLength),
+    const dimensionTick = Math.max(10, layout.tickSize * 0.7);
+    const overallDimensionTicks = [
+      [layout.leftX, layout.topDimensionY - dimensionTick / 2, layout.leftX, layout.topDimensionY + dimensionTick / 2],
+      [layout.rightX, layout.topDimensionY - dimensionTick / 2, layout.rightX, layout.topDimensionY + dimensionTick / 2],
+      [layout.leftDimensionX - dimensionTick / 2, layout.topY, layout.leftDimensionX + dimensionTick / 2, layout.topY],
+      [layout.leftDimensionX - dimensionTick / 2, layout.bottomY, layout.leftDimensionX + dimensionTick / 2, layout.bottomY],
     ];
 
     return (
@@ -241,6 +435,11 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
           <ResponsiveOrthographicCamera zoom={zoom} />
           <color attach="background" args={[backgroundColor]} />
           <group position={[-VIEWBOX_WIDTH / 2 + pan.x, VIEWBOX_HEIGHT / 2 - pan.y, 0]}>
+            {textureImageUrl
+              ? (renderTextureOverlay
+                  ? renderTextureOverlay(layout, textureImageUrl)
+                  : <DefaultTextureOverlay imageUrl={textureImageUrl} layout={layout} />)
+              : null}
             {showDimensions && <>
               <Line points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topDimensionY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
               <Line points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.leftX, layout.topY - layout.tickSize, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
@@ -248,15 +447,21 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
               <Line points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftDimensionX, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
               <Line points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.topY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
               <Line points={[createScenePoint(layout.leftDimensionX, layout.bottomY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              {arrowHeadSegments.map((points, index) => (
-                <Line key={`arrow-head-${index}`} points={points} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              {overallDimensionTicks.map((segment, index) => (
+                <Line
+                  key={`overall-dimension-tick-${index}`}
+                  points={[
+                    createScenePoint(segment[0], segment[1], 1),
+                    createScenePoint(segment[2], segment[3], 1),
+                  ]}
+                  color={dimensionColor}
+                  lineWidth={LINE_WIDTH}
+                />
               ))}
-            </>}
-            {renderShape(layout, shapeStrokeColor, createScenePoint)}
-            {showLabels && <>
               <Text position={[layout.centerX, -layout.topLabelY, 3]} color={labelColor} fontSize={layout.widthFontSize} anchorX="center" anchorY="middle" textAlign="center">{widthText}</Text>
               <Text position={[layout.sideLabelX, -layout.centerY, 3]} color={labelColor} fontSize={layout.heightFontSize} anchorX="center" anchorY="middle" textAlign="center" rotation={[0, 0, Math.PI / 2]}>{heightText}</Text>
             </>}
+            {renderShape(layout, shapeStrokeColor, createScenePoint)}
           </group>
         </Canvas>
       </div>

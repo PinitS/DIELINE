@@ -2,17 +2,14 @@ import { Line, Text } from "@react-three/drei";
 import { forwardRef } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
+import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
 import { formatDielineDisplayValue } from "../../../utils/units";
-import { BaseDielineCanvas } from "../../BaseDielineCanvas";
+import { BaseDielineCanvas, createTextureBounds, TexturedPolygonMesh } from "../../BaseDielineCanvas";
 
 type Point = { x: number; y: number };
 
 const FOLD_LINE_COLOR = "#22c55e";
 const DIMENSION_COLOR = "#111111";
-const DEFAULT_CLOSURE_PANEL_MM = 45;
-const DEFAULT_DUST_FLAP_MM = 32;
-const DEFAULT_GLUE_WIDTH_MM = 12;
-const DEFAULT_TUCK_FLAP_MM = 15;
 const ADVANCED_DIMENSIONS_TRIGGER = {
   closurePanel: 35,
   dustFlap: 32,
@@ -21,7 +18,6 @@ const ADVANCED_DIMENSIONS_TRIGGER = {
 } as const;
 const DIMENSION_MATCH_EPSILON = 0.001;
 
-const normalize = (value: number) => (Number.isFinite(value) && value > 0 ? value : 1);
 const matchesDimensionValue = (value: number, expected: number) =>
   Math.abs(value - expected) <= DIMENSION_MATCH_EPSILON;
 
@@ -124,14 +120,15 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
   function TuckEndBoxDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const displayUnit = canvasProps.displayUnit ?? "mm";
     const showDimensions = canvasProps.showDimensions ?? true;
-    const showLabels = canvasProps.showLabels ?? true;
-    const length = normalize(attribute.length);
-    const width = normalize(attribute.width);
-    const height = normalize(attribute.height);
-    const glueWidth = attribute.glueWidth ?? DEFAULT_GLUE_WIDTH_MM;
-    const dustFlap = attribute.dustFlap ?? DEFAULT_DUST_FLAP_MM;
-    const tuckFlap = attribute.tuckFlap ?? DEFAULT_TUCK_FLAP_MM;
-    const closurePanel = attribute.closurePanel ?? DEFAULT_CLOSURE_PANEL_MM;
+    const {
+      length,
+      width,
+      height,
+      glueWidth,
+      dustFlap,
+      tuckFlap,
+      closurePanel,
+    } = resolveTuckEndBoxAttributes(attribute);
     const advancedDimensionsEnabled =
       showDimensions
       && matchesDimensionValue(closurePanel, ADVANCED_DIMENSIONS_TRIGGER.closurePanel)
@@ -154,6 +151,100 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
+        renderTextureOverlay={(layout, textureImageUrl) => {
+          const scale = layout.shapeWidthPx / bounds.overallWidthMm;
+          const pxX = (mm: number) => layout.leftX + mm * scale;
+          const pxY = (mm: number) => layout.topY + mm * scale;
+
+          const x0 = glueWidth;
+          const x1 = x0 + length;
+          const x2 = x1 + width;
+          const x3 = x2 + length;
+          const x4 = x3 + width;
+
+          const y0 = tuckFlap;
+          const y1 = y0 + closurePanel;
+          const y2 = y1 + height;
+          const y3 = y2 + closurePanel;
+          const y4 = y3 + tuckFlap;
+          const topDustY = y1 - dustFlap;
+          const bottomDustY = y2 + dustFlap;
+
+          const dustInset = Math.min(width * 0.22, dustFlap * 0.45);
+          const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
+          const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
+
+          const topClosurePanel = createRoundedTopClosurePanel(
+            x2,
+            x3,
+            y1,
+            y0,
+            0,
+            closureCornerRadius,
+          );
+          const bottomClosurePanel = createRoundedBottomClosurePanel(
+            x0,
+            x1,
+            y2,
+            y3,
+            y4,
+            closureCornerRadius,
+          );
+
+          const texturePolygons: Point[][] = [
+            [
+              { x: pxX(x0), y: pxY(y1) },
+              { x: pxX(x4), y: pxY(y1) },
+              { x: pxX(x4), y: pxY(y2) },
+              { x: pxX(x0), y: pxY(y2) },
+            ],
+            [
+              { x: pxX(0), y: pxY(y1 + glueInset) },
+              { x: pxX(x0), y: pxY(y1) },
+              { x: pxX(x0), y: pxY(y2) },
+              { x: pxX(0), y: pxY(y2 - glueInset) },
+            ],
+            topClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
+            [
+              { x: pxX(x1), y: pxY(y1) },
+              { x: pxX(x2), y: pxY(y1) },
+              { x: pxX(x2), y: pxY(topDustY) },
+              { x: pxX(x1 + dustInset), y: pxY(topDustY) },
+            ],
+            [
+              { x: pxX(x3), y: pxY(y1) },
+              { x: pxX(x4), y: pxY(y1) },
+              { x: pxX(x4 - dustInset), y: pxY(topDustY) },
+              { x: pxX(x3), y: pxY(topDustY) },
+            ],
+            bottomClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
+            [
+              { x: pxX(x1), y: pxY(y2) },
+              { x: pxX(x2), y: pxY(y2) },
+              { x: pxX(x2 - dustInset), y: pxY(bottomDustY) },
+              { x: pxX(x1), y: pxY(bottomDustY) },
+            ],
+            [
+              { x: pxX(x3), y: pxY(y2) },
+              { x: pxX(x4), y: pxY(y2) },
+              { x: pxX(x4), y: pxY(bottomDustY) },
+              { x: pxX(x3 + dustInset), y: pxY(bottomDustY) },
+            ],
+          ];
+
+          return (
+            <>
+              {texturePolygons.map((polygon, index) => (
+                <TexturedPolygonMesh
+                  key={`texture-${index}`}
+                  imageUrl={textureImageUrl}
+                  points={polygon}
+                  textureBounds={createTextureBounds(layout)}
+                />
+              ))}
+            </>
+          );
+        }}
         renderShape={(layout, shapeStrokeColor, createScenePoint) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;
@@ -409,7 +500,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   ))}
                 </>
               )}
-              {showDimensions && showLabels && (
+              {showDimensions && (
                 <>
                   <Text
                     position={[pxX((x1 + x2) / 2), -dimensionTextY, 3]}
@@ -444,7 +535,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                   </Text>
                 </>
               )}
-              {advancedDimensionsEnabled && showLabels && (
+              {advancedDimensionsEnabled && (
                 <>
                   <Text
                     position={[pxX(x0 / 2), -glueTextY, 3]}

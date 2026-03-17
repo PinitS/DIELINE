@@ -2,12 +2,12 @@ import type { CSSProperties } from "react";
 
 export type DisplayUnit = "mm" | "cm" | "in";
 
-export type CircleAttributes = { size: number };
-export type RectangleAttributes = { width: number; height: number };
+export type CircleAttributes = { size?: number };
+export type RectangleAttributes = { width?: number; height?: number };
 export type TuckEndBoxAttributes = {
-  length: number;
-  width: number;
-  height: number;
+  length?: number;
+  width?: number;
+  height?: number;
   closurePanel?: number;
   dustFlap?: number;
   glueWidth?: number;
@@ -32,13 +32,13 @@ export type SharedCanvasProps = {
   height?: number | string;
   displayUnit?: DisplayUnit;
   backgroundColor?: string;
+  textureImageUrl?: string;
   shapeStrokeColor?: string;
   dimensionColor?: string;
   labelColor?: string;
   widthLabel?: string;
   heightLabel?: string;
   showDimensions?: boolean;
-  showLabels?: boolean;
   className?: string;
   style?: CSSProperties;
 };
