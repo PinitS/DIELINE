@@ -1,0 +1,1 @@
+export type DemoViewMode = "dieline" | "texture" | "3d";

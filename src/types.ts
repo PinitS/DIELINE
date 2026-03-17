@@ -33,6 +33,8 @@ export type TuckEndBoxAttributes = {
   tuckFlap?: number;
 };
 
+export type TuckEndBoxRenderMode = "dieline" | "folded3d";
+
 export type DielineBounds = {
   overallWidthMm: number;
   overallHeightMm: number;
@@ -88,4 +90,6 @@ export type RectangleDielineProps = SharedCanvasProps & {
 export type TuckEndBoxDielineProps = SharedCanvasProps & {
   attribute: TuckEndBoxAttributes;
   onMeasure?: DielineMeasureCallback;
+  renderMode?: TuckEndBoxRenderMode;
+  frame?: number;
 };

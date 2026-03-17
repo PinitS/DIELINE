@@ -5,6 +5,7 @@ import { measureTuckEndBoxBounds } from "../../../utils/measure";
 import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
 import { formatDielineDisplayValue } from "../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../BaseDielineCanvas";
+import { Becf_10803_folded3d } from "./Becf_10803_folded3d";
 
 type Point = { x: number; y: number };
 
@@ -107,7 +108,19 @@ const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
   formatDielineDisplayValue(valueMm, displayUnit);
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
-  function TuckEndBoxDieline({ attribute, onMeasure, ...canvasProps }, ref) {
+  function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
+    if (renderMode === "folded3d") {
+      return (
+        <Becf_10803_folded3d
+          ref={ref}
+          attribute={attribute}
+          onMeasure={onMeasure}
+          renderMode={renderMode}
+          {...canvasProps}
+        />
+      );
+    }
+
     const displayUnit = canvasProps.displayUnit ?? "mm";
     const showDimensions = canvasProps.showDimensions ?? true;
     const {

@@ -39,7 +39,7 @@ h2 { font-size: 18px; margin-bottom: 12px; }
 }
 .mode-toggle {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 .mode-toggle button {
@@ -63,6 +63,51 @@ h2 { font-size: 18px; margin-bottom: 12px; }
   opacity: 0.55;
 }
 .summary-card { display: grid; gap: 8px; padding: 18px; background: #f8fafc; border-radius: 18px; }
+.frame-card {
+  gap: 14px;
+}
+.frame-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.frame-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+}
+.frame-slider {
+  width: 100%;
+}
+.frame-range-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.fold-sequence-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+.fold-sequence-list li {
+  color: #475569;
+}
+.fold-sequence-list li.is-current {
+  color: #0f172a;
+  font-weight: 700;
+}
 .upload-card {
   display: grid;
   gap: 16px;
