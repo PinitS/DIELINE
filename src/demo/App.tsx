@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { getDielineModelById, getDielineModels } from "../index";
-import type { DielineCanvasHandle, DielineModelId, DisplayUnit, TexturePlacement } from "../types";
+import type { DielineCanvasHandle, DielineModelId, DielinePrintController, DisplayUnit, TexturePlacement } from "../types";
 import { DemoCanvas } from "./components/DemoCanvas";
 import { DemoControlSection } from "./components/DemoControlSection";
 import type { DemoViewMode } from "./demoTypes";
@@ -75,12 +75,10 @@ export const App = () => {
   const [textureFileName, setTextureFileName] = useState<string>("");
   const [texturePlacement, setTexturePlacement] = useState<TexturePlacement>(DEFAULT_TEXTURE_PLACEMENT);
   const [tuckFrame, setTuckFrame] = useState(0);
-  const isTextureMode = viewMode === "texture";
+  const [printExportController, setPrintExportController] = useState<DielinePrintController | null>(null);
   const is3DMode = viewMode === "3d";
   const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
   const supports3DView = selectedModelMetadata.dimensionType === "3D";
-  const isTuckEndBox = shapeType === "tuckEndBox";
-  const isFolded3DMode = is3DMode && supports3DView && isTuckEndBox;
 
   useEffect(() => () => {
     if (texturePreviewUrl) {
@@ -152,6 +150,22 @@ export const App = () => {
     downloadJsonFile("react-dieline-models.json", getDielineModels());
   };
 
+  const exportPrintTestPdf = () => {
+    try {
+      if (!printExportController) {
+        throw new Error("Print export API is not ready yet.");
+      }
+
+      printExportController.printToPdf({
+        title: `${selectedModelMetadata.exportName}.pdf`,
+        displayUnit,
+      });
+    } catch (error) {
+      console.error(error);
+      window.alert("Unable to open the print PDF window. Please allow pop-ups and try again.");
+    }
+  };
+
   const readSizeFromRef = () => {
     setRefSnapshot({
       width: canvasRef.current?.getOverallWidth() ?? 0,
@@ -197,6 +211,7 @@ export const App = () => {
           <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.dimensionType}`}</p>
           <div className="toggle-row">
             <button type="button" onClick={exportModelJson}>Export model JSON</button>
+            <button type="button" onClick={exportPrintTestPdf}>Print test PDF (1:1)</button>
           </div>
         </div>
 
@@ -268,6 +283,7 @@ export const App = () => {
           tuckFrame={tuckFrame}
           onTexturePlacementChange={setTexturePlacement}
           onMeasure={setMeasuredBounds}
+          onPrintExportReady={(controller) => setPrintExportController(controller)}
         />
       </section>
     </div>

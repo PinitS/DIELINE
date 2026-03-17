@@ -57,6 +57,29 @@ export type DielineCanvasHandle = {
   resetView: () => void;
 };
 
+export type DielineSvgDocument = {
+  svg: string;
+  widthMm: number;
+  heightMm: number;
+};
+
+export type DielinePrintOptions = {
+  title?: string;
+  displayUnit?: DisplayUnit;
+  autoPrint?: boolean;
+  closeAfterPrint?: boolean;
+  marginMm?: number;
+};
+
+export type DielinePrintSvgOptions = Pick<DielinePrintOptions, "displayUnit">;
+export type DielinePrintPdfOptions = Omit<DielinePrintOptions, "autoPrint">;
+
+export type DielinePrintController = {
+  createPrintSvg: (options?: DielinePrintSvgOptions) => DielineSvgDocument;
+  openPrintPreview: (options?: DielinePrintOptions) => Window;
+  printToPdf: (options?: DielinePrintPdfOptions) => void;
+};
+
 export type SharedCanvasProps = {
   width?: number | string;
   height?: number | string;
@@ -73,6 +96,7 @@ export type SharedCanvasProps = {
   heightLabel?: string;
   showDimensions?: boolean;
   showShapeLines?: boolean;
+  onPrintExportReady?: (controller: DielinePrintController | null) => void;
   className?: string;
   style?: CSSProperties;
 };

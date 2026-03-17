@@ -1,7 +1,8 @@
 import { Line, Text } from "@react-three/drei";
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useMemo } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
+import { createDielinePrintController } from "../../../utils/pdfExport";
 import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
 import { formatDielineDisplayValue } from "../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../BaseDielineCanvas";
@@ -108,7 +109,17 @@ const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
   formatDielineDisplayValue(valueMm, displayUnit);
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
-  function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
+  function TuckEndBoxDieline({ attribute, onMeasure, onPrintExportReady, renderMode = "dieline", ...canvasProps }, ref) {
+    const printExportController = useMemo(() => createDielinePrintController(
+      { modelId: "tuckEndBox", attributes: attribute },
+      { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf" },
+    ), [attribute, canvasProps.displayUnit]);
+
+    useEffect(() => {
+      onPrintExportReady?.(printExportController);
+      return () => onPrintExportReady?.(null);
+    }, [onPrintExportReady, printExportController]);
+
     if (renderMode === "folded3d") {
       return (
         <Becf_10803_folded3d

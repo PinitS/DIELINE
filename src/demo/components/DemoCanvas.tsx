@@ -8,6 +8,7 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineModelId,
+  DielinePrintController,
   DisplayUnit,
   TexturePlacement,
 } from "../../types";
@@ -35,6 +36,7 @@ type DemoCanvasProps = {
   tuckFrame: number;
   onTexturePlacementChange: (placement: TexturePlacement) => void;
   onMeasure: (bounds: DielineBounds) => void;
+  onPrintExportReady: (controller: DielinePrintController | null) => void;
 };
 
 export const DemoCanvas = ({
@@ -59,6 +61,7 @@ export const DemoCanvas = ({
   tuckFrame,
   onTexturePlacementChange,
   onMeasure,
+  onPrintExportReady,
 }: DemoCanvasProps) => {
   const isTextureMode = viewMode === "texture";
   const isFolded3DMode = viewMode === "3d" && supports3DView && shapeType === "tuckEndBox";
@@ -79,6 +82,7 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
+          onPrintExportReady={onPrintExportReady}
         />
       );
 
@@ -97,6 +101,7 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
+          onPrintExportReady={onPrintExportReady}
         />
       );
 
@@ -126,6 +131,7 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
+          onPrintExportReady={onPrintExportReady}
         />
       );
   }

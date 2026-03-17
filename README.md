@@ -187,6 +187,36 @@ Defaults:
 />
 ```
 
+## Print export via callback
+
+```tsx
+import { useState } from "react";
+import type { DielinePrintController } from "react-dieline";
+import { StrickerCircleDieline } from "react-dieline";
+
+export function Example() {
+  const [printApi, setPrintApi] = useState<DielinePrintController | null>(null);
+
+  return (
+    <>
+      <button onClick={() => printApi?.printToPdf({ title: "circle.pdf" })}>
+        Print / Save PDF
+      </button>
+      <StrickerCircleDieline
+        attribute={{ size: 120 }}
+        onPrintExportReady={(api) => setPrintApi(api)}
+      />
+    </>
+  );
+}
+```
+
+`onPrintExportReady` returns a controller with:
+
+- `createPrintSvg()`
+- `openPrintPreview()`
+- `printToPdf()`
+
 ## Reading measurements via ref
 
 ```tsx
