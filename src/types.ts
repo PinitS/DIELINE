@@ -2,6 +2,25 @@ import type { CSSProperties } from "react";
 
 export type DisplayUnit = "mm" | "cm" | "in";
 
+export type DielineModelDimension = "2D" | "3D";
+export type DielineModelId = "circle" | "rectangle" | "tuckEndBox";
+
+export type DielineModelAttributeMetadata = {
+  name: string;
+  type: "number";
+  description: string;
+  defaultValue?: number;
+};
+
+export type DielineModelMetadata = {
+  id: DielineModelId;
+  name: string;
+  exportName: string;
+  componentPath: string;
+  dimensionType: DielineModelDimension;
+  attributes: readonly DielineModelAttributeMetadata[];
+};
+
 export type CircleAttributes = { size?: number };
 export type RectangleAttributes = { width?: number; height?: number };
 export type TuckEndBoxAttributes = {

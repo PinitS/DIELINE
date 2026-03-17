@@ -17,6 +17,10 @@ React Three Fiber dieline component library for React.
 - Named helpers:
   - `convertDielineMillimeters`
   - `formatDielineDisplayValue`
+- Model metadata helpers:
+  - `DIELINE_MODELS`
+  - `getDielineModels`
+  - `getDielineModelById`
 - Measurement callback and imperative ref API
 
 ## Install
@@ -94,8 +98,20 @@ export function Example() {
 - `StrickerCircleDieline`
 - `StrickerRectangleDieline`
 - `Becf_10803_dieline`
+- `DIELINE_MODELS`
+- `getDielineModels`
+- `getDielineModelById`
 - `convertDielineMillimeters`
 - `formatDielineDisplayValue`
+
+## Model metadata usage
+
+```tsx
+import { getDielineModels } from "react-dieline";
+
+const models = getDielineModels();
+const canView3D = models.some((model) => model.dimensionType === "3D");
+```
 
 ## Props shared by all shapes
 

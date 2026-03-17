@@ -46,6 +46,10 @@ h2 { font-size: 18px; margin-bottom: 12px; }
   cursor: pointer;
   transition: all 0.2s ease;
 }
+.mode-toggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .mode-toggle button.is-active {
   background: #0f172a;
   border-color: #0f172a;

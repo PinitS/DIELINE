@@ -4,8 +4,10 @@ import {
   StrickerRectangleDieline,
   Becf_10803_dieline,
   formatDielineDisplayValue,
+  getDielineModelById,
+  getDielineModels,
 } from "../index";
-import type { DielineCanvasHandle, DisplayUnit, TexturePlacement } from "../types";
+import type { DielineCanvasHandle, DielineModelId, DisplayUnit, TexturePlacement } from "../types";
 
 const ADVANCED_DIMENSION_PRESET = {
   closurePanel: 35,
@@ -25,7 +27,23 @@ const DEFAULT_TEXTURE_PLACEMENT: TexturePlacement = {
   scale: 1,
 };
 
+const MODEL_METADATA = getDielineModels();
+
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+const downloadJsonFile = (filename: string, data: unknown) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = objectUrl;
+  link.download = filename;
+  link.click();
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+  }, 0);
+};
 
 const readImageDimensions = (imageUrl: string) => new Promise<{ width: number; height: number }>((resolve, reject) => {
   const image = new Image();
@@ -44,7 +62,7 @@ const readImageDimensions = (imageUrl: string) => new Promise<{ width: number; h
 export const App = () => {
   const canvasRef = useRef<DielineCanvasHandle | null>(null);
   const [viewMode, setViewMode] = useState<DemoViewMode>("dieline");
-  const [shapeType, setShapeType] = useState<"circle" | "rectangle" | "tuckEndBox">("circle");
+  const [shapeType, setShapeType] = useState<DielineModelId>("circle");
   const [circleSize, setCircleSize] = useState(90);
   const [rectWidth, setRectWidth] = useState(120);
   const [rectHeight, setRectHeight] = useState(80);
@@ -63,6 +81,8 @@ export const App = () => {
   const [textureFileName, setTextureFileName] = useState<string>("");
   const [texturePlacement, setTexturePlacement] = useState<TexturePlacement>(DEFAULT_TEXTURE_PLACEMENT);
   const isTextureMode = viewMode === "texture";
+  const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
+  const supports3DView = selectedModelMetadata.dimensionType === "3D";
 
   useEffect(() => () => {
     if (texturePreviewUrl) {
@@ -124,6 +144,10 @@ export const App = () => {
 
   const textureControlsDisabled = !texturePreviewUrl;
 
+  const exportModelJson = () => {
+    downloadJsonFile("react-dieline-models.json", getDielineModels());
+  };
+
   return (
     <div className="demo-shell">
       <aside className="control-panel">
@@ -154,14 +178,27 @@ export const App = () => {
           </button>
         </div>
 
+        <div className="summary-card">
+          <h2>Model registry</h2>
+          <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.dimensionType}`}</p>
+          <p>{`Export: ${selectedModelMetadata.exportName}`}</p>
+          <p>{`Attributes: ${selectedModelMetadata.attributes.map((attribute) => attribute.name).join(", ")}`}</p>
+          <p className="muted">View 3D is enabled automatically only for models from the `src/components/3D` folder.</p>
+
+          <div className="toggle-row">
+            <button type="button" onClick={exportModelJson}>Export model JSON</button>
+            <button type="button" disabled={!supports3DView}>View 3D</button>
+          </div>
+        </div>
+
         {viewMode === "dieline" ? (
           <>
             <div className="section-grid">
               <label className="field">Dieline type
-                <select value={shapeType} onChange={(e) => setShapeType(e.target.value as "circle" | "rectangle" | "tuckEndBox")}>
-                  <option value="circle">Circle</option>
-                  <option value="rectangle">Rectangle</option>
-                  <option value="tuckEndBox">Tuck End Box</option>
+                <select value={shapeType} onChange={(e) => setShapeType(e.target.value as DielineModelId)}>
+                  {MODEL_METADATA.map((model) => (
+                    <option key={model.id} value={model.id}>{`${model.name} (${model.dimensionType})`}</option>
+                  ))}
                 </select>
               </label>
               <label className="field">Display unit
