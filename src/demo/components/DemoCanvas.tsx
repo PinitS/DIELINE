@@ -8,14 +8,13 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineModelId,
-  DielinePrintController,
   DisplayUnit,
   TexturePlacement,
 } from "../../types";
 import type { DemoViewMode } from "../demoTypes";
 
 type DemoCanvasProps = {
-  canvasRef: RefObject<DielineCanvasHandle | null>;
+  modelRef: RefObject<DielineCanvasHandle | null>;
   viewMode: DemoViewMode;
   shapeType: DielineModelId;
   supports3DView: boolean;
@@ -36,11 +35,10 @@ type DemoCanvasProps = {
   tuckFrame: number;
   onTexturePlacementChange: (placement: TexturePlacement) => void;
   onMeasure: (bounds: DielineBounds) => void;
-  onPrintExportReady: (controller: DielinePrintController | null) => void;
 };
 
 export const DemoCanvas = ({
-  canvasRef,
+  modelRef,
   viewMode,
   shapeType,
   supports3DView,
@@ -61,7 +59,6 @@ export const DemoCanvas = ({
   tuckFrame,
   onTexturePlacementChange,
   onMeasure,
-  onPrintExportReady,
 }: DemoCanvasProps) => {
   const isTextureMode = viewMode === "texture";
   const isFolded3DMode = viewMode === "3d" && supports3DView && shapeType === "tuckEndBox";
@@ -70,7 +67,7 @@ export const DemoCanvas = ({
     case "circle":
       return (
         <StrickerCircleDieline
-          ref={canvasRef}
+          ref={modelRef}
           attribute={{ size: circleSize }}
           displayUnit={displayUnit}
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
@@ -82,14 +79,13 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
-          onPrintExportReady={onPrintExportReady}
         />
       );
 
     case "rectangle":
       return (
         <StrickerRectangleDieline
-          ref={canvasRef}
+          ref={modelRef}
           attribute={{ width: rectWidth, height: rectHeight }}
           displayUnit={displayUnit}
           textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
@@ -101,7 +97,6 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
-          onPrintExportReady={onPrintExportReady}
         />
       );
 
@@ -109,7 +104,7 @@ export const DemoCanvas = ({
     default:
       return (
         <Becf_10803_dieline
-          ref={canvasRef}
+          ref={modelRef}
           attribute={{
             length: tuckLength,
             width: tuckWidth,
@@ -131,7 +126,6 @@ export const DemoCanvas = ({
           widthLabel="Overall Width"
           heightLabel="Overall Height"
           onMeasure={onMeasure}
-          onPrintExportReady={onPrintExportReady}
         />
       );
   }

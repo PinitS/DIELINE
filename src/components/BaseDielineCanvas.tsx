@@ -25,6 +25,7 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineMeasureCallback,
+  DielinePrintController,
   SharedCanvasProps,
   TexturePlacement,
 } from "../types";
@@ -39,6 +40,7 @@ export type TextureBounds = { left: number; top: number; width: number; height: 
 type BaseDielineCanvasProps = SharedCanvasProps & {
   bounds: DielineBounds;
   onMeasure?: DielineMeasureCallback;
+  printController: DielinePrintController;
   renderShape: (
     layout: DielineLayout,
     shapeStrokeColor: string,
@@ -355,6 +357,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       style,
       bounds,
       onMeasure,
+      printController,
       renderShape,
       renderTextureOverlay,
     } = props;
@@ -482,7 +485,8 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
           setZoom(DEFAULT_ZOOM);
         }
       },
-    }), [bounds.overallHeightMm, bounds.overallWidthMm, fitView]);
+      printController,
+    }), [bounds.overallHeightMm, bounds.overallWidthMm, fitView, printController]);
 
     useEffect(() => {
       const container = containerRef.current;

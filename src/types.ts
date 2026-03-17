@@ -55,6 +55,7 @@ export type DielineCanvasHandle = {
   getOverallWidth: () => number;
   getOverallHeight: () => number;
   resetView: () => void;
+  printController: DielinePrintController;
 };
 
 export type DielineSvgDocument = {
@@ -96,7 +97,6 @@ export type SharedCanvasProps = {
   heightLabel?: string;
   showDimensions?: boolean;
   showShapeLines?: boolean;
-  onPrintExportReady?: (controller: DielinePrintController | null) => void;
   className?: string;
   style?: CSSProperties;
 };

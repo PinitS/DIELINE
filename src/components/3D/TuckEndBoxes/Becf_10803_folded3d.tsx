@@ -3,8 +3,9 @@ import { Canvas } from "@react-three/fiber";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { DoubleSide, Shape, ShapeGeometry, Vector2 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import type { DielineCanvasHandle, TuckEndBoxDielineProps } from "../../../types";
+import type { DielineCanvasHandle, DielinePrintController, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
+import { createDielinePrintController } from "../../../utils/pdfExport";
 import {
   getTuckEndBoxFoldAngles,
   getTuckEndBoxGeometry,
@@ -116,10 +117,14 @@ const FoldedTuckEndBoxModel = ({ attribute, frame = 0 }: Pick<TuckEndBoxDielineP
 };
 
 export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
-  function Becf10803Folded3d({ attribute, onMeasure, width = "100%", height = "100%", backgroundColor = "#d9d9d9", className, style, frame = 0 }, ref) {
+  function Becf10803Folded3d({ attribute, onMeasure, displayUnit = "mm", width = "100%", height = "100%", backgroundColor = "#d9d9d9", className, style, frame = 0 }, ref) {
     const controlsRef = useRef<OrbitControlsImpl | null>(null);
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = useMemo(() => measureTuckEndBoxBounds(geometry.resolved), [geometry.resolved]);
+    const printController = useMemo(() => createDielinePrintController(
+      { modelId: "tuckEndBox", attributes: attribute },
+      { displayUnit, title: "Becf_10803_folded3d.pdf" },
+    ), [attribute, displayUnit]);
 
     const cameraDistance = useMemo(() => {
       const span = Math.max(
@@ -150,7 +155,8 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
         controls.target.set(0, 0, 0);
         controls.update();
       },
-    }), [bounds.overallHeightMm, bounds.overallWidthMm, initialCameraPosition]);
+      printController,
+    }), [bounds.overallHeightMm, bounds.overallWidthMm, initialCameraPosition, printController]);
 
     return (
       <div

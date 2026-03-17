@@ -1,5 +1,5 @@
 import { Line } from "@react-three/drei";
-import { forwardRef, useEffect, useMemo } from "react";
+import { forwardRef, useMemo } from "react";
 import type { CircleDielineProps, DielineCanvasHandle } from "../../types";
 import { measureCircleBounds } from "../../utils/measure";
 import { createDielinePrintController } from "../../utils/pdfExport";
@@ -8,17 +8,12 @@ import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
 const CIRCLE_SEGMENTS = 96;
 
 export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDielineProps>(
-  function CircleDieline({ attribute, onMeasure, onPrintExportReady, ...canvasProps }, ref) {
+  function CircleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const bounds = measureCircleBounds(attribute);
-    const printExportController = useMemo(() => createDielinePrintController(
+    const printController = useMemo(() => createDielinePrintController(
       { modelId: "circle", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "StrickerCircleDieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);
-
-    useEffect(() => {
-      onPrintExportReady?.(printExportController);
-      return () => onPrintExportReady?.(null);
-    }, [onPrintExportReady, printExportController]);
 
     return (
       <BaseDielineCanvas
@@ -26,6 +21,7 @@ export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDieli
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
+        printController={printController}
         renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const radius = layout.shapeWidthPx / 2;
           const points = Array.from({ length: CIRCLE_SEGMENTS }, (_, index) => {

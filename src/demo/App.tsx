@@ -7,7 +7,6 @@ import type {
   CircleAttributes,
   DielineCanvasHandle,
   DielineModelId,
-  DielinePrintController,
   DisplayUnit,
   RectangleAttributes,
   TexturePlacement,
@@ -67,7 +66,7 @@ const createDefaultTexturePlacement = (imageWidth: number, imageHeight: number):
 });
 
 export const App = () => {
-  const canvasRef = useRef<DielineCanvasHandle | null>(null);
+  const modelRef = useRef<DielineCanvasHandle | null>(null);
   const [viewMode, setViewMode] = useState<DemoViewMode>("dieline");
   const [shapeType, setShapeType] = useState<DielineModelId>("circle");
 
@@ -95,7 +94,6 @@ export const App = () => {
   const [texturePreviewUrl, setTexturePreviewUrl] = useState<string | null>(null);
   const [textureFileName, setTextureFileName] = useState<string>("");
   const [tuckFrame, setTuckFrame] = useState(0);
-  const [printExportController, setPrintExportController] = useState<DielinePrintController | null>(null);
 
   const isTextureMode = viewMode === "texture";
   const is3DMode = viewMode === "3d";
@@ -187,11 +185,12 @@ export const App = () => {
 
   const exportPrintTestPdf = () => {
     try {
-      if (!printExportController) {
+      const printController = modelRef.current?.printController;
+      if (!printController) {
         throw new Error("Print export API is not ready yet.");
       }
 
-      printExportController.printToPdf({
+      printController.printToPdf({
         title: `${selectedModelMetadata.exportName}.pdf`,
         displayUnit,
       });
@@ -275,7 +274,7 @@ export const App = () => {
                   onTextureUpload={handleTextureUpload}
                   onUpdateTexturePlacement={updateTexturePlacement}
                   onResetTexturePlacement={resetTexturePlacement}
-                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                  onResetCanvasView={() => modelRef.current?.resetView()}
                 />
               );
 
@@ -297,7 +296,7 @@ export const App = () => {
                   onTextureUpload={handleTextureUpload}
                   onUpdateTexturePlacement={updateTexturePlacement}
                   onResetTexturePlacement={resetTexturePlacement}
-                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                  onResetCanvasView={() => modelRef.current?.resetView()}
                 />
               );
 
@@ -322,7 +321,7 @@ export const App = () => {
                   onTextureUpload={handleTextureUpload}
                   onUpdateTexturePlacement={updateTexturePlacement}
                   onResetTexturePlacement={resetTexturePlacement}
-                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                  onResetCanvasView={() => modelRef.current?.resetView()}
                 />
               );
           }
@@ -335,7 +334,7 @@ export const App = () => {
             case "circle":
               return (
                 <StrickerCircleDieline
-                  ref={canvasRef}
+                  ref={modelRef}
                   attribute={attributeStrickerCircle}
                   displayUnit={displayUnit}
                   textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
@@ -347,14 +346,13 @@ export const App = () => {
                   widthLabel="Overall Width"
                   heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
-                  onPrintExportReady={(controller) => setPrintExportController(controller)}
                 />
               );
 
             case "rectangle":
               return (
                 <StrickerRectangleDieline
-                  ref={canvasRef}
+                  ref={modelRef}
                   attribute={attributeStrickerRectangle}
                   displayUnit={displayUnit}
                   textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
@@ -366,7 +364,6 @@ export const App = () => {
                   widthLabel="Overall Width"
                   heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
-                  onPrintExportReady={(controller) => setPrintExportController(controller)}
                 />
               );
 
@@ -374,7 +371,7 @@ export const App = () => {
             default:
               return (
                 <Becf_10803_dieline
-                  ref={canvasRef}
+                  ref={modelRef}
                   attribute={attributeBecf_10803}
                   displayUnit={displayUnit}
                   renderMode={is3DMode ? "folded3d" : "dieline"}
@@ -388,7 +385,6 @@ export const App = () => {
                   widthLabel="Overall Width"
                   heightLabel="Overall Height"
                   onMeasure={setMeasuredBounds}
-                  onPrintExportReady={(controller) => setPrintExportController(controller)}
                 />
               );
           }

@@ -1,5 +1,5 @@
 import { Line, Text } from "@react-three/drei";
-import { forwardRef, useEffect, useMemo } from "react";
+import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
 import { createDielinePrintController } from "../../../utils/pdfExport";
@@ -109,16 +109,11 @@ const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
   formatDielineDisplayValue(valueMm, displayUnit);
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
-  function TuckEndBoxDieline({ attribute, onMeasure, onPrintExportReady, renderMode = "dieline", ...canvasProps }, ref) {
-    const printExportController = useMemo(() => createDielinePrintController(
+  function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
+    const printController = useMemo(() => createDielinePrintController(
       { modelId: "tuckEndBox", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);
-
-    useEffect(() => {
-      onPrintExportReady?.(printExportController);
-      return () => onPrintExportReady?.(null);
-    }, [onPrintExportReady, printExportController]);
 
     if (renderMode === "folded3d") {
       return (
@@ -159,6 +154,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
+        printController={printController}
         renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;
