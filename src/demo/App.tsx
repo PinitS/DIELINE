@@ -1,8 +1,21 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { getDielineModelById, getDielineModels } from "../index";
-import type { DielineCanvasHandle, DielineModelId, DielinePrintController, DisplayUnit, TexturePlacement } from "../types";
-import { DemoCanvas } from "./components/DemoCanvas";
-import { DemoControlSection } from "./components/DemoControlSection";
+import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803_dieline";
+import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
+import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
+import type {
+  CircleAttributes,
+  DielineCanvasHandle,
+  DielineModelId,
+  DielinePrintController,
+  DisplayUnit,
+  RectangleAttributes,
+  TexturePlacement,
+  TuckEndBoxAttributes,
+} from "../types";
+import { StrickerCircleControl } from "./components/controls/StrickerCircleControl";
+import { StrickerRectangleControl } from "./components/controls/StrickerRectangleControl";
+import { Becf_10803Control } from "./components/controls/Becf_10803Control";
 import type { DemoViewMode } from "./demoTypes";
 
 const ADVANCED_DIMENSION_PRESET = {
@@ -11,15 +24,6 @@ const ADVANCED_DIMENSION_PRESET = {
   glueWidth: 12,
   tuckFlap: 15,
 } as const;
-
-const DEFAULT_TEXTURE_PLACEMENT: TexturePlacement = {
-  hasTexture: false,
-  imageWidth: 0,
-  imageHeight: 0,
-  offsetXRatio: 0,
-  offsetYRatio: 0,
-  scale: 1,
-};
 
 const MODEL_METADATA = getDielineModels();
 
@@ -53,32 +57,67 @@ const readImageDimensions = (imageUrl: string) => new Promise<{ width: number; h
   image.src = imageUrl;
 });
 
+const createDefaultTexturePlacement = (imageWidth: number, imageHeight: number): TexturePlacement => ({
+  hasTexture: true,
+  imageWidth,
+  imageHeight,
+  offsetXRatio: 0,
+  offsetYRatio: 0,
+  scale: 1,
+});
+
 export const App = () => {
   const canvasRef = useRef<DielineCanvasHandle | null>(null);
   const [viewMode, setViewMode] = useState<DemoViewMode>("dieline");
   const [shapeType, setShapeType] = useState<DielineModelId>("circle");
-  const [circleSize, setCircleSize] = useState(90);
-  const [rectWidth, setRectWidth] = useState(120);
-  const [rectHeight, setRectHeight] = useState(80);
-  const [tuckLength, setTuckLength] = useState(100);
-  const [tuckWidth, setTuckWidth] = useState(50);
-  const [tuckHeight, setTuckHeight] = useState(150);
-  const [tuckClosurePanel, setTuckClosurePanel] = useState<number>(ADVANCED_DIMENSION_PRESET.closurePanel);
-  const [tuckDustFlap, setTuckDustFlap] = useState<number>(ADVANCED_DIMENSION_PRESET.dustFlap);
-  const [tuckGlueWidth, setTuckGlueWidth] = useState<number>(ADVANCED_DIMENSION_PRESET.glueWidth);
-  const [tuckFlap, setTuckFlap] = useState<number>(ADVANCED_DIMENSION_PRESET.tuckFlap);
+
+  // Attribute states per model type
+  const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>({ size: 90 });
+  const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>({ width: 120, height: 80 });
+  const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>({
+    length: 100,
+    width: 50,
+    height: 150,
+    closurePanel: ADVANCED_DIMENSION_PRESET.closurePanel,
+    dustFlap: ADVANCED_DIMENSION_PRESET.dustFlap,
+    glueWidth: ADVANCED_DIMENSION_PRESET.glueWidth,
+    tuckFlap: ADVANCED_DIMENSION_PRESET.tuckFlap,
+  });
+
+  // Texture states per model type
+  const [textureStrickerCircle, setTextureStrickerCircle] = useState<TexturePlacement | undefined>(undefined);
+  const [textureStrickerRectangle, setTextureStrickerRectangle] = useState<TexturePlacement | undefined>(undefined);
+  const [textureBecf_10803, setTextureBecf_10803] = useState<TexturePlacement | undefined>(undefined);
+
   const [displayUnit, setDisplayUnit] = useState<DisplayUnit>("mm");
   const [showDimensions, setShowDimensions] = useState(true);
   const [measuredBounds, setMeasuredBounds] = useState({ overallWidthMm: 0, overallHeightMm: 0 });
-  const [refSnapshot, setRefSnapshot] = useState({ width: 0, height: 0 });
   const [texturePreviewUrl, setTexturePreviewUrl] = useState<string | null>(null);
   const [textureFileName, setTextureFileName] = useState<string>("");
-  const [texturePlacement, setTexturePlacement] = useState<TexturePlacement>(DEFAULT_TEXTURE_PLACEMENT);
   const [tuckFrame, setTuckFrame] = useState(0);
   const [printExportController, setPrintExportController] = useState<DielinePrintController | null>(null);
+
+  const isTextureMode = viewMode === "texture";
   const is3DMode = viewMode === "3d";
   const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
   const supports3DView = selectedModelMetadata.dimensionType === "3D";
+
+  // Get current texture state based on shapeType
+  const currentTexture = shapeType === "circle"
+    ? textureStrickerCircle
+    : shapeType === "rectangle"
+      ? textureStrickerRectangle
+      : textureBecf_10803;
+
+  const setCurrentTexture = (texture: TexturePlacement | undefined) => {
+    if (shapeType === "circle") {
+      setTextureStrickerCircle(texture);
+    } else if (shapeType === "rectangle") {
+      setTextureStrickerRectangle(texture);
+    } else {
+      setTextureBecf_10803(texture);
+    }
+  };
 
   useEffect(() => () => {
     if (texturePreviewUrl) {
@@ -102,14 +141,7 @@ export const App = () => {
       const { width, height } = await readImageDimensions(nextTextureUrl);
 
       setTextureFileName(file.name);
-      setTexturePlacement({
-        hasTexture: true,
-        imageWidth: width,
-        imageHeight: height,
-        offsetXRatio: 0,
-        offsetYRatio: 0,
-        scale: 1,
-      });
+      setCurrentTexture(createDefaultTexturePlacement(width, height));
       setTexturePreviewUrl((currentUrl) => {
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
@@ -126,22 +158,25 @@ export const App = () => {
   };
 
   const resetTexturePlacement = () => {
-    setTexturePlacement((current) => ({
-      ...current,
-      hasTexture: Boolean(texturePreviewUrl),
+    if (!currentTexture) return;
+
+    setCurrentTexture({
+      ...currentTexture,
       offsetXRatio: 0,
       offsetYRatio: 0,
       scale: 1,
-    }));
+    });
   };
 
   const updateTexturePlacement = (key: "offsetXRatio" | "offsetYRatio" | "scale", value: number) => {
-    setTexturePlacement((current) => ({
-      ...current,
+    if (!currentTexture) return;
+
+    setCurrentTexture({
+      ...currentTexture,
       [key]: key === "scale"
         ? clamp(value, 0.1, 8)
         : clamp(value, -2, 2),
-    }));
+    });
   };
 
   const textureControlsDisabled = !texturePreviewUrl;
@@ -166,19 +201,22 @@ export const App = () => {
     }
   };
 
-  const readSizeFromRef = () => {
-    setRefSnapshot({
-      width: canvasRef.current?.getOverallWidth() ?? 0,
-      height: canvasRef.current?.getOverallHeight() ?? 0,
-    });
-  };
-
   return (
     <div className="demo-shell">
       <aside className="control-panel" >
         <div>
           <p className="eyebrow">react-dieline</p>
           <h1>React Three Fiber dieline demo</h1>
+        </div>
+
+        <div className="section-grid">
+          <label className="field">Dieline type
+            <select value={shapeType} onChange={(event) => setShapeType(event.target.value as DielineModelId)}>
+              {MODEL_METADATA.map((model) => (
+                <option key={model.id} value={model.id}>{`${model.name} (${model.dimensionType})`}</option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="mode-toggle" aria-label="View mode toggle">
@@ -215,76 +253,146 @@ export const App = () => {
           </div>
         </div>
 
-        <DemoControlSection
-          viewMode={viewMode}
-          shapeType={shapeType}
-          modelMetadata={MODEL_METADATA}
-          displayUnit={displayUnit}
-          showDimensions={showDimensions}
-          measuredBounds={measuredBounds}
-          refSnapshot={refSnapshot}
-          circleSize={circleSize}
-          rectWidth={rectWidth}
-          rectHeight={rectHeight}
-          tuckLength={tuckLength}
-          tuckWidth={tuckWidth}
-          tuckHeight={tuckHeight}
-          tuckClosurePanel={tuckClosurePanel}
-          tuckDustFlap={tuckDustFlap}
-          tuckGlueWidth={tuckGlueWidth}
-          tuckFlap={tuckFlap}
-          tuckFrame={tuckFrame}
-          texturePreviewUrl={texturePreviewUrl}
-          textureFileName={textureFileName}
-          texturePlacement={texturePlacement}
-          textureControlsDisabled={textureControlsDisabled}
-          onShapeTypeChange={setShapeType}
-          onDisplayUnitChange={setDisplayUnit}
-          onCircleSizeChange={setCircleSize}
-          onRectWidthChange={setRectWidth}
-          onRectHeightChange={setRectHeight}
-          onTuckLengthChange={setTuckLength}
-          onTuckWidthChange={setTuckWidth}
-          onTuckHeightChange={setTuckHeight}
-          onTuckClosurePanelChange={setTuckClosurePanel}
-          onTuckDustFlapChange={setTuckDustFlap}
-          onTuckGlueWidthChange={setTuckGlueWidth}
-          onTuckFlapChange={setTuckFlap}
-          onTuckFrameChange={setTuckFrame}
-          onToggleDimensions={() => setShowDimensions((value) => !value)}
-          onReadSizeFromRef={readSizeFromRef}
-          onTextureUpload={handleTextureUpload}
-          onUpdateTexturePlacement={updateTexturePlacement}
-          onResetTexturePlacement={resetTexturePlacement}
-          onResetCanvasView={() => canvasRef.current?.resetView()}
-        />
+
+
+        {(() => {
+          switch (shapeType) {
+            case "circle":
+              return (
+                <StrickerCircleControl
+                  viewMode={viewMode}
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  measuredBounds={measuredBounds}
+                  attribute={attributeStrickerCircle}
+                  setAttribute={setAttributeStrickerCircle}
+                  texture={currentTexture}
+                  texturePreviewUrl={texturePreviewUrl}
+                  textureFileName={textureFileName}
+                  textureControlsDisabled={textureControlsDisabled}
+                  onDisplayUnitChange={setDisplayUnit}
+                  onToggleDimensions={() => setShowDimensions((value) => !value)}
+                  onTextureUpload={handleTextureUpload}
+                  onUpdateTexturePlacement={updateTexturePlacement}
+                  onResetTexturePlacement={resetTexturePlacement}
+                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                />
+              );
+
+            case "rectangle":
+              return (
+                <StrickerRectangleControl
+                  viewMode={viewMode}
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  measuredBounds={measuredBounds}
+                  attribute={attributeStrickerRectangle}
+                  setAttribute={setAttributeStrickerRectangle}
+                  texture={currentTexture}
+                  texturePreviewUrl={texturePreviewUrl}
+                  textureFileName={textureFileName}
+                  textureControlsDisabled={textureControlsDisabled}
+                  onDisplayUnitChange={setDisplayUnit}
+                  onToggleDimensions={() => setShowDimensions((value) => !value)}
+                  onTextureUpload={handleTextureUpload}
+                  onUpdateTexturePlacement={updateTexturePlacement}
+                  onResetTexturePlacement={resetTexturePlacement}
+                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                />
+              );
+
+            case "tuckEndBox":
+            default:
+              return (
+                <Becf_10803Control
+                  viewMode={viewMode}
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  measuredBounds={measuredBounds}
+                  attribute={attributeBecf_10803}
+                  setAttribute={setAttributeBecf_10803}
+                  texture={currentTexture}
+                  texturePreviewUrl={texturePreviewUrl}
+                  textureFileName={textureFileName}
+                  textureControlsDisabled={textureControlsDisabled}
+                  tuckFrame={tuckFrame}
+                  onDisplayUnitChange={setDisplayUnit}
+                  onTuckFrameChange={setTuckFrame}
+                  onToggleDimensions={() => setShowDimensions((value) => !value)}
+                  onTextureUpload={handleTextureUpload}
+                  onUpdateTexturePlacement={updateTexturePlacement}
+                  onResetTexturePlacement={resetTexturePlacement}
+                  onResetCanvasView={() => canvasRef.current?.resetView()}
+                />
+              );
+          }
+        })()}
       </aside>
 
       <section className="canvas-panel" >
-        <DemoCanvas
-          canvasRef={canvasRef}
-          viewMode={viewMode}
-          shapeType={shapeType}
-          supports3DView={supports3DView}
-          displayUnit={displayUnit}
-          showDimensions={showDimensions}
-          texturePreviewUrl={texturePreviewUrl}
-          texturePlacement={texturePlacement}
-          circleSize={circleSize}
-          rectWidth={rectWidth}
-          rectHeight={rectHeight}
-          tuckLength={tuckLength}
-          tuckWidth={tuckWidth}
-          tuckHeight={tuckHeight}
-          tuckClosurePanel={tuckClosurePanel}
-          tuckDustFlap={tuckDustFlap}
-          tuckGlueWidth={tuckGlueWidth}
-          tuckFlap={tuckFlap}
-          tuckFrame={tuckFrame}
-          onTexturePlacementChange={setTexturePlacement}
-          onMeasure={setMeasuredBounds}
-          onPrintExportReady={(controller) => setPrintExportController(controller)}
-        />
+        {(() => {
+          switch (shapeType) {
+            case "circle":
+              return (
+                <StrickerCircleDieline
+                  ref={canvasRef}
+                  attribute={attributeStrickerCircle}
+                  displayUnit={displayUnit}
+                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  texturePlacement={isTextureMode ? currentTexture : undefined}
+                  onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
+                  allowTextureTransform={false}
+                  showDimensions={isTextureMode ? false : showDimensions}
+                  showShapeLines
+                  widthLabel="Overall Width"
+                  heightLabel="Overall Height"
+                  onMeasure={setMeasuredBounds}
+                  onPrintExportReady={(controller) => setPrintExportController(controller)}
+                />
+              );
+
+            case "rectangle":
+              return (
+                <StrickerRectangleDieline
+                  ref={canvasRef}
+                  attribute={attributeStrickerRectangle}
+                  displayUnit={displayUnit}
+                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  texturePlacement={isTextureMode ? currentTexture : undefined}
+                  onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
+                  allowTextureTransform={false}
+                  showDimensions={isTextureMode ? false : showDimensions}
+                  showShapeLines
+                  widthLabel="Overall Width"
+                  heightLabel="Overall Height"
+                  onMeasure={setMeasuredBounds}
+                  onPrintExportReady={(controller) => setPrintExportController(controller)}
+                />
+              );
+
+            case "tuckEndBox":
+            default:
+              return (
+                <Becf_10803_dieline
+                  ref={canvasRef}
+                  attribute={attributeBecf_10803}
+                  displayUnit={displayUnit}
+                  renderMode={is3DMode ? "folded3d" : "dieline"}
+                  frame={is3DMode ? tuckFrame : 0}
+                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  texturePlacement={isTextureMode ? currentTexture : undefined}
+                  onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
+                  allowTextureTransform={false}
+                  showDimensions={isTextureMode ? false : showDimensions}
+                  showShapeLines
+                  widthLabel="Overall Width"
+                  heightLabel="Overall Height"
+                  onMeasure={setMeasuredBounds}
+                  onPrintExportReady={(controller) => setPrintExportController(controller)}
+                />
+              );
+          }
+        })()}
       </section>
     </div>
   );
