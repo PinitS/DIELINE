@@ -14,7 +14,14 @@ export {
 export { convertDielineMillimeters, formatDielineDisplayValue } from "./utils/units";
 export { TUCK_END_BOX_FOLD_FRAME_COUNT, TUCK_END_BOX_FOLD_SEQUENCE } from "./utils/tuckEndBoxGeometry";
 export type { DielinePrintData } from "./utils/pdfExport";
+export {
+  DEFAULT_CIRCLE_ATTRIBUTES,
+  DEFAULT_DISPLAY_UNIT,
+  DEFAULT_RECTANGLE_ATTRIBUTES,
+  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
+} from "./defaults";
 export type {
+  CircleAttributes,
   CircleDielineProps,
   DielineModelAttributeMetadata,
   DielineCanvasHandle,
@@ -27,9 +34,11 @@ export type {
   DielinePrintSvgOptions,
   DielineSvgDocument,
   DisplayUnit,
+  RectangleAttributes,
   RectangleDielineProps,
   SharedCanvasProps,
   TexturePlacement,
+  TuckEndBoxAttributes,
   TuckEndBoxDielineProps,
   TuckEndBoxRenderMode,
 } from "./types";

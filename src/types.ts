@@ -54,6 +54,7 @@ export type TexturePlacement = {
 export type DielineCanvasHandle = {
   getOverallWidth: () => number;
   getOverallHeight: () => number;
+  getOverall: () => DielineBounds;
   resetView: () => void;
   printController: DielinePrintController;
 };

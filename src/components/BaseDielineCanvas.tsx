@@ -479,6 +479,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
     useImperativeHandle(ref, () => ({
       getOverallWidth: () => bounds.overallWidthMm,
       getOverallHeight: () => bounds.overallHeightMm,
+      getOverall: () => bounds,
       resetView: () => {
         if (!fitView()) {
           setPan({ x: 0, y: 0 });
@@ -486,7 +487,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
         }
       },
       printController,
-    }), [bounds.overallHeightMm, bounds.overallWidthMm, fitView, printController]);
+    }), [bounds, fitView, printController]);
 
     useEffect(() => {
       const container = containerRef.current;

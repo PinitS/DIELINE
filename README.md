@@ -1,27 +1,14 @@
 # react-dieline
 
-React Three Fiber dieline component library for React.
+React Three Fiber dieline component library for creating printable dieline templates.
 
 ## Features
 
-- React Three Fiber rendering
-- Pannable canvas
-- Millimeter-first inputs
-- Display labels in `mm`, `cm`, or `in`
-- Always formats labels to 2 decimals
-- Dynamic font sizing for overall width/height labels
-- Type-specific public API:
-  - `StrickerCircleDieline`
-  - `StrickerRectangleDieline`
-  - `Becf_10803_dieline`
-- Named helpers:
-  - `convertDielineMillimeters`
-  - `formatDielineDisplayValue`
-- Model metadata helpers:
-  - `DIELINE_MODELS`
-  - `getDielineModels`
-  - `getDielineModelById`
-- Measurement callback and imperative ref API
+- **3 rendering modes**: Dieline, Texture preview, and 3D folded view
+- **Pannable & zoomable canvas** with mouse wheel and drag
+- **Print export** - Generate SVG or PDF for printing
+- **Millimeter-first** inputs with display in mm, cm, or in
+- **Type-safe API** with full TypeScript support
 
 ## Install
 
@@ -35,239 +22,290 @@ Peer dependencies:
 npm install react react-dom
 ```
 
-## Core idea
-
-You choose the shape component directly.
-
-- Use `StrickerCircleDieline` for circles
-- Use `StrickerRectangleDieline` for rectangles
-- Use `Becf_10803_dieline` for the tuck-end-box model
-
-All input dimensions are in **millimeters**.
-
-## Basic usage
+## Quick Start
 
 ```tsx
 import { StrickerCircleDieline } from "react-dieline";
 
-export function Example() {
-  return (
-    <StrickerCircleDieline
-      attribute={{ size: 90 }}
-      displayUnit="mm"
-      width={800}
-      height={600}
-    />
-  );
-}
-```
-
-## Rectangle usage
-
-```tsx
-import { StrickerRectangleDieline } from "react-dieline";
-
-export function Example() {
-  return (
-    <StrickerRectangleDieline
-      attribute={{ width: 120, height: 80 }}
-      displayUnit="cm"
-      showDimensions
-    />
-  );
-}
-```
-
-## Tuck-end-box usage
-
-```tsx
-import { Becf_10803_dieline } from "react-dieline";
-
-export function Example() {
-  return (
-    <Becf_10803_dieline
-      attribute={{ length: 100, width: 50, height: 150 }}
-      showDimensions
-    />
-  );
-}
-```
-
-## Public exports
-
-- `StrickerCircleDieline`
-- `StrickerRectangleDieline`
-- `Becf_10803_dieline`
-- `DIELINE_MODELS`
-- `getDielineModels`
-- `getDielineModelById`
-- `convertDielineMillimeters`
-- `formatDielineDisplayValue`
-
-## Model metadata usage
-
-```tsx
-import { getDielineModels } from "react-dieline";
-
-const models = getDielineModels();
-const canView3D = models.some((model) => model.dimensionType === "3D");
-```
-
-## Props shared by all shapes
-
-- `width?: number | string`
-- `height?: number | string`
-- `displayUnit?: "mm" | "cm" | "in"`
-- `backgroundColor?: string`
-- `shapeStrokeColor?: string`
-- `dimensionColor?: string`
-- `labelColor?: string`
-- `widthLabel?: string`
-- `heightLabel?: string`
-- `showDimensions?: boolean`
-  - Controls both dimension lines and dimension labels
-  - Default: `true`
-- `className?: string`
-- `style?: CSSProperties`
-- `onMeasure?: (bounds) => void`
-
-## Shape-specific props
-
-### StrickerCircleDieline
-
-```tsx
-attribute: { size?: number }
-```
-
-Default `size`: `90`
-
-### StrickerRectangleDieline
-
-```tsx
-attribute: { width?: number; height?: number }
-```
-
-Default `width`: `120`
-
-Default `height`: `80`
-
-### Becf_10803_dieline
-
-```tsx
-attribute: {
-  length?: number;
-  width?: number;
-  height?: number;
-  closurePanel?: number;
-  dustFlap?: number;
-  glueWidth?: number;
-  tuckFlap?: number;
-}
-```
-
-Defaults:
-
-- `length: 100`
-- `width: 50`
-- `height: 150`
-- `closurePanel: 45`
-- `dustFlap: 32`
-- `glueWidth: 12`
-- `tuckFlap: 15`
-
-## Reading measurements via callback
-
-```tsx
 <StrickerCircleDieline
-  attribute={{ size: 100 }}
-  onMeasure={(bounds) => {
-    console.log(bounds.overallWidthMm);
-    console.log(bounds.overallHeightMm);
-  }}
+  attribute={{ size: 90 }}
+  displayUnit="mm"
 />
 ```
 
-## Print export via callback
+---
 
+## Models
+
+### 1. StrickerCircleDieline
+
+Circle dieline with configurable diameter.
+
+**Attributes:**
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `size` | `number` | `90` | Diameter in mm |
+
+**Usage:**
 ```tsx
-import { useState } from "react";
-import type { DielinePrintController } from "react-dieline";
 import { StrickerCircleDieline } from "react-dieline";
 
-export function Example() {
-  const [printApi, setPrintApi] = useState<DielinePrintController | null>(null);
-
-  return (
-    <>
-      <button onClick={() => printApi?.printToPdf({ title: "circle.pdf" })}>
-        Print / Save PDF
-      </button>
-      <StrickerCircleDieline
-        attribute={{ size: 120 }}
-        onPrintExportReady={(api) => setPrintApi(api)}
-      />
-    </>
-  );
-}
+<StrickerCircleDieline
+  attribute={{ size: 120 }}
+  displayUnit="mm"
+/>
 ```
 
-`onPrintExportReady` returns a controller with:
+---
 
-- `createPrintSvg()`
-- `openPrintPreview()`
-- `printToPdf()`
+### 2. StrickerRectangleDieline
 
-## Reading measurements via ref
+Rectangle dieline with configurable width and height.
+
+**Attributes:**
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `width` | `number` | `120` | Width in mm |
+| `height` | `number` | `80` | Height in mm |
+
+**Usage:**
+```tsx
+import { StrickerRectangleDieline } from "react-dieline";
+
+<StrickerRectangleDieline
+  attribute={{ width: 200, height: 150 }}
+  displayUnit="mm"
+/>
+```
+
+---
+
+### 3. Becf_10803_dieline
+
+Tuck-end-box dieline (BECF 10803 standard). Supports 2D dieline view and 3D folded view.
+
+**Attributes:**
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `length` | `number` | `100` | Box length in mm |
+| `width` | `number` | `50` | Box width in mm |
+| `height` | `number` | `150` | Box height in mm |
+| `closurePanel` | `number` | `50` | Closure panel size in mm |
+| `dustFlap` | `number` | `32` | Dust flap size in mm |
+| `glueWidth` | `number` | `12` | Glue strip width in mm |
+| `tuckFlap` | `number` | `15` | Tuck flap size in mm |
+
+**Usage:**
+```tsx
+import { Becf_10803_dieline } from "react-dieline";
+
+// 2D dieline view
+<Becf_10803_dieline
+  attribute={{
+    length: 100,
+    width: 50,
+    height: 150,
+    closurePanel: 50,
+    dustFlap: 32,
+    glueWidth: 12,
+    tuckFlap: 15,
+  }}
+  displayUnit="mm"
+/>
+
+// 3D folded view
+<Becf_10803_dieline
+  attribute={{ length: 100, width: 50, height: 150 }}
+  renderMode="folded3d"
+  frame={0.5}
+/>
+```
+
+---
+
+## Default Values
+
+Import default attributes from the library:
+
+```tsx
+import {
+  DEFAULT_CIRCLE_ATTRIBUTES,
+  DEFAULT_RECTANGLE_ATTRIBUTES,
+  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
+  DEFAULT_DISPLAY_UNIT,
+} from "react-dieline";
+
+console.log(DEFAULT_CIRCLE_ATTRIBUTES);     // { size: 90 }
+console.log(DEFAULT_RECTANGLE_ATTRIBUTES);  // { width: 120, height: 80 }
+console.log(DEFAULT_TUCK_END_BOX_ATTRIBUTES); // { length: 100, width: 50, height: 150, closurePanel: 50, dustFlap: 32, glueWidth: 12, tuckFlap: 15 }
+console.log(DEFAULT_DISPLAY_UNIT);           // "mm"
+```
+
+---
+
+## Props
+
+### Shared Props
+
+All dieline components accept these props:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `width` | `number \| string` | `"100%"` | Canvas width |
+| `height` | `number \| string` | `"100%"` | Canvas height |
+| `displayUnit` | `"mm" \| "cm" \| "in"` | `"mm"` | Unit for dimension labels |
+| `backgroundColor` | `string` | `"#d9d9d9"` | Canvas background |
+| `shapeStrokeColor` | `string` | `"#ff2d2d"` | Cut line color |
+| `dimensionColor` | `string` | `"#111111"` | Dimension line color |
+| `labelColor` | `string` | `"#111111"` | Dimension label text color |
+| `showDimensions` | `boolean` | `true` | Show/hide dimensions |
+| `showShapeLines` | `boolean` | `true` | Show/hide shape outline |
+| `className` | `string` | - | CSS class for container |
+| `style` | `CSSProperties` | - | Inline styles for container |
+| `onMeasure` | `(bounds) => void` | - | Callback with measured bounds |
+
+### Texture Props (Optional)
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `textureImageUrl` | `string` | URL of texture image |
+| `texturePlacement` | `TexturePlacement` | Texture positioning config |
+| `onTexturePlacementChange` | `(placement) => void` | Callback when texture moves |
+
+### 3D Props (Tuck-end-box only)
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `renderMode` | `"dieline" \| "folded3d"` | `"dieline"` | Render mode |
+| `frame` | `number` | `0` | Animation frame (0-1) |
+
+---
+
+## Ref API
+
+Use `ref` to access imperative methods:
 
 ```tsx
 import { useRef } from "react";
 import { StrickerCircleDieline } from "react-dieline";
+import type { DielineCanvasHandle } from "react-dieline";
 
-export function Example() {
-  const ref = useRef<{
-    getOverallWidth: () => number;
-    getOverallHeight: () => number;
-    resetView: () => void;
-  } | null>(null);
+function App() {
+  const modelRef = useRef<DielineCanvasHandle>(null);
 
   return (
     <>
-      <button onClick={() => console.log(ref.current?.getOverallWidth())}>
-        Read width
+      <button onClick={() => modelRef.current?.resetView()}>
+        Reset View
       </button>
-      <button onClick={() => ref.current?.resetView()}>
-        Reset view
+      <button onClick={() => console.log(modelRef.current?.getOverallWidth())}>
+        Get Width
       </button>
-      <StrickerCircleDieline ref={ref} attribute={{ size: 120 }} />
+      <StrickerCircleDieline ref={modelRef} attribute={{ size: 90 }} />
     </>
   );
 }
 ```
 
-## Ref API
+### Ref Methods
 
-- `getOverallWidth(): number`
-- `getOverallHeight(): number`
-- `resetView(): void`
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `getOverallWidth()` | `number` | Overall width in mm |
+| `getOverallHeight()` | `number` | Overall height in mm |
+| `getOverall()` | `{ overallWidthMm: number, overallHeightMm: number }` | Both dimensions in mm |
+| `resetView()` | `void` | Reset pan/zoom to fit |
 
-The ref API returns dimensions in **millimeters**.
+## Print Export
 
-`resetView()` restores the fitted initial view.
+Access print functions via ref:
 
-## Helper usage
+```tsx
+import { useRef } from "react";
+import { StrickerCircleDieline } from "react-dieline";
+import type { DielineCanvasHandle } from "react-dieline";
+
+function App() {
+  const modelRef = useRef<DielineCanvasHandle>(null);
+
+  const handlePrint = () => {
+    modelRef.current?.printController.printToPdf({
+      title: "my-dieline.pdf",
+      displayUnit: "mm",
+    });
+  };
+
+  return (
+    <>
+      <button onClick={handlePrint}>Export PDF</button>
+      <StrickerCircleDieline ref={modelRef} attribute={{ size: 90 }} />
+    </>
+  );
+}
+```
+
+### Print Controller Methods
+
+| Method | Arguments | Description |
+|--------|-----------|-------------|
+| `createPrintSvg(options?)` | `{ displayUnit }` | Returns SVG document |
+| `openPrintPreview(options?)` | `{ title, displayUnit, autoPrint, marginMm }` | Opens browser print dialog |
+| `printToPdf(options?)` | `{ title, displayUnit, marginMm }` | Downloads as PDF |
+
+---
+
+## View Modes
+
+Switch between dieline, texture, and 3D views:
+
+```tsx
+<Becf_10803_dieline
+  attribute={{ length: 100, width: 50, height: 150 }}
+  renderMode="dieline"    // Default: flat dieline
+  // renderMode="folded3d" // 3D folded view
+/>
+```
+
+For texture preview, provide a texture image:
+
+```tsx
+<StrickerCircleDieline
+  attribute={{ size: 90 }}
+  textureImageUrl="/pattern.png"
+  texturePlacement={{
+    hasTexture: true,
+    imageWidth: 512,
+    imageHeight: 512,
+    offsetXRatio: 0,
+    offsetYRatio: 0,
+    scale: 1,
+  }}
+/>
+```
+
+---
+
+## Helpers
 
 ```tsx
 import { convertDielineMillimeters, formatDielineDisplayValue } from "react-dieline";
 
-const widthCm = convertDielineMillimeters(120, "cm");
-const label = formatDielineDisplayValue(120, "cm");
+// Convert between units
+const widthCm = convertDielineMillimeters(120, "cm"); // 12
+
+// Format for display
+const label = formatDielineDisplayValue(120.5, "mm"); // "120.50 mm"
 ```
 
-## Local development
+---
+
+## Local Development
 
 ```bash
-npm run dev
-npm run typecheck
-npm run build
+npm run dev      # Start dev server
+npm run typecheck  # Type check
+npm run build    # Build library
 ```
-

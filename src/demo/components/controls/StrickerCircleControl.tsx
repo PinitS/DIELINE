@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { formatDielineDisplayValue } from "../../../index";
+import { DEFAULT_CIRCLE_ATTRIBUTES, formatDielineDisplayValue } from "../../../index";
 import type { CircleAttributes, DielineBounds, DisplayUnit, TexturePlacement } from "../../../types";
 import type { DemoViewMode } from "../../demoTypes";
 
@@ -194,7 +194,7 @@ export const StrickerCircleControl = ({
           type="number"
           min={1}
           step={1}
-          value={attribute.size ?? 90}
+          value={attribute.size ?? DEFAULT_CIRCLE_ATTRIBUTES.size}
           onChange={(event) => setAttribute({ size: Number(event.target.value) || 1 })}
         />
       </label>

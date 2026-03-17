@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { getDielineModelById, getDielineModels } from "../index";
+import {
+  DEFAULT_CIRCLE_ATTRIBUTES,
+  DEFAULT_RECTANGLE_ATTRIBUTES,
+  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
+  getDielineModelById,
+  getDielineModels,
+} from "../index";
 import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803_dieline";
 import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
 import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
@@ -16,13 +22,6 @@ import { StrickerCircleControl } from "./components/controls/StrickerCircleContr
 import { StrickerRectangleControl } from "./components/controls/StrickerRectangleControl";
 import { Becf_10803Control } from "./components/controls/Becf_10803Control";
 import type { DemoViewMode } from "./demoTypes";
-
-const ADVANCED_DIMENSION_PRESET = {
-  closurePanel: 50,
-  dustFlap: 32,
-  glueWidth: 12,
-  tuckFlap: 15,
-} as const;
 
 const MODEL_METADATA = getDielineModels();
 
@@ -71,17 +70,9 @@ export const App = () => {
   const [shapeType, setShapeType] = useState<DielineModelId>("circle");
 
   // Attribute states per model type
-  const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>({ size: 90 });
-  const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>({ width: 120, height: 80 });
-  const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>({
-    length: 100,
-    width: 50,
-    height: 150,
-    closurePanel: ADVANCED_DIMENSION_PRESET.closurePanel,
-    dustFlap: ADVANCED_DIMENSION_PRESET.dustFlap,
-    glueWidth: ADVANCED_DIMENSION_PRESET.glueWidth,
-    tuckFlap: ADVANCED_DIMENSION_PRESET.tuckFlap,
-  });
+  const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>(DEFAULT_CIRCLE_ATTRIBUTES);
+  const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>(DEFAULT_RECTANGLE_ATTRIBUTES);
+  const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>(DEFAULT_TUCK_END_BOX_ATTRIBUTES);
 
   // Texture states per model type
   const [textureStrickerCircle, setTextureStrickerCircle] = useState<TexturePlacement | undefined>(undefined);

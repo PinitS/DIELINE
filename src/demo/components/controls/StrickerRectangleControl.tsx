@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { formatDielineDisplayValue } from "../../../index";
+import { DEFAULT_RECTANGLE_ATTRIBUTES, formatDielineDisplayValue } from "../../../index";
 import type { DielineBounds, DisplayUnit, RectangleAttributes, TexturePlacement } from "../../../types";
 import type { DemoViewMode } from "../../demoTypes";
 
@@ -195,7 +195,7 @@ export const StrickerRectangleControl = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.width ?? 120}
+            value={attribute.width ?? DEFAULT_RECTANGLE_ATTRIBUTES.width}
             onChange={(event) => setAttribute({ ...attribute, width: Number(event.target.value) || 1 })}
           />
         </label>
@@ -204,7 +204,7 @@ export const StrickerRectangleControl = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.height ?? 80}
+            value={attribute.height ?? DEFAULT_RECTANGLE_ATTRIBUTES.height}
             onChange={(event) => setAttribute({ ...attribute, height: Number(event.target.value) || 1 })}
           />
         </label>

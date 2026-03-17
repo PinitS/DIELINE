@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import {
+  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
   TUCK_END_BOX_FOLD_FRAME_COUNT,
   TUCK_END_BOX_FOLD_SEQUENCE,
   formatDielineDisplayValue,
@@ -242,7 +243,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.length ?? 100}
+            value={attribute.length ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.length}
             onChange={(event) => setAttribute({ ...attribute, length: Number(event.target.value) || 1 })}
           />
         </label>
@@ -251,7 +252,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.width ?? 50}
+            value={attribute.width ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.width}
             onChange={(event) => setAttribute({ ...attribute, width: Number(event.target.value) || 1 })}
           />
         </label>
@@ -260,7 +261,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.height ?? 150}
+            value={attribute.height ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.height}
             onChange={(event) => setAttribute({ ...attribute, height: Number(event.target.value) || 1 })}
           />
         </label>
@@ -269,7 +270,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.closurePanel ?? 50}
+            value={attribute.closurePanel ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.closurePanel}
             onChange={(event) => setAttribute({ ...attribute, closurePanel: Number(event.target.value) || 1 })}
           />
         </label>
@@ -278,7 +279,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.dustFlap ?? 32}
+            value={attribute.dustFlap ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.dustFlap}
             onChange={(event) => setAttribute({ ...attribute, dustFlap: Number(event.target.value) || 1 })}
           />
         </label>
@@ -287,7 +288,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.glueWidth ?? 12}
+            value={attribute.glueWidth ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.glueWidth}
             onChange={(event) => setAttribute({ ...attribute, glueWidth: Number(event.target.value) || 1 })}
           />
         </label>
@@ -296,7 +297,7 @@ export const Becf_10803Control = ({
             type="number"
             min={1}
             step={1}
-            value={attribute.tuckFlap ?? 15}
+            value={attribute.tuckFlap ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.tuckFlap}
             onChange={(event) => setAttribute({ ...attribute, tuckFlap: Number(event.target.value) || 1 })}
           />
         </label>
