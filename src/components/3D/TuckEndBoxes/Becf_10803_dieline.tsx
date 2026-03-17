@@ -10,16 +10,6 @@ type Point = { x: number; y: number };
 
 const FOLD_LINE_COLOR = "#22c55e";
 const DIMENSION_COLOR = "#111111";
-const ADVANCED_DIMENSIONS_TRIGGER = {
-  closurePanel: 35,
-  dustFlap: 32,
-  glueWidth: 12,
-  tuckFlap: 15,
-} as const;
-const DIMENSION_MATCH_EPSILON = 0.001;
-
-const matchesDimensionValue = (value: number, expected: number) =>
-  Math.abs(value - expected) <= DIMENSION_MATCH_EPSILON;
 
 const toScenePoints = (
   points: Point[],
@@ -129,12 +119,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
       tuckFlap,
       closurePanel,
     } = resolveTuckEndBoxAttributes(attribute);
-    const advancedDimensionsEnabled =
-      showDimensions
-      && matchesDimensionValue(closurePanel, ADVANCED_DIMENSIONS_TRIGGER.closurePanel)
-      && matchesDimensionValue(dustFlap, ADVANCED_DIMENSIONS_TRIGGER.dustFlap)
-      && matchesDimensionValue(glueWidth, ADVANCED_DIMENSIONS_TRIGGER.glueWidth)
-      && matchesDimensionValue(tuckFlap, ADVANCED_DIMENSIONS_TRIGGER.tuckFlap);
+    const advancedDimensionsEnabled = showDimensions;
     const bounds = measureTuckEndBoxBounds({
       length,
       width,
@@ -277,7 +262,8 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           const advancedVerticalLabelOffset = Math.max(12, advancedLabelFontSize * 0.92);
           const verticalLabelPadding = Math.max(8, labelFontSize * 0.7);
           const advancedVerticalLabelPadding = Math.max(7, advancedLabelFontSize * 0.72);
-          const dimensionY = pxY(y2 + closurePanel * 0.46);
+          const internalDimensionOffsetMm = Math.max(12, Math.min(height * 0.18, 28));
+          const dimensionY = pxY(y2 - internalDimensionOffsetMm);
           const dimensionTextY = dimensionY - Math.max(14, layout.widthFontSize * 0.55);
           const rightDimensionX = pxX(x3 + width * 0.68);
           const glueDimensionY = pxY((y1 + y2) / 2);
@@ -371,9 +357,9 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           ];
 
           const bottomDimensionGuides: Point[][] = [
-            [{ x: pxX(x1), y: pxY(y2) }, { x: pxX(x1), y: dimensionY + dimensionTick * 0.4 }],
-            [{ x: pxX(x2), y: pxY(y2) }, { x: pxX(x2), y: dimensionY + dimensionTick * 0.4 }],
-            [{ x: pxX(x3), y: pxY(y2) }, { x: pxX(x3), y: dimensionY + dimensionTick * 0.4 }],
+            [{ x: pxX(x1), y: pxY(y2) }, { x: pxX(x1), y: dimensionY - dimensionTick * 0.4 }],
+            [{ x: pxX(x2), y: pxY(y2) }, { x: pxX(x2), y: dimensionY - dimensionTick * 0.4 }],
+            [{ x: pxX(x3), y: pxY(y2) }, { x: pxX(x3), y: dimensionY - dimensionTick * 0.4 }],
           ];
 
           const heightDimensionGuides: Point[][] = [
