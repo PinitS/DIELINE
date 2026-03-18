@@ -45,7 +45,7 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
     id: "tuckEndBox",
     name: "Tuck End Box",
     exportName: "Becf_10803_dieline",
-    componentPath: "src/components/3D/TuckEndBoxes/Becf_10803_dieline.tsx",
+    componentPath: "src/components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline.tsx",
     attributes: [
       {
         name: "length",

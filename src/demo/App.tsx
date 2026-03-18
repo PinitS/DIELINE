@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803_dieline";
+import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline";
 import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
 import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
 import { getDielineModelById, getDielineModels } from "../lib/modelMetadata";

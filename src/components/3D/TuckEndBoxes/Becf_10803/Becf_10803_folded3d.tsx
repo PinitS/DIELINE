@@ -3,14 +3,14 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, type RefOb
 import { DoubleSide, Shape, ShapeGeometry, Vector2 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { OrbitControls as ThreeOrbitControls } from "three-stdlib";
-import type { DielineCanvasHandle, TuckEndBoxDielineProps } from "../../../types";
-import { measureTuckEndBoxBounds } from "../../../utils/measure";
-import { createDielinePrintController } from "../../../utils/pdfExport";
+import type { DielineCanvasHandle, TuckEndBoxDielineProps } from "../../../../types";
+import { measureTuckEndBoxBounds } from "../../../../utils/measure";
+import { createDielinePrintController } from "../../../../utils/pdfExport";
 import {
   getTuckEndBoxFoldAngles,
   getTuckEndBoxGeometry,
   type Point,
-} from "../../../utils/tuckEndBoxGeometry";
+} from "../../../../utils/tuckEndBoxGeometry";
 
 type PanelMeshProps = {
   points: Point[];

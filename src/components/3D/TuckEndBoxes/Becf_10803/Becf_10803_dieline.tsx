@@ -1,12 +1,12 @@
 import { Text } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
-import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
-import { measureTuckEndBoxBounds } from "../../../utils/measure";
-import { createDielinePrintController } from "../../../utils/pdfExport";
-import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
-import { formatDielineDisplayValue } from "../../../utils/units";
-import { BaseDielineCanvas, TexturedPolygonMesh } from "../../BaseDielineCanvas";
-import { SceneLine } from "../../ScenePrimitives";
+import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../../types";
+import { measureTuckEndBoxBounds } from "../../../../utils/measure";
+import { createDielinePrintController } from "../../../../utils/pdfExport";
+import { resolveTuckEndBoxAttributes } from "../../../../utils/tuckEndBox";
+import { formatDielineDisplayValue } from "../../../../utils/units";
+import { BaseDielineCanvas, TexturedPolygonMesh } from "../../../BaseDielineCanvas";
+import { SceneLine } from "../../../ScenePrimitives";
 import { Becf_10803_folded3d } from "./Becf_10803_folded3d";
 
 type Point = { x: number; y: number };
