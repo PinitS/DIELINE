@@ -1,5 +1,12 @@
-import type { CircleAttributes, DielineBounds, RectangleAttributes, TuckEndBoxAttributes } from "../types";
-import { resolveTuckEndBoxAttributes } from "./tuckEndBox";
+import type {
+  Becf11d01Attributes,
+  CircleAttributes,
+  DielineBounds,
+  RectangleAttributes,
+  TuckEndBoxAttributes,
+} from "../types";
+import { resolveBecf11d01Attributes } from "./becf11d01Geometry";
+import { getTuckEndBoxGeometry } from "./becf10803Geometry";
 
 const DEFAULT_CIRCLE_SIZE_MM = 90;
 const DEFAULT_RECTANGLE_WIDTH_MM = 120;
@@ -28,16 +35,22 @@ export const measureRectangleBounds = (
 
 export const measureTuckEndBoxBounds = (
   attribute: TuckEndBoxAttributes,
+): DielineBounds => getTuckEndBoxGeometry(attribute).bounds;
+
+export const measureBecf11d01Bounds = (
+  attribute: Becf11d01Attributes,
 ): DielineBounds => {
   const {
-    length,
-    width,
-    height,
+    panelWidth,
+    panelHeight,
+    sideDepth,
+    sideLeftWidth,
+    flapHeight,
     glueWidth,
-    closurePanel,
-    tuckFlap,
-  } = resolveTuckEndBoxAttributes(attribute);
-  const overallWidthMm = length + width + length + width + glueWidth;
-  const overallHeightMm = tuckFlap + closurePanel + height + closurePanel + tuckFlap;
-  return { overallWidthMm, overallHeightMm };
+  } = resolveBecf11d01Attributes(attribute);
+
+  return {
+    overallWidthMm: glueWidth + panelWidth + sideDepth + panelWidth + sideLeftWidth,
+    overallHeightMm: flapHeight + panelHeight + flapHeight,
+  };
 };

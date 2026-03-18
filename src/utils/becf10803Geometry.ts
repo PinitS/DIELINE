@@ -1,10 +1,26 @@
-import type { TuckEndBoxAttributes } from "../types";
-import {
-  resolveTuckEndBoxAttributes,
-  type ResolvedTuckEndBoxAttributes,
-} from "./tuckEndBox";
+import type { DielineBounds, TuckEndBoxAttributes } from "../types";
 
 export type Point = { x: number; y: number };
+
+export const DEFAULT_TUCK_END_BOX_ATTRIBUTES = {
+  length: 100,
+  width: 50,
+  height: 150,
+  closurePanel: 50,
+  dustFlap: 32,
+  glueWidth: 12,
+  tuckFlap: 15,
+} as const;
+
+export type ResolvedTuckEndBoxAttributes = {
+  length: number;
+  width: number;
+  height: number;
+  closurePanel: number;
+  dustFlap: number;
+  glueWidth: number;
+  tuckFlap: number;
+};
 
 export type TuckEndBoxFoldAngles = {
   sideRight: number;
@@ -31,8 +47,36 @@ export const TUCK_END_BOX_FOLD_SEQUENCE = [
   "Close the bottom lid and tuck flap.",
 ] as const;
 
+type TuckEndBoxPanels2d = {
+  bodyStrip: Point[];
+  glueTab: Point[];
+  topClosure: Point[];
+  topDustLeft: Point[];
+  topDustRight: Point[];
+  bottomClosure: Point[];
+  bottomDustLeft: Point[];
+  bottomDustRight: Point[];
+};
+
+type TuckEndBoxPanels3d = {
+  glueTab: Point[];
+  front: Point[];
+  sideRight: Point[];
+  back: Point[];
+  sideLeft: Point[];
+  topClosure: Point[];
+  topTuck: Point[];
+  bottomClosure: Point[];
+  bottomTuck: Point[];
+  topDustLeft: Point[];
+  topDustRight: Point[];
+  bottomDustLeft: Point[];
+  bottomDustRight: Point[];
+};
+
 export type TuckEndBoxGeometry = {
   resolved: ResolvedTuckEndBoxAttributes;
+  bounds: DielineBounds;
   guides: {
     x0: number;
     x1: number;
@@ -50,25 +94,18 @@ export type TuckEndBoxGeometry = {
     glueInset: number;
     closureCornerRadius: number;
   };
-  panels: {
-    bodyStrip: Point[];
-    glueTab: Point[];
-    front: Point[];
-    sideRight: Point[];
-    back: Point[];
-    sideLeft: Point[];
-    topClosureOutline: Point[];
-    bottomClosureOutline: Point[];
-    topClosure: Point[];
-    topTuck: Point[];
-    bottomClosure: Point[];
-    bottomTuck: Point[];
-    topDustLeft: Point[];
-    topDustRight: Point[];
-    bottomDustLeft: Point[];
-    bottomDustRight: Point[];
-  };
+  panels2d: TuckEndBoxPanels2d;
+  panels3d: TuckEndBoxPanels3d;
+  panels: TuckEndBoxPanels3d;
+  cuts: Point[][];
+  folds: Point[][];
 };
+
+const resolveDimension = (value: number | undefined, fallback: number): number => (
+  typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : fallback
+);
 
 const createQuadraticCurve = (
   start: Point,
@@ -139,6 +176,18 @@ const createRoundedBottomTuckFlap = (
   ];
 };
 
+export const resolveTuckEndBoxAttributes = (
+  attribute: TuckEndBoxAttributes = {},
+): ResolvedTuckEndBoxAttributes => ({
+  length: resolveDimension(attribute.length, DEFAULT_TUCK_END_BOX_ATTRIBUTES.length),
+  width: resolveDimension(attribute.width, DEFAULT_TUCK_END_BOX_ATTRIBUTES.width),
+  height: resolveDimension(attribute.height, DEFAULT_TUCK_END_BOX_ATTRIBUTES.height),
+  closurePanel: resolveDimension(attribute.closurePanel, DEFAULT_TUCK_END_BOX_ATTRIBUTES.closurePanel),
+  dustFlap: resolveDimension(attribute.dustFlap, DEFAULT_TUCK_END_BOX_ATTRIBUTES.dustFlap),
+  glueWidth: resolveDimension(attribute.glueWidth, DEFAULT_TUCK_END_BOX_ATTRIBUTES.glueWidth),
+  tuckFlap: resolveDimension(attribute.tuckFlap, DEFAULT_TUCK_END_BOX_ATTRIBUTES.tuckFlap),
+});
+
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 const clampFrame = (frame: number) =>
@@ -173,11 +222,134 @@ export const getTuckEndBoxGeometry = (
   const dustInset = Math.min(width * 0.22, dustFlap * 0.45);
   const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
   const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
+  const bounds = { overallWidthMm: x4, overallHeightMm: y4 };
   const topTuck = createRoundedTopTuckFlap(x2, x3, y0, 0, closureCornerRadius);
   const bottomTuck = createRoundedBottomTuckFlap(x0, x1, y3, y4, closureCornerRadius);
+  const glueTab = [
+    { x: 0, y: y1 + glueInset },
+    { x: x0, y: y1 },
+    { x: x0, y: y2 },
+    { x: 0, y: y2 - glueInset },
+  ];
+  const front = createRectangle(x0, y1, x1, y2);
+  const sideRight = createRectangle(x1, y1, x2, y2);
+  const back = createRectangle(x2, y1, x3, y2);
+  const sideLeft = createRectangle(x3, y1, x4, y2);
+  const topClosureOutline = [
+    { x: x2, y: y1 },
+    { x: x2, y: y0 },
+    ...topTuck.slice(1, -1),
+    { x: x3, y: y0 },
+    { x: x3, y: y1 },
+  ];
+  const bottomClosureOutline = [
+    { x: x0, y: y2 },
+    { x: x0, y: y3 },
+    ...bottomTuck.slice(1, -1),
+    { x: x1, y: y3 },
+    { x: x1, y: y2 },
+  ];
+  const topDustLeft = [
+    { x: x1, y: y1 },
+    { x: x2, y: y1 },
+    { x: x2, y: topDustY },
+    { x: x1 + dustInset, y: topDustY },
+  ];
+  const topDustRight = [
+    { x: x3, y: y1 },
+    { x: x4, y: y1 },
+    { x: x4 - dustInset, y: topDustY },
+    { x: x3, y: topDustY },
+  ];
+  const bottomDustLeft = [
+    { x: x1, y: y2 },
+    { x: x2, y: y2 },
+    { x: x2 - dustInset, y: bottomDustY },
+    { x: x1, y: bottomDustY },
+  ];
+  const bottomDustRight = [
+    { x: x3, y: y2 },
+    { x: x4, y: y2 },
+    { x: x4, y: bottomDustY },
+    { x: x3 + dustInset, y: bottomDustY },
+  ];
+  const topDustLeftCut = [
+    { x: x1, y: y1 },
+    { x: x1 + dustInset, y: topDustY },
+    { x: x2, y: topDustY },
+    { x: x2, y: y1 },
+  ];
+  const topDustRightCut = [
+    { x: x3, y: y1 },
+    { x: x3, y: topDustY },
+    { x: x4 - dustInset, y: topDustY },
+    { x: x4, y: y1 },
+  ];
+  const bottomDustLeftCut = [
+    { x: x1, y: y2 },
+    { x: x1, y: bottomDustY },
+    { x: x2 - dustInset, y: bottomDustY },
+    { x: x2, y: y2 },
+  ];
+  const bottomDustRightCut = [
+    { x: x3, y: y2 },
+    { x: x3 + dustInset, y: bottomDustY },
+    { x: x4, y: bottomDustY },
+    { x: x4, y: y2 },
+  ];
+  const panels2d = {
+    bodyStrip: createRectangle(x0, y1, x4, y2),
+    glueTab,
+    topClosure: topClosureOutline,
+    topDustLeft,
+    topDustRight,
+    bottomClosure: bottomClosureOutline,
+    bottomDustLeft,
+    bottomDustRight,
+  };
+  const panels3d = {
+    glueTab,
+    front,
+    sideRight,
+    back,
+    sideLeft,
+    topClosure: createRectangle(x2, y0, x3, y1),
+    topTuck,
+    bottomClosure: createRectangle(x0, y2, x1, y3),
+    bottomTuck,
+    topDustLeft,
+    topDustRight,
+    bottomDustLeft,
+    bottomDustRight,
+  };
+  const cuts: Point[][] = [
+    [glueTab[0], glueTab[1]],
+    [glueTab[0], glueTab[3]],
+    [glueTab[2], glueTab[3]],
+    topClosureOutline,
+    topDustLeftCut,
+    topDustRightCut,
+    bottomClosureOutline,
+    bottomDustLeftCut,
+    bottomDustRightCut,
+    [{ x: x0, y: y1 }, { x: x1, y: y1 }],
+    [{ x: x2, y: y2 }, { x: x3, y: y2 }],
+    [{ x: x4, y: y1 }, { x: x4, y: y2 }],
+  ];
+  const folds: Point[][] = [
+    [{ x: x0, y: y1 }, { x: x4, y: y1 }],
+    [{ x: x0, y: y2 }, { x: x4, y: y2 }],
+    [{ x: x0, y: y1 }, { x: x0, y: y2 }],
+    [{ x: x1, y: y1 }, { x: x1, y: y2 }],
+    [{ x: x2, y: y1 }, { x: x2, y: y2 }],
+    [{ x: x3, y: y1 }, { x: x3, y: y2 }],
+    [{ x: x2, y: y0 }, { x: x3, y: y0 }],
+    [{ x: x0, y: y3 }, { x: x1, y: y3 }],
+  ];
 
   return {
     resolved,
+    bounds,
     guides: {
       x0,
       x1,
@@ -195,49 +367,11 @@ export const getTuckEndBoxGeometry = (
       glueInset,
       closureCornerRadius,
     },
-    panels: {
-      bodyStrip: createRectangle(x0, y1, x4, y2),
-      glueTab: [
-        { x: 0, y: y1 + glueInset },
-        { x: x0, y: y1 },
-        { x: x0, y: y2 },
-        { x: 0, y: y2 - glueInset },
-      ],
-      front: createRectangle(x0, y1, x1, y2),
-      sideRight: createRectangle(x1, y1, x2, y2),
-      back: createRectangle(x2, y1, x3, y2),
-      sideLeft: createRectangle(x3, y1, x4, y2),
-      topClosureOutline: [{ x: x2, y: y1 }, { x: x2, y: y0 }, ...topTuck.slice(1, -1), { x: x3, y: y0 }, { x: x3, y: y1 }],
-      bottomClosureOutline: [{ x: x0, y: y2 }, { x: x0, y: y3 }, ...bottomTuck.slice(1, -1), { x: x1, y: y3 }, { x: x1, y: y2 }],
-      topClosure: createRectangle(x2, y0, x3, y1),
-      topTuck,
-      bottomClosure: createRectangle(x0, y2, x1, y3),
-      bottomTuck,
-      topDustLeft: [
-        { x: x1, y: y1 },
-        { x: x2, y: y1 },
-        { x: x2, y: topDustY },
-        { x: x1 + dustInset, y: topDustY },
-      ],
-      topDustRight: [
-        { x: x3, y: y1 },
-        { x: x4, y: y1 },
-        { x: x4 - dustInset, y: topDustY },
-        { x: x3, y: topDustY },
-      ],
-      bottomDustLeft: [
-        { x: x1, y: y2 },
-        { x: x2, y: y2 },
-        { x: x2 - dustInset, y: bottomDustY },
-        { x: x1, y: bottomDustY },
-      ],
-      bottomDustRight: [
-        { x: x3, y: y2 },
-        { x: x4, y: y2 },
-        { x: x4, y: bottomDustY },
-        { x: x3 + dustInset, y: bottomDustY },
-      ],
-    },
+    panels2d,
+    panels3d,
+    panels: panels3d,
+    cuts,
+    folds,
   };
 };
 

@@ -1,9 +1,8 @@
 import { Text } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../../types";
-import { measureTuckEndBoxBounds } from "../../../../utils/measure";
 import { createDielinePrintController } from "../../../../utils/pdfExport";
-import { resolveTuckEndBoxAttributes } from "../../../../utils/tuckEndBox";
+import { getTuckEndBoxGeometry } from "../../../../utils/becf10803Geometry";
 import { formatDielineDisplayValue } from "../../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../../BaseDielineCanvas";
 import { SceneLine } from "../../../ScenePrimitives";
@@ -20,97 +19,13 @@ const toScenePoints = (
   z = 2,
 ) => points.map(({ x, y }) => createScenePoint(x, y, z));
 
-const createQuadraticCurve = (
-  start: Point,
-  control: Point,
-  end: Point,
-  segments = 14,
-) => Array.from({ length: segments + 1 }, (_, index) => {
-  const t = index / segments;
-  const inv = 1 - t;
-  return {
-    x: inv * inv * start.x + 2 * inv * t * control.x + t * t * end.x,
-    y: inv * inv * start.y + 2 * inv * t * control.y + t * t * end.y,
-  };
-});
-
-const createRoundedTopClosurePanel = (
-  left: number,
-  right: number,
-  foldY: number,
-  tuckFoldY: number,
-  outerY: number,
-  cornerRadius: number,
-) => {
-  const leftCurveStart = { x: left, y: outerY + cornerRadius };
-  const topLeftCorner = { x: left + cornerRadius, y: outerY };
-  const topRightCorner = { x: right - cornerRadius, y: outerY };
-  const rightCurveEnd = { x: right, y: outerY + cornerRadius };
-
-  const leftCurve = createQuadraticCurve(
-    leftCurveStart,
-    { x: left, y: outerY },
-    topLeftCorner,
-  );
-  const rightCurve = createQuadraticCurve(
-    topRightCorner,
-    { x: right, y: outerY },
-    rightCurveEnd,
-  );
-
-  return [
-    { x: left, y: foldY },
-    { x: left, y: tuckFoldY },
-    leftCurveStart,
-    ...leftCurve.slice(1),
-    topRightCorner,
-    ...rightCurve.slice(1),
-    { x: right, y: tuckFoldY },
-    { x: right, y: foldY },
-  ];
-};
-
-const createRoundedBottomClosurePanel = (
-  left: number,
-  right: number,
-  foldY: number,
-  tuckFoldY: number,
-  outerY: number,
-  cornerRadius: number,
-) => {
-  const leftCurveStart = { x: left, y: outerY - cornerRadius };
-  const bottomLeftCorner = { x: left + cornerRadius, y: outerY };
-  const bottomRightCorner = { x: right - cornerRadius, y: outerY };
-  const rightCurveEnd = { x: right, y: outerY - cornerRadius };
-
-  const leftCurve = createQuadraticCurve(
-    leftCurveStart,
-    { x: left, y: outerY },
-    bottomLeftCorner,
-  );
-  const rightCurve = createQuadraticCurve(
-    bottomRightCorner,
-    { x: right, y: outerY },
-    rightCurveEnd,
-  );
-
-  return [
-    { x: left, y: foldY },
-    { x: left, y: tuckFoldY },
-    leftCurveStart,
-    ...leftCurve.slice(1),
-    bottomRightCorner,
-    ...rightCurve.slice(1),
-    { x: right, y: tuckFoldY },
-    { x: right, y: foldY },
-  ];
-};
-
 const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
   formatDielineDisplayValue(valueMm, displayUnit);
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
   function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
+    const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
+    const bounds = geometry.bounds;
     const exportPreviewLayout = useMemo(() => createDielinePrintController(
       { modelId: "tuckEndBox", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf", },
@@ -130,24 +45,9 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
 
     const displayUnit = canvasProps.displayUnit ?? "mm";
     const showDimensions = canvasProps.showDimensions ?? true;
-    const {
-      length,
-      width,
-      height,
-      glueWidth,
-      dustFlap,
-      tuckFlap,
-      closurePanel,
-    } = resolveTuckEndBoxAttributes(attribute);
-    const bounds = measureTuckEndBoxBounds({
-      length,
-      width,
-      height,
-      glueWidth,
-      dustFlap,
-      tuckFlap,
-      closurePanel,
-    });
+    const { resolved, guides } = geometry;
+    const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel } = resolved;
+    const { x0, x1, x2, x3, x4, y0, y1, y2, topDustY } = guides;
 
     return (
       <BaseDielineCanvas
@@ -161,90 +61,13 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           const pxX = (mm: number) => layout.leftX + mm * scale;
           const pxY = (mm: number) => layout.topY + mm * scale;
 
-          const x0 = glueWidth;
-          const x1 = x0 + length;
-          const x2 = x1 + width;
-          const x3 = x2 + length;
-          const x4 = x3 + width;
-
-          const y0 = tuckFlap;
-          const y1 = y0 + closurePanel;
-          const y2 = y1 + height;
-          const y3 = y2 + closurePanel;
-          const y4 = y3 + tuckFlap;
-          const topDustY = y1 - dustFlap;
-          const bottomDustY = y2 + dustFlap;
-
-          const dustInset = Math.min(width * 0.22, dustFlap * 0.45);
-          const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
-          const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
-
-          const topClosurePanel = createRoundedTopClosurePanel(
-            x2,
-            x3,
-            y1,
-            y0,
-            0,
-            closureCornerRadius,
-          );
-          
-          const bottomClosurePanel = createRoundedBottomClosurePanel(
-            x0,
-            x1,
-            y2,
-            y3,
-            y4,
-            closureCornerRadius,
-          );
-
-          const texturePolygons: Point[][] = [
-            [
-              { x: pxX(x0), y: pxY(y1) },
-              { x: pxX(x4), y: pxY(y1) },
-              { x: pxX(x4), y: pxY(y2) },
-              { x: pxX(x0), y: pxY(y2) },
-            ],
-            [
-              { x: pxX(0), y: pxY(y1 + glueInset) },
-              { x: pxX(x0), y: pxY(y1) },
-              { x: pxX(x0), y: pxY(y2) },
-              { x: pxX(0), y: pxY(y2 - glueInset) },
-            ],
-            topClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
-            [
-              { x: pxX(x1), y: pxY(y1) },
-              { x: pxX(x2), y: pxY(y1) },
-              { x: pxX(x2), y: pxY(topDustY) },
-              { x: pxX(x1 + dustInset), y: pxY(topDustY) },
-            ],
-            [
-              { x: pxX(x3), y: pxY(y1) },
-              { x: pxX(x4), y: pxY(y1) },
-              { x: pxX(x4 - dustInset), y: pxY(topDustY) },
-              { x: pxX(x3), y: pxY(topDustY) },
-            ],
-            bottomClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
-            [
-              { x: pxX(x1), y: pxY(y2) },
-              { x: pxX(x2), y: pxY(y2) },
-              { x: pxX(x2 - dustInset), y: pxY(bottomDustY) },
-              { x: pxX(x1), y: pxY(bottomDustY) },
-            ],
-            [
-              { x: pxX(x3), y: pxY(y2) },
-              { x: pxX(x4), y: pxY(y2) },
-              { x: pxX(x4), y: pxY(bottomDustY) },
-              { x: pxX(x3 + dustInset), y: pxY(bottomDustY) },
-            ],
-          ];
-
           return (
             <>
-              {texturePolygons.map((polygon, index) => (
+              {Object.values(geometry.panels2d).map((polygon, index) => (
                 <TexturedPolygonMesh
                   key={`texture-${index}`}
                   imageUrl={textureImageUrl}
-                  points={polygon}
+                  points={polygon.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) }))}
                   textureBounds={textureBounds}
                 />
               ))}
@@ -255,24 +78,6 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;
           const pxY = (mm: number) => layout.topY + mm * scale;
-
-          const x0 = glueWidth;
-          const x1 = x0 + length;
-          const x2 = x1 + width;
-          const x3 = x2 + length;
-          const x4 = x3 + width;
-
-          const y0 = tuckFlap;
-          const y1 = y0 + closurePanel;
-          const y2 = y1 + height;
-          const y3 = y2 + closurePanel;
-          const y4 = y3 + tuckFlap;
-          const topDustY = y1 - dustFlap;
-          const bottomDustY = y2 + dustFlap;
-
-          const dustInset = Math.min(width * 0.22, dustFlap * 0.45);
-          const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
-          const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
           const dashSize = Math.max(6, layout.tickSize * 0.55);
           const gapSize = Math.max(4, layout.tickSize * 0.45);
           const labelFontSize = Math.max(11, Math.min(layout.widthFontSize * 0.78, 18));
@@ -297,88 +102,6 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           const closureLabelX = Math.max(pxX(x2) + advancedVerticalLabelPadding, closureDimensionX - advancedVerticalLabelOffset);
           const dustLabelX = Math.max(pxX(x3) + advancedVerticalLabelPadding, dustDimensionX - advancedVerticalLabelOffset);
 
-          const topClosurePanel = createRoundedTopClosurePanel(
-            x2,
-            x3,
-            y1,
-            y0,
-            0,
-            closureCornerRadius,
-          );
-
-          const bottomClosurePanel = createRoundedBottomClosurePanel(
-            x0,
-            x1,
-            y2,
-            y3,
-            y4,
-            closureCornerRadius,
-          );
-
-          const cutSegments: Point[][] = [
-            [
-              { x: pxX(0), y: pxY(y1 + glueInset) },
-              { x: pxX(x0), y: pxY(y1) },
-            ],
-            [
-              { x: pxX(0), y: pxY(y1 + glueInset) },
-              { x: pxX(0), y: pxY(y2 - glueInset) },
-            ],
-            [
-              { x: pxX(x0), y: pxY(y2) },
-              { x: pxX(0), y: pxY(y2 - glueInset) },
-            ],
-            topClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
-            [
-              { x: pxX(x1), y: pxY(y1) },
-              { x: pxX(x1 + dustInset), y: pxY(topDustY) },
-              { x: pxX(x2), y: pxY(topDustY) },
-              { x: pxX(x2), y: pxY(y1) },
-            ],
-            [
-              { x: pxX(x3), y: pxY(y1) },
-              { x: pxX(x3), y: pxY(topDustY) },
-              { x: pxX(x4 - dustInset), y: pxY(topDustY) },
-              { x: pxX(x4), y: pxY(y1) },
-            ],
-            bottomClosurePanel.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })),
-            [
-              { x: pxX(x1), y: pxY(y2) },
-              { x: pxX(x1), y: pxY(bottomDustY) },
-              { x: pxX(x2 - dustInset), y: pxY(bottomDustY) },
-              { x: pxX(x2), y: pxY(y2) },
-            ],
-            [
-              { x: pxX(x3), y: pxY(y2) },
-              { x: pxX(x3 + dustInset), y: pxY(bottomDustY) },
-              { x: pxX(x4), y: pxY(bottomDustY) },
-              { x: pxX(x4), y: pxY(y2) },
-            ],
-            [
-              { x: pxX(x0), y: pxY(y1) },
-              { x: pxX(x1), y: pxY(y1) },
-            ],
-            [
-              { x: pxX(x2), y: pxY(y2) },
-              { x: pxX(x3), y: pxY(y2) },
-            ],
-            [
-              { x: pxX(x4), y: pxY(y1) },
-              { x: pxX(x4), y: pxY(y2) },
-            ],
-          ];
-
-          const foldSegments: Point[][] = [
-            [{ x: pxX(x0), y: pxY(y1) }, { x: pxX(x4), y: pxY(y1) }],
-            [{ x: pxX(x0), y: pxY(y2) }, { x: pxX(x4), y: pxY(y2) }],
-            [{ x: pxX(x0), y: pxY(y1) }, { x: pxX(x0), y: pxY(y2) }],
-            [{ x: pxX(x1), y: pxY(y1) }, { x: pxX(x1), y: pxY(y2) }],
-            [{ x: pxX(x2), y: pxY(y1) }, { x: pxX(x2), y: pxY(y2) }],
-            [{ x: pxX(x3), y: pxY(y1) }, { x: pxX(x3), y: pxY(y2) }],
-            [{ x: pxX(x2), y: pxY(y0) }, { x: pxX(x3), y: pxY(y0) }],
-            [{ x: pxX(x0), y: pxY(y3) }, { x: pxX(x1), y: pxY(y3) }],
-          ];
-
           const bottomDimensionGuides: Point[][] = [
             [{ x: pxX(x1), y: pxY(y2) }, { x: pxX(x1), y: dimensionY - dimensionTick * 0.4 }],
             [{ x: pxX(x2), y: pxY(y2) }, { x: pxX(x2), y: dimensionY - dimensionTick * 0.4 }],
@@ -392,18 +115,18 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
 
           return (
             <>
-              {showShapeLines && cutSegments.map((segment, index) => (
+              {showShapeLines && geometry.cuts.map((segment, index) => (
                 <SceneLine
                   key={`cut-${index}`}
-                  points={toScenePoints(segment, createScenePoint)}
+                  points={toScenePoints(segment.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })), createScenePoint)}
                   color={shapeStrokeColor}
                   lineWidth={2}
                 />
               ))}
-              {showShapeLines && foldSegments.map((segment, index) => (
+              {showShapeLines && geometry.folds.map((segment, index) => (
                 <SceneLine
                   key={`fold-${index}`}
-                  points={toScenePoints(segment, createScenePoint, 1.5)}
+                  points={toScenePoints(segment.map(({ x, y }) => ({ x: pxX(x), y: pxY(y) })), createScenePoint, 1.5)}
                   color={FOLD_LINE_COLOR}
                   lineWidth={1.35}
                   dashed

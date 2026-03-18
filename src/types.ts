@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 export type DisplayUnit = "mm" | "cm" | "in";
 
 export type DielineModelDimension = "2D" | "3D";
-export type DielineModelId = "circle" | "rectangle" | "tuckEndBox";
+export type DielineModelId = "circle" | "rectangle" | "tuckEndBox" | "becf11d01";
 
 export type DielineModelAttributeMetadata = {
   name: string;
@@ -31,6 +31,16 @@ export type TuckEndBoxAttributes = {
   dustFlap?: number;
   glueWidth?: number;
   tuckFlap?: number;
+};
+export type Becf11d01Attributes = {
+  panelWidth?: number;
+  panelHeight?: number;
+  sideDepth?: number;
+  sideLeftWidth?: number;
+  flapHeight?: number;
+  glueWidth?: number;
+  flapInset?: number;
+  glueSkew?: number;
 };
 
 export type TuckEndBoxRenderMode = "dieline" | "folded3d";
@@ -112,6 +122,13 @@ export type RectangleDielineProps = SharedCanvasProps & {
 
 export type TuckEndBoxDielineProps = SharedCanvasProps & {
   attribute: TuckEndBoxAttributes;
+  onMeasure?: DielineMeasureCallback;
+  renderMode?: TuckEndBoxRenderMode;
+  frame?: number;
+};
+
+export type Becf11d01DielineProps = SharedCanvasProps & {
+  attribute: Becf11d01Attributes;
   onMeasure?: DielineMeasureCallback;
   renderMode?: TuckEndBoxRenderMode;
   frame?: number;

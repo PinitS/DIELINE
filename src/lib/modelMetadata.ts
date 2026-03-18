@@ -91,6 +91,62 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
       },
     ],
   },
+  {
+    id: "becf11d01",
+    name: "Square Flap Skillet Box",
+    exportName: "Becf_11d01_dieline",
+    componentPath: "src/components/3D/TuckEndBoxes/Becf_11d01/Becf_11d01_dieline.tsx",
+    attributes: [
+      {
+        name: "panelWidth",
+        type: "number",
+        description: "Front and back panel width in millimeters",
+        defaultValue: 175,
+      },
+      {
+        name: "panelHeight",
+        type: "number",
+        description: "Body panel height in millimeters",
+        defaultValue: 230,
+      },
+      {
+        name: "sideDepth",
+        type: "number",
+        description: "Right side panel depth in millimeters",
+        defaultValue: 74,
+      },
+      {
+        name: "sideLeftWidth",
+        type: "number",
+        description: "Left side panel width in millimeters",
+        defaultValue: 73.5,
+      },
+      {
+        name: "flapHeight",
+        type: "number",
+        description: "Major and dust flap height in millimeters",
+        defaultValue: 74,
+      },
+      {
+        name: "glueWidth",
+        type: "number",
+        description: "Glue tab width in millimeters",
+        defaultValue: 15,
+      },
+      {
+        name: "flapInset",
+        type: "number",
+        description: "Inset from panel edge to major flap cut in millimeters",
+        defaultValue: 2,
+      },
+      {
+        name: "glueSkew",
+        type: "number",
+        description: "Glue tab skew offset in millimeters",
+        defaultValue: 4.019,
+      },
+    ],
+  },
 ];
 
 export const DIELINE_MODELS: readonly DielineModelMetadata[] = MODEL_DEFINITIONS.map((model) => ({

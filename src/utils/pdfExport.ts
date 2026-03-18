@@ -1,4 +1,5 @@
 import type {
+  Becf11d01Attributes,
   CircleAttributes,
   DielineModelId,
   DielinePrintController,
@@ -10,8 +11,9 @@ import type {
   RectangleAttributes,
   TuckEndBoxAttributes,
 } from "../types";
-import { measureCircleBounds, measureRectangleBounds, measureTuckEndBoxBounds } from "./measure";
-import { resolveTuckEndBoxAttributes } from "./tuckEndBox";
+import { getBecf11d01Geometry } from "./becf11d01Geometry";
+import { getTuckEndBoxGeometry } from "./becf10803Geometry";
+import { measureBecf11d01Bounds, measureCircleBounds, measureRectangleBounds } from "./measure";
 import { formatDielineDisplayValue } from "./units";
 
 const PDF_MARGIN_MM = 10;
@@ -33,7 +35,7 @@ type ExportBounds = { left: number; top: number; right: number; bottom: number }
 
 export type DielinePrintData = {
   modelId: DielineModelId;
-  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes;
+  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -108,68 +110,6 @@ const toTextSvg = (label: Label, offsetX: number, offsetY: number) => {
   return `<text x="${x.toFixed(3)}" y="${y.toFixed(3)}" font-size="${label.fontSize}" fill="${DIMENSION_COLOR}" text-anchor="middle" dominant-baseline="middle" font-family="Helvetica, Arial, sans-serif"${transform}>${escapeHtml(label.text)}</text>`;
 };
 
-const createQuadraticCurve = (start: Point, control: Point, end: Point, segments = 14) => (
-  Array.from({ length: segments + 1 }, (_, index) => {
-    const t = index / segments;
-    const inv = 1 - t;
-
-    return {
-      x: inv * inv * start.x + 2 * inv * t * control.x + t * t * end.x,
-      y: inv * inv * start.y + 2 * inv * t * control.y + t * t * end.y,
-    };
-  })
-);
-
-const createRoundedTopClosurePanel = (
-  left: number,
-  right: number,
-  foldY: number,
-  tuckFoldY: number,
-  outerY: number,
-  cornerRadius: number,
-) => {
-  const leftCurveStart = { x: left, y: outerY + cornerRadius };
-  const topLeftCorner = { x: left + cornerRadius, y: outerY };
-  const topRightCorner = { x: right - cornerRadius, y: outerY };
-  const rightCurveEnd = { x: right, y: outerY + cornerRadius };
-
-  return [
-    { x: left, y: foldY },
-    { x: left, y: tuckFoldY },
-    leftCurveStart,
-    ...createQuadraticCurve(leftCurveStart, { x: left, y: outerY }, topLeftCorner).slice(1),
-    topRightCorner,
-    ...createQuadraticCurve(topRightCorner, { x: right, y: outerY }, rightCurveEnd).slice(1),
-    { x: right, y: tuckFoldY },
-    { x: right, y: foldY },
-  ];
-};
-
-const createRoundedBottomClosurePanel = (
-  left: number,
-  right: number,
-  foldY: number,
-  tuckFoldY: number,
-  outerY: number,
-  cornerRadius: number,
-) => {
-  const leftCurveStart = { x: left, y: outerY - cornerRadius };
-  const bottomLeftCorner = { x: left + cornerRadius, y: outerY };
-  const bottomRightCorner = { x: right - cornerRadius, y: outerY };
-  const rightCurveEnd = { x: right, y: outerY - cornerRadius };
-
-  return [
-    { x: left, y: foldY },
-    { x: left, y: tuckFoldY },
-    leftCurveStart,
-    ...createQuadraticCurve(leftCurveStart, { x: left, y: outerY }, bottomLeftCorner).slice(1),
-    bottomRightCorner,
-    ...createQuadraticCurve(bottomRightCorner, { x: right, y: outerY }, rightCurveEnd).slice(1),
-    { x: right, y: tuckFoldY },
-    { x: right, y: foldY },
-  ];
-};
-
 const createOverallDimensions = (width: number, height: number, displayUnit: DisplayUnit): ExportGeometry => {
   const minDimension = Math.min(width, height);
   const widthFontSize = clamp(width * 0.15, 4, 8.7);
@@ -241,23 +181,10 @@ const createRectangleGeometry = (attributes: RectangleAttributes, displayUnit: D
 };
 
 const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit: DisplayUnit): ExportGeometry => {
-  const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel } = resolveTuckEndBoxAttributes(attributes);
-  const bounds = measureTuckEndBoxBounds(attributes);
-  const x0 = glueWidth;
-  const x1 = x0 + length;
-  const x2 = x1 + width;
-  const x3 = x2 + length;
-  const x4 = x3 + width;
-  const y0 = tuckFlap;
-  const y1 = y0 + closurePanel;
-  const y2 = y1 + height;
-  const y3 = y2 + closurePanel;
-  const y4 = y3 + tuckFlap;
-  const topDustY = y1 - dustFlap;
-  const bottomDustY = y2 + dustFlap;
-  const dustInset = Math.min(width * 0.22, dustFlap * 0.45);
-  const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
-  const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
+  const geometry = getTuckEndBoxGeometry(attributes);
+  const { bounds, guides, resolved } = geometry;
+  const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel } = resolved;
+  const { x0, x1, x2, x3, x4, y0, y1, y2, y4, topDustY } = guides;
   const minDimension = Math.min(length, width, height, closurePanel, dustFlap, tuckFlap, glueWidth);
   const labelFontSize = clamp(minDimension * 0.08, 4, 10);
   const advancedLabelFontSize = Math.max(3, labelFontSize * 0.75);
@@ -276,31 +203,11 @@ const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit:
   const tuckLabelX = Math.max(x2 + Math.max(3.5, advancedLabelFontSize * 0.72), tuckDimensionX - Math.max(5, advancedLabelFontSize * 0.92));
   const closureLabelX = Math.max(x2 + Math.max(3.5, advancedLabelFontSize * 0.72), closureDimensionX - Math.max(5, advancedLabelFontSize * 0.92));
   const dustLabelX = Math.max(x3 + Math.max(3.5, advancedLabelFontSize * 0.72), dustDimensionX - Math.max(5, advancedLabelFontSize * 0.92));
-  const topClosurePanel = createRoundedTopClosurePanel(x2, x3, y1, y0, 0, closureCornerRadius);
-  const bottomClosurePanel = createRoundedBottomClosurePanel(x0, x1, y2, y3, y4, closureCornerRadius);
 
   return {
     polylines: [
-      { points: [{ x: 0, y: y1 + glueInset }, { x: x0, y: y1 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: 0, y: y1 + glueInset }, { x: 0, y: y2 - glueInset }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x0, y: y2 }, { x: 0, y: y2 - glueInset }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: topClosurePanel, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x1, y: y1 }, { x: x1 + dustInset, y: topDustY }, { x: x2, y: topDustY }, { x: x2, y: y1 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x3, y: y1 }, { x: x3, y: topDustY }, { x: x4 - dustInset, y: topDustY }, { x: x4, y: y1 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: bottomClosurePanel, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x1, y: y2 }, { x: x1, y: bottomDustY }, { x: x2 - dustInset, y: bottomDustY }, { x: x2, y: y2 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x3, y: y2 }, { x: x3 + dustInset, y: bottomDustY }, { x: x4, y: bottomDustY }, { x: x4, y: y2 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x0, y: y1 }, { x: x1, y: y1 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x2, y: y2 }, { x: x3, y: y2 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x4, y: y1 }, { x: x4, y: y2 }], stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
-      { points: [{ x: x0, y: y1 }, { x: x4, y: y1 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x0, y: y2 }, { x: x4, y: y2 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x0, y: y1 }, { x: x0, y: y2 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x1, y: y1 }, { x: x1, y: y2 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x2, y: y1 }, { x: x2, y: y2 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x3, y: y1 }, { x: x3, y: y2 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x2, y: y0 }, { x: x3, y: y0 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
-      { points: [{ x: x0, y: y3 }, { x: x1, y: y3 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
+      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
       { points: [{ x: x1, y: y2 }, { x: x1, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
       { points: [{ x: x2, y: y2 }, { x: x2, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
       { points: [{ x: x3, y: y2 }, { x: x3, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
@@ -341,6 +248,57 @@ const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit:
   };
 };
 
+const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: DisplayUnit): ExportGeometry => {
+  const geometry = getBecf11d01Geometry(attributes);
+  const bounds = measureBecf11d01Bounds(attributes);
+  const { resolved, guides } = geometry;
+  const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
+  const labelFontSize = clamp(Math.min(resolved.panelWidth, resolved.panelHeight, resolved.sideDepth) * 0.08, 4, 10);
+  const secondaryFontSize = Math.max(3.4, labelFontSize * 0.78);
+
+  return {
+    polylines: [
+      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+      ...dimensions.polylines,
+    ],
+    labels: [
+      {
+        x: (guides.frontLeft + guides.frontRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.panelWidth, displayUnit),
+        fontSize: labelFontSize,
+      },
+      {
+        x: (guides.frontRight + guides.sideRightRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.sideDepth, displayUnit),
+        fontSize: secondaryFontSize,
+      },
+      {
+        x: (guides.sideRightRight + guides.backRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.panelWidth, displayUnit),
+        fontSize: labelFontSize,
+      },
+      {
+        x: (guides.backRight + guides.sideLeftRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.sideLeftWidth, displayUnit),
+        fontSize: secondaryFontSize,
+      },
+      {
+        x: guides.frontLeft + resolved.panelWidth * 0.26,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.panelHeight, displayUnit),
+        fontSize: secondaryFontSize,
+        rotate: true,
+      },
+      ...dimensions.labels,
+    ],
+  };
+};
+
 const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): ExportGeometry => {
   switch (data.modelId) {
     case "circle":
@@ -349,6 +307,8 @@ const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): Expor
       return createRectangleGeometry(data.attributes as RectangleAttributes, displayUnit);
     case "tuckEndBox":
       return createTuckEndBoxGeometry(data.attributes as TuckEndBoxAttributes, displayUnit);
+    case "becf11d01":
+      return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit);
     default:
       throw new Error(`Unsupported model: ${data.modelId}`);
   }
@@ -490,4 +450,11 @@ export const printTuckEndBoxDielineToPdf = (
   options?: Omit<DielinePrintOptions, "autoPrint">,
 ) => {
   printDielineToPdf({ modelId: "tuckEndBox", attributes }, options);
+};
+
+export const printBecf11d01DielineToPdf = (
+  attributes: Becf11d01Attributes,
+  options?: Omit<DielinePrintOptions, "autoPrint">,
+) => {
+  printDielineToPdf({ modelId: "becf11d01", attributes }, options);
 };

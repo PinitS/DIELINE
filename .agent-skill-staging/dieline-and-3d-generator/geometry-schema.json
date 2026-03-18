@@ -1,0 +1,32 @@
+{
+  "job": {
+    "name": "",
+    "sourceDxf": "",
+    "units": "mm",
+    "status": "INTAKE"
+  },
+  "sourceEntities": [],
+  "normalized": {
+    "extents": { "minX": 0, "minY": 0, "maxX": 0, "maxY": 0 },
+    "cuts": [],
+    "folds": [],
+    "scores": [],
+    "glueAreas": [],
+    "panels": [],
+    "holes": [],
+    "annotations": [],
+    "dimensions": [],
+    "unknown": []
+  },
+  "topology": {
+    "loops": [],
+    "adjacency": [],
+    "foldHierarchy": []
+  },
+  "assumptions": [],
+  "validation": {
+    "curveSamplingUsed": false,
+    "unresolvedItems": [],
+    "needsUserConfirmation": []
+  }
+}

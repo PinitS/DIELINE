@@ -1,0 +1,135 @@
+{
+  "job": {
+    "name": "becf-11d01",
+    "sourceDxf": "src/assets/master-data/becf-11d01/becf-11d01.dxf",
+    "units": "mm",
+    "status": "PLAN_READY"
+  },
+  "sourceEntities": [
+    { "type": "LINE", "layer": "cut", "purpose": "outer perimeter, flap trims, glue flap edges" },
+    { "type": "LINE", "layer": "crease", "purpose": "body folds and flap hinges" },
+    { "type": "LINE", "layer": "dimensions", "purpose": "measurement guides only; exclude from rendered dieline" },
+    { "type": "TEXT", "layer": "dimensions", "texts": ["378.00mm", "512.50mm", "175.00mm", "74.00mm", "230.00mm"] }
+  ],
+  "normalized": {
+    "extents": { "minX": -15, "minY": -74, "maxX": 497.5, "maxY": 304 },
+    "cuts": [
+      { "id": "cut_glue_bottom", "from": { "x": 0, "y": 0 }, "to": { "x": -15, "y": 4.019 } },
+      { "id": "cut_glue_side", "from": { "x": -15, "y": 4.019 }, "to": { "x": -15, "y": 225.981 } },
+      { "id": "cut_glue_top", "from": { "x": -15, "y": 225.981 }, "to": { "x": 0, "y": 230 } },
+      { "id": "cut_bottom_front_left", "from": { "x": 0, "y": 0 }, "to": { "x": 2, "y": 0 } },
+      { "id": "cut_bottom_front_right", "from": { "x": 173, "y": 0 }, "to": { "x": 175, "y": 0 } },
+      { "id": "cut_bottom_side_right_left", "from": { "x": 175, "y": 0 }, "to": { "x": 249, "y": 0 } },
+      { "id": "cut_bottom_back_left", "from": { "x": 249, "y": 0 }, "to": { "x": 251, "y": 0 } },
+      { "id": "cut_bottom_back_right", "from": { "x": 422, "y": 0 }, "to": { "x": 424, "y": 0 } },
+      { "id": "cut_bottom_side_left", "from": { "x": 424, "y": 0 }, "to": { "x": 497.5, "y": 0 } },
+      { "id": "cut_top_front_left", "from": { "x": 0, "y": 230 }, "to": { "x": 2, "y": 230 } },
+      { "id": "cut_top_front_right", "from": { "x": 173, "y": 230 }, "to": { "x": 175, "y": 230 } },
+      { "id": "cut_top_side_right", "from": { "x": 175, "y": 230 }, "to": { "x": 249, "y": 230 } },
+      { "id": "cut_top_back_left", "from": { "x": 249, "y": 230 }, "to": { "x": 251, "y": 230 } },
+      { "id": "cut_top_back_right", "from": { "x": 422, "y": 230 }, "to": { "x": 424, "y": 230 } },
+      { "id": "cut_top_side_left", "from": { "x": 424, "y": 230 }, "to": { "x": 497.5, "y": 230 } },
+      { "id": "cut_bottom_front_outer", "from": { "x": 2, "y": -74 }, "to": { "x": 173, "y": -74 } },
+      { "id": "cut_bottom_side_right_outer", "from": { "x": 175, "y": -74 }, "to": { "x": 249, "y": -74 } },
+      { "id": "cut_bottom_back_outer", "from": { "x": 251, "y": -74 }, "to": { "x": 422, "y": -74 } },
+      { "id": "cut_bottom_side_left_outer", "from": { "x": 424, "y": -74 }, "to": { "x": 497.5, "y": -74 } },
+      { "id": "cut_top_front_outer", "from": { "x": 2, "y": 304 }, "to": { "x": 173, "y": 304 } },
+      { "id": "cut_top_side_right_outer", "from": { "x": 175, "y": 304 }, "to": { "x": 249, "y": 304 } },
+      { "id": "cut_top_back_outer", "from": { "x": 251, "y": 304 }, "to": { "x": 422, "y": 304 } },
+      { "id": "cut_top_side_left_outer", "from": { "x": 424, "y": 304 }, "to": { "x": 497.5, "y": 304 } }
+    ],
+    "folds": [
+      { "id": "fold_glue_to_front", "axis": "vertical", "x": 0, "y0": 0, "y1": 230 },
+      { "id": "fold_front_to_side_right", "axis": "vertical", "x": 175, "y0": 0, "y1": 230 },
+      { "id": "fold_side_right_to_back", "axis": "vertical", "x": 249, "y0": 0, "y1": 230 },
+      { "id": "fold_back_to_side_left", "axis": "vertical", "x": 424, "y0": 0, "y1": 230 },
+      { "id": "fold_front_top_flap", "axis": "horizontal", "x0": 2, "x1": 173, "sourceY": 230.5, "normalizedY": 230 },
+      { "id": "fold_side_right_top_flap", "axis": "horizontal", "x0": 175, "x1": 249, "sourceY": 230, "normalizedY": 230 },
+      { "id": "fold_back_top_flap", "axis": "horizontal", "x0": 251, "x1": 422, "sourceY": 231, "normalizedY": 230 },
+      { "id": "fold_side_left_top_flap", "axis": "horizontal", "x0": 424, "x1": 497.5, "sourceY": 230, "normalizedY": 230 },
+      { "id": "fold_front_bottom_flap", "axis": "horizontal", "x0": 2, "x1": 173, "sourceY": -0.5, "normalizedY": 0 },
+      { "id": "fold_side_right_bottom_flap", "axis": "horizontal", "x0": 175, "x1": 249, "sourceY": 0, "normalizedY": 0 },
+      { "id": "fold_back_bottom_flap", "axis": "horizontal", "x0": 251, "x1": 422, "sourceY": -1, "normalizedY": 0 },
+      { "id": "fold_side_left_bottom_flap", "axis": "horizontal", "x0": 424, "x1": 497.5, "sourceY": 0, "normalizedY": 0 }
+    ],
+    "scores": [],
+    "glueAreas": [
+      {
+        "id": "glue_tab",
+        "polygon": [
+          { "x": -15, "y": 4.019 },
+          { "x": 0, "y": 0 },
+          { "x": 0, "y": 230 },
+          { "x": -15, "y": 225.981 }
+        ]
+      }
+    ],
+    "panels": [
+      { "id": "panel_front", "kind": "body", "x": 0, "y": 0, "width": 175, "height": 230 },
+      { "id": "panel_side_right", "kind": "body", "x": 175, "y": 0, "width": 74, "height": 230 },
+      { "id": "panel_back", "kind": "body", "x": 249, "y": 0, "width": 175, "height": 230 },
+      { "id": "panel_side_left", "kind": "body", "x": 424, "y": 0, "width": 73.5, "height": 230 },
+      { "id": "flap_top_front", "kind": "major_flap", "x": 2, "y": 230, "width": 171, "height": 74 },
+      { "id": "flap_top_side_right", "kind": "dust_flap", "x": 175, "y": 230, "width": 74, "height": 74 },
+      { "id": "flap_top_back", "kind": "major_flap", "x": 251, "y": 230, "width": 171, "height": 74 },
+      { "id": "flap_top_side_left", "kind": "dust_flap", "x": 424, "y": 230, "width": 73.5, "height": 74 },
+      { "id": "flap_bottom_front", "kind": "major_flap", "x": 2, "y": -74, "width": 171, "height": 74 },
+      { "id": "flap_bottom_side_right", "kind": "dust_flap", "x": 175, "y": -74, "width": 74, "height": 74 },
+      { "id": "flap_bottom_back", "kind": "major_flap", "x": 251, "y": -74, "width": 171, "height": 74 },
+      { "id": "flap_bottom_side_left", "kind": "dust_flap", "x": 424, "y": -74, "width": 73.5, "height": 74 }
+    ],
+    "holes": [],
+    "annotations": [
+      { "id": "box_family", "text": "Standard box / square flap skillet box" },
+      { "id": "ecma", "text": "ECMA A10.10.03.03 (A1010)" }
+    ],
+    "dimensions": [
+      { "id": "overall_height", "value": 378, "sourceText": "378.00mm" },
+      { "id": "overall_width", "value": 512.5, "sourceText": "512.50mm" },
+      { "id": "nominal_length", "value": 175, "sourceText": "175.00mm" },
+      { "id": "nominal_depth", "value": 74, "sourceText": "74.00mm" },
+      { "id": "nominal_height", "value": 230, "sourceText": "230.00mm" }
+    ],
+    "unknown": []
+  },
+  "topology": {
+    "loops": [
+      { "id": "outer_outline", "type": "single_perimeter", "hasHoles": false }
+    ],
+    "adjacency": [
+      { "from": "glue_tab", "to": "panel_front", "via": "fold_glue_to_front" },
+      { "from": "panel_front", "to": "panel_side_right", "via": "fold_front_to_side_right" },
+      { "from": "panel_side_right", "to": "panel_back", "via": "fold_side_right_to_back" },
+      { "from": "panel_back", "to": "panel_side_left", "via": "fold_back_to_side_left" },
+      { "from": "panel_front", "to": "flap_top_front", "via": "fold_front_top_flap" },
+      { "from": "panel_side_right", "to": "flap_top_side_right", "via": "fold_side_right_top_flap" },
+      { "from": "panel_back", "to": "flap_top_back", "via": "fold_back_top_flap" },
+      { "from": "panel_side_left", "to": "flap_top_side_left", "via": "fold_side_left_top_flap" },
+      { "from": "panel_front", "to": "flap_bottom_front", "via": "fold_front_bottom_flap" },
+      { "from": "panel_side_right", "to": "flap_bottom_side_right", "via": "fold_side_right_bottom_flap" },
+      { "from": "panel_back", "to": "flap_bottom_back", "via": "fold_back_bottom_flap" },
+      { "from": "panel_side_left", "to": "flap_bottom_side_left", "via": "fold_side_left_bottom_flap" }
+    ],
+    "foldHierarchy": [
+      { "step": 1, "description": "Raise body strip into a tube using the four vertical body folds." },
+      { "step": 2, "description": "Glue tab bonds to inside of side-left or front seam depending on assembly convention." },
+      { "step": 3, "description": "Fold top and bottom dust flaps inward." },
+      { "step": 4, "description": "Fold major flaps to close top and bottom." }
+    ]
+  },
+  "assumptions": [
+    "DXF coordinates are already millimeters; dimension text confirms mm values.",
+    "The dimensions layer is non-structural and should not be rendered as shape geometry.",
+    "The 0.5 to 1.0 mm hinge offsets on the major flaps are manufacturing cutbacks; 3D hinges should normalize to the body edge while 2D should preserve source cutback lines.",
+    "The right side panel is modeled from source geometry as 73.5 mm wide even though nominal depth is annotated elsewhere as 74 mm."
+  ],
+  "validation": {
+    "curveSamplingUsed": false,
+    "unresolvedItems": [
+      "Decide whether folded 3D should preserve the exact 73.5 mm right side panel width or normalize both side panels to 74 mm for a perfectly symmetric carton volume."
+    ],
+    "needsUserConfirmation": [
+      "Proceed with a bespoke square-flap standard-box implementation rather than reusing the current rounded tuck-end-box geometry helper as-is."
+    ]
+  }
+}

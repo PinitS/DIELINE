@@ -10,7 +10,7 @@ import {
   getTuckEndBoxFoldAngles,
   getTuckEndBoxGeometry,
   type Point,
-} from "../../../../utils/tuckEndBoxGeometry";
+} from "../../../../utils/becf10803Geometry";
 
 type PanelMeshProps = {
   points: Point[];
