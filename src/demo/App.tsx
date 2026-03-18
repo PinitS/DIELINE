@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline";
+import { Becf_10a0a_dieline } from "../components/3D/TuckEndBoxes/Becf_10a0a/Becf_10a0a_dieline";
 import { Becf_11d01_dieline } from "../components/3D/TuckEndBoxes/Becf_11d01/Becf_11d01_dieline";
 import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
 import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
 import { getDielineModelById, getDielineModels } from "../lib/modelMetadata";
 import type {
+  Becf10a0aAttributes,
   Becf11d01Attributes,
   CircleAttributes,
   DielineCanvasHandle,
@@ -17,6 +19,7 @@ import type {
 import { StrickerCircleControl } from "./components/controls/StrickerCircleControl";
 import { StrickerRectangleControl } from "./components/controls/StrickerRectangleControl";
 import { Becf_10803Control } from "./components/controls/Becf_10803Control";
+import { Becf_10a0aControl } from "./components/controls/Becf_10a0aControl";
 import { Becf_11d01Control } from "./components/controls/Becf_11d01Control";
 import type { DemoViewMode } from "./demoTypes";
 
@@ -67,6 +70,7 @@ const getValueByModelId = <T,>(
   rectangleValue: T,
   tuckEndBoxValue: T,
   becf11d01Value: T,
+  becf10a0aValue: T,
 ) => {
   switch (modelId) {
     case "circle":
@@ -77,6 +81,8 @@ const getValueByModelId = <T,>(
       return tuckEndBoxValue;
     case "becf11d01":
       return becf11d01Value;
+    case "becf10a0a":
+      return becf10a0aValue;
     default:
       return circleValue;
   }
@@ -92,20 +98,24 @@ export const App = () => {
   const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>({});
   const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>({});
   const [attributeBecf_11d01, setAttributeBecf_11d01] = useState<Becf11d01Attributes>({});
+  const [attributeBecf_10a0a, setAttributeBecf_10a0a] = useState<Becf10a0aAttributes>({});
 
   // Texture states per model type
   const [textureStrickerCircle, setTextureStrickerCircle] = useState<TexturePlacement | undefined>(undefined);
   const [textureStrickerRectangle, setTextureStrickerRectangle] = useState<TexturePlacement | undefined>(undefined);
   const [textureBecf_10803, setTextureBecf_10803] = useState<TexturePlacement | undefined>(undefined);
   const [textureBecf_11d01, setTextureBecf_11d01] = useState<TexturePlacement | undefined>(undefined);
+  const [textureBecf_10a0a, setTextureBecf_10a0a] = useState<TexturePlacement | undefined>(undefined);
   const [texturePreviewUrlStrickerCircle, setTexturePreviewUrlStrickerCircle] = useState<string | null>(null);
   const [texturePreviewUrlStrickerRectangle, setTexturePreviewUrlStrickerRectangle] = useState<string | null>(null);
   const [texturePreviewUrlBecf_10803, setTexturePreviewUrlBecf_10803] = useState<string | null>(null);
   const [texturePreviewUrlBecf_11d01, setTexturePreviewUrlBecf_11d01] = useState<string | null>(null);
+  const [texturePreviewUrlBecf_10a0a, setTexturePreviewUrlBecf_10a0a] = useState<string | null>(null);
   const [textureFileNameStrickerCircle, setTextureFileNameStrickerCircle] = useState("");
   const [textureFileNameStrickerRectangle, setTextureFileNameStrickerRectangle] = useState("");
   const [textureFileNameBecf_10803, setTextureFileNameBecf_10803] = useState("");
   const [textureFileNameBecf_11d01, setTextureFileNameBecf_11d01] = useState("");
+  const [textureFileNameBecf_10a0a, setTextureFileNameBecf_10a0a] = useState("");
 
   const [displayUnit, setDisplayUnit] = useState<DisplayUnit>("mm");
   const [showDimensions, setShowDimensions] = useState(true);
@@ -124,6 +134,7 @@ export const App = () => {
     textureStrickerRectangle,
     textureBecf_10803,
     textureBecf_11d01,
+    textureBecf_10a0a,
   );
   const currentTexturePreviewUrl = getValueByModelId(
     shapeType,
@@ -131,6 +142,7 @@ export const App = () => {
     texturePreviewUrlStrickerRectangle,
     texturePreviewUrlBecf_10803,
     texturePreviewUrlBecf_11d01,
+    texturePreviewUrlBecf_10a0a,
   );
   const currentTextureFileName = getValueByModelId(
     shapeType,
@@ -138,6 +150,7 @@ export const App = () => {
     textureFileNameStrickerRectangle,
     textureFileNameBecf_10803,
     textureFileNameBecf_11d01,
+    textureFileNameBecf_10a0a,
   );
 
   const setTextureForModel = (modelId: DielineModelId, texture: TexturePlacement | undefined) => {
@@ -153,6 +166,9 @@ export const App = () => {
         return;
       case "becf11d01":
         setTextureBecf_11d01(texture);
+        return;
+      case "becf10a0a":
+        setTextureBecf_10a0a(texture);
         return;
       default:
         setTextureStrickerCircle(texture);
@@ -190,6 +206,9 @@ export const App = () => {
       case "becf11d01":
         replaceTexturePreviewUrl(setTexturePreviewUrlBecf_11d01, nextTextureUrl);
         return;
+      case "becf10a0a":
+        replaceTexturePreviewUrl(setTexturePreviewUrlBecf_10a0a, nextTextureUrl);
+        return;
       default:
         replaceTexturePreviewUrl(setTexturePreviewUrlStrickerCircle, nextTextureUrl);
     }
@@ -208,6 +227,9 @@ export const App = () => {
         return;
       case "becf11d01":
         setTextureFileNameBecf_11d01(nextTextureFileName);
+        return;
+      case "becf10a0a":
+        setTextureFileNameBecf_10a0a(nextTextureFileName);
         return;
       default:
         setTextureFileNameStrickerCircle(nextTextureFileName);
@@ -454,6 +476,28 @@ export const App = () => {
                 />
               );
 
+            case "becf10a0a":
+              return (
+                <Becf_10a0aControl
+                  viewMode={viewMode}
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  measuredBounds={measuredBounds}
+                  attribute={attributeBecf_10a0a}
+                  setAttribute={setAttributeBecf_10a0a}
+                  texture={currentTexture}
+                  texturePreviewUrl={currentTexturePreviewUrl}
+                  textureFileName={currentTextureFileName}
+                  textureControlsDisabled={textureControlsDisabled}
+                  onDisplayUnitChange={setDisplayUnit}
+                  onToggleDimensions={() => setShowDimensions((value) => !value)}
+                  onTextureUpload={handleTextureUpload}
+                  onUpdateTexturePlacement={updateTexturePlacement}
+                  onResetTexturePlacement={resetTexturePlacement}
+                  onResetCanvasView={() => modelRef.current?.resetView()}
+                />
+              );
+
             default:
               return null;
           }
@@ -518,6 +562,21 @@ export const App = () => {
                   displayUnit={displayUnit}
                   renderMode={is3DMode ? "folded3d" : "dieline"}
                   frame={is3DMode ? tuckFrame : 0}
+                  textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
+                  texturePlacement={isTextureMode ? currentTexture : undefined}
+                  onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
+                  showDimensions={isTextureMode ? false : showDimensions}
+                  showShapeLines
+                  onMeasure={setMeasuredBounds}
+                />
+              );
+
+            case "becf10a0a":
+              return (
+                <Becf_10a0a_dieline
+                  ref={modelRef}
+                  attribute={attributeBecf_10a0a}
+                  displayUnit={displayUnit}
                   textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}

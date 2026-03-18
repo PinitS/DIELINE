@@ -2,6 +2,7 @@ import type {
   CircleAttributes,
   RectangleAttributes,
 } from "./types";
+export { DEFAULT_BECF10A0A_ATTRIBUTES } from "./utils/becf10a0aGeometry";
 export { DEFAULT_BECF11D01_ATTRIBUTES } from "./utils/becf11d01Geometry";
 export { DEFAULT_TUCK_END_BOX_ATTRIBUTES } from "./utils/becf10803Geometry";
 

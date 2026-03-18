@@ -1,4 +1,5 @@
 import type {
+  Becf10a0aAttributes,
   Becf11d01Attributes,
   CircleAttributes,
   DielineModelId,
@@ -11,9 +12,10 @@ import type {
   RectangleAttributes,
   TuckEndBoxAttributes,
 } from "../types";
+import { getBecf10a0aGeometry } from "./becf10a0aGeometry";
 import { getBecf11d01Geometry } from "./becf11d01Geometry";
 import { getTuckEndBoxGeometry } from "./becf10803Geometry";
-import { measureBecf11d01Bounds, measureCircleBounds, measureRectangleBounds } from "./measure";
+import { measureBecf10a0aBounds, measureBecf11d01Bounds, measureCircleBounds, measureRectangleBounds } from "./measure";
 import { formatDielineDisplayValue } from "./units";
 
 const PDF_MARGIN_MM = 10;
@@ -35,7 +37,7 @@ type ExportBounds = { left: number; top: number; right: number; bottom: number }
 
 export type DielinePrintData = {
   modelId: DielineModelId;
-  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes;
+  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes | Becf10a0aAttributes;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -299,6 +301,51 @@ const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: D
   };
 };
 
+const createBecf10a0aGeometry = (attributes: Becf10a0aAttributes, displayUnit: DisplayUnit): ExportGeometry => {
+  const geometry = getBecf10a0aGeometry(attributes);
+  const bounds = measureBecf10a0aBounds(attributes);
+  const { resolved, guides } = geometry;
+  const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
+  const labelFontSize = clamp(Math.min(resolved.length, resolved.height, resolved.width) * 0.08, 4, 10);
+  const secondaryFontSize = Math.max(3.4, labelFontSize * 0.78);
+
+  return {
+    polylines: [
+      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+      ...dimensions.polylines,
+    ],
+    labels: [
+      {
+        x: (guides.frontLeft + guides.frontRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.length, displayUnit),
+        fontSize: labelFontSize,
+      },
+      {
+        x: (guides.frontRight + guides.sideRightRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.width, displayUnit),
+        fontSize: secondaryFontSize,
+      },
+      {
+        x: (guides.sideRightRight + guides.backRight) / 2,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.length, displayUnit),
+        fontSize: labelFontSize,
+      },
+      {
+        x: guides.frontLeft + resolved.length * 0.26,
+        y: (guides.bodyTopY + guides.bodyBottomY) / 2,
+        text: formatDielineDisplayValue(resolved.height, displayUnit),
+        fontSize: secondaryFontSize,
+        rotate: true,
+      },
+      ...dimensions.labels,
+    ],
+  };
+};
+
 const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): ExportGeometry => {
   switch (data.modelId) {
     case "circle":
@@ -309,6 +356,8 @@ const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): Expor
       return createTuckEndBoxGeometry(data.attributes as TuckEndBoxAttributes, displayUnit);
     case "becf11d01":
       return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit);
+    case "becf10a0a":
+      return createBecf10a0aGeometry(data.attributes as Becf10a0aAttributes, displayUnit);
     default:
       throw new Error(`Unsupported model: ${data.modelId}`);
   }
@@ -457,4 +506,11 @@ export const printBecf11d01DielineToPdf = (
   options?: Omit<DielinePrintOptions, "autoPrint">,
 ) => {
   printDielineToPdf({ modelId: "becf11d01", attributes }, options);
+};
+
+export const printBecf10a0aDielineToPdf = (
+  attributes: Becf10a0aAttributes,
+  options?: Omit<DielinePrintOptions, "autoPrint">,
+) => {
+  printDielineToPdf({ modelId: "becf10a0a", attributes }, options);
 };

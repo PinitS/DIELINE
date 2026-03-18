@@ -1,10 +1,12 @@
 import type {
+  Becf10a0aAttributes,
   Becf11d01Attributes,
   CircleAttributes,
   DielineBounds,
   RectangleAttributes,
   TuckEndBoxAttributes,
 } from "../types";
+import { getBecf10a0aGeometry } from "./becf10a0aGeometry";
 import { resolveBecf11d01Attributes } from "./becf11d01Geometry";
 import { getTuckEndBoxGeometry } from "./becf10803Geometry";
 
@@ -53,3 +55,7 @@ export const measureBecf11d01Bounds = (
     overallHeightMm: dustFlap + height + dustFlap,
   };
 };
+
+export const measureBecf10a0aBounds = (
+  attribute: Becf10a0aAttributes,
+): DielineBounds => getBecf10a0aGeometry(attribute).bounds;
