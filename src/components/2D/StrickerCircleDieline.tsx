@@ -10,7 +10,7 @@ const CIRCLE_SEGMENTS = 96;
 export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDielineProps>(
   function CircleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const bounds = measureCircleBounds(attribute);
-    const printController = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielinePrintController(
       { modelId: "circle", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "StrickerCircleDieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);
@@ -21,7 +21,7 @@ export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDieli
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        printController={printController}
+        exportPreviewLayout={exportPreviewLayout}
         renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const radius = layout.shapeWidthPx / 2;
           const points = Array.from({ length: CIRCLE_SEGMENTS }, (_, index) => {

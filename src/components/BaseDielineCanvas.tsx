@@ -41,7 +41,7 @@ export type TextureBounds = { left: number; top: number; width: number; height: 
 type BaseDielineCanvasProps = SharedCanvasProps & {
   bounds: DielineBounds;
   onMeasure?: DielineMeasureCallback;
-  printController: DielinePrintController;
+  exportPreviewLayout: DielinePrintController;
   renderShape: (
     layout: DielineLayout,
     shapeStrokeColor: string,
@@ -358,7 +358,7 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
       style,
       bounds,
       onMeasure,
-      printController,
+      exportPreviewLayout,
       renderShape,
       renderTextureOverlay,
     } = props;
@@ -485,8 +485,8 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
           setZoom(DEFAULT_ZOOM);
         }
       },
-      printController,
-    }), [bounds, fitView, printController]);
+      exportPreviewLayout,
+    }), [bounds, exportPreviewLayout, fitView]);
 
     useEffect(() => {
       const container = containerRef.current;

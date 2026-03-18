@@ -1,9 +1,9 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, type RefObject } from "react";
 import { DoubleSide, Shape, ShapeGeometry, Vector2 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { OrbitControls as ThreeOrbitControls } from "three-stdlib";
-import type { DielineCanvasHandle, DielinePrintController, TuckEndBoxDielineProps } from "../../../types";
+import type { DielineCanvasHandle, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
 import { createDielinePrintController } from "../../../utils/pdfExport";
 import {
@@ -18,7 +18,7 @@ type PanelMeshProps = {
 };
 
 type LocalOrbitControlsProps = {
-  controlsRef: React.MutableRefObject<OrbitControlsImpl | null>;
+  controlsRef: RefObject<OrbitControlsImpl | null>;
   enableDamping?: boolean;
   dampingFactor?: number;
   minDistance?: number;
@@ -166,7 +166,7 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
     const controlsRef = useRef<OrbitControlsImpl | null>(null);
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = useMemo(() => measureTuckEndBoxBounds(geometry.resolved), [geometry.resolved]);
-    const printController = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielinePrintController(
       { modelId: "tuckEndBox", attributes: attribute },
       { displayUnit, title: "Becf_10803_folded3d.pdf" },
     ), [attribute, displayUnit]);
@@ -199,8 +199,8 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
         controls.target.set(0, 0, 0);
         controls.update();
       },
-      printController,
-    }), [bounds, initialCameraPosition, printController]);
+      exportPreviewLayout,
+    }), [bounds, exportPreviewLayout, initialCameraPosition]);
 
     return (
       <div

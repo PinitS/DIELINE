@@ -111,7 +111,7 @@ const getDimensionText = (valueMm: number, displayUnit: DisplayUnit) =>
 
 export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDielineProps>(
   function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
-    const printController = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielinePrintController(
       { modelId: "tuckEndBox", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf", },
     ), [attribute, canvasProps.displayUnit]);
@@ -155,7 +155,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        printController={printController}
+        exportPreviewLayout={exportPreviewLayout}
         renderTextureOverlay={(layout, textureImageUrl, textureBounds) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;

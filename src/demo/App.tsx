@@ -258,20 +258,20 @@ export const App = () => {
     downloadJsonFile("react-dieline-models.json", getDielineModels());
   };
 
-  const exportPrintTestPdf = () => {
+  const exportPreviewTestPdf = () => {
     try {
-      const printController = modelRef.current?.printController;
-      if (!printController) {
-        throw new Error("Print export API is not ready yet.");
+      const exportPreviewLayout = modelRef.current?.exportPreviewLayout;
+      if (!exportPreviewLayout) {
+        throw new Error("Preview export API is not ready yet.");
       }
 
-      printController.printToPdf({
+      exportPreviewLayout.printToPdf({
         title: `${selectedModelMetadata.exportName}.pdf`,
         displayUnit,
       });
     } catch (error) {
       console.error(error);
-      window.alert("Unable to open the print PDF window. Please allow pop-ups and try again.");
+      window.alert("Unable to open the preview export PDF window. Please allow pop-ups and try again.");
     }
   };
 
@@ -323,7 +323,7 @@ export const App = () => {
           <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.dimensionType}`}</p>
           <div className="toggle-row">
             <button type="button" onClick={exportModelJson}>Export model JSON</button>
-            <button type="button" onClick={exportPrintTestPdf}>Print test PDF (1:1)</button>
+            <button type="button" onClick={exportPreviewTestPdf}>Export preview PDF (1:1)</button>
           </div>
         </div>
 

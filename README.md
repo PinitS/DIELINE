@@ -1,12 +1,12 @@
 # react-dieline
 
-React Three Fiber dieline component library for creating printable dieline templates.
+React Three Fiber dieline component library for creating dieline layouts and preview exports.
 
 ## Features
 
 - **3 rendering modes**: Dieline, Texture preview, and 3D folded view
 - **Pannable & zoomable canvas** with mouse wheel and drag
-- **Print export** - Generate SVG or PDF for printing
+- **Preview export** - Generate SVG or PDF for layout preview/testing
 - **Millimeter-first** inputs with display in mm, cm, or in
 - **Type-safe API** with full TypeScript support
 
@@ -210,16 +210,20 @@ function App() {
 }
 ```
 
-### Ref Methods
+### Ref API
 
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `getOverall()` | `{ overallWidthMm: number, overallHeightMm: number }` | Both dimensions in mm |
+| Entry | Returns | Description |
+|-------|---------|-------------|
+| `getOverall()` | `{ overallWidthMm: number, overallHeightMm: number }` | Get both overall dimensions in mm |
 | `resetView()` | `void` | Reset pan/zoom to fit |
+| `exportPreviewLayout` | `DielinePrintController` | Ref property for preview/test export helpers: `createPrintSvg()`, `openPrintPreview()`, and `printToPdf()` |
 
-## Print Export
+## Preview Export
 
-Access print functions via ref:
+> **Important:** `exportPreviewLayout` is provided for preview/testing exports only.
+> It is **not intended for real production printing workflows**.
+
+Access preview export functions via ref:
 
 ```tsx
 import { useRef } from "react";
@@ -229,8 +233,9 @@ import type { DielineCanvasHandle } from "react-dieline";
 function App() {
   const modelRef = useRef<DielineCanvasHandle>(null);
 
-  const handlePrint = () => {
-    modelRef.current?.printController.printToPdf({
+  const handlePreviewExport = () => {
+    // Preview/test export only. Not intended for real production printing.
+    modelRef.current?.exportPreviewLayout.printToPdf({
       title: "my-dieline.pdf",
       displayUnit: "mm",
     });
@@ -238,7 +243,7 @@ function App() {
 
   return (
     <>
-      <button onClick={handlePrint}>Export PDF</button>
+      <button onClick={handlePreviewExport}>Export preview PDF</button>
       <StrickerCircleDieline ref={modelRef} attribute={{ size: 90 }} />
     </>
   );

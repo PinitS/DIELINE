@@ -8,7 +8,7 @@ import { SceneLine } from "../ScenePrimitives";
 export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, RectangleDielineProps>(
   function RectangleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const bounds = measureRectangleBounds(attribute);
-    const printController = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielinePrintController(
       { modelId: "rectangle", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "StrickerRectangleDieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);
@@ -19,7 +19,7 @@ export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, Rectangl
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        printController={printController}
+        exportPreviewLayout={exportPreviewLayout}
         renderTextureOverlay={(layout, textureImageUrl, textureBounds) => (
           <TexturedPolygonMesh
             imageUrl={textureImageUrl}
