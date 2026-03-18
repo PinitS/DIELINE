@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
-import { DEFAULT_CIRCLE_ATTRIBUTES, formatDielineDisplayValue } from "../../../index";
+import { DEFAULT_CIRCLE_ATTRIBUTES } from "../../../defaults";
 import type { CircleAttributes, DielineBounds, DisplayUnit, TexturePlacement } from "../../../types";
+import { formatDielineDisplayValue } from "../../../utils/units";
 import type { DemoViewMode } from "../../demoTypes";
 
 type StrickerCircleControlProps = {

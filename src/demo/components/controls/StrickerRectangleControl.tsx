@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
-import { DEFAULT_RECTANGLE_ATTRIBUTES, formatDielineDisplayValue } from "../../../index";
+import { DEFAULT_RECTANGLE_ATTRIBUTES } from "../../../defaults";
 import type { DielineBounds, DisplayUnit, RectangleAttributes, TexturePlacement } from "../../../types";
+import { formatDielineDisplayValue } from "../../../utils/units";
 import type { DemoViewMode } from "../../demoTypes";
 
 type StrickerRectangleControlProps = {

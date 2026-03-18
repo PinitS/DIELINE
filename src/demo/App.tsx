@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import {
-  DEFAULT_CIRCLE_ATTRIBUTES,
-  DEFAULT_RECTANGLE_ATTRIBUTES,
-  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
-  getDielineModelById,
-  getDielineModels,
-} from "../index";
 import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803_dieline";
 import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
 import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
+import { getDielineModelById, getDielineModels } from "../lib/modelMetadata";
 import type {
   CircleAttributes,
   DielineCanvasHandle,
@@ -64,55 +58,150 @@ const createDefaultTexturePlacement = (imageWidth: number, imageHeight: number):
   scale: 1,
 });
 
+const getValueByModelId = <T,>(
+  modelId: DielineModelId,
+  circleValue: T,
+  rectangleValue: T,
+  tuckEndBoxValue: T,
+) => {
+  switch (modelId) {
+    case "circle":
+      return circleValue;
+    case "rectangle":
+      return rectangleValue;
+    case "tuckEndBox":
+    default:
+      return tuckEndBoxValue;
+  }
+};
+
 export const App = () => {
   const modelRef = useRef<DielineCanvasHandle | null>(null);
   const [viewMode, setViewMode] = useState<DemoViewMode>("dieline");
   const [shapeType, setShapeType] = useState<DielineModelId>("circle");
 
   // Attribute states per model type
-  const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>(DEFAULT_CIRCLE_ATTRIBUTES);
-  const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>(DEFAULT_RECTANGLE_ATTRIBUTES);
-  const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>(DEFAULT_TUCK_END_BOX_ATTRIBUTES);
+  const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>({});
+  const [attributeStrickerRectangle, setAttributeStrickerRectangle] = useState<RectangleAttributes>({});
+  const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>({});
 
   // Texture states per model type
   const [textureStrickerCircle, setTextureStrickerCircle] = useState<TexturePlacement | undefined>(undefined);
   const [textureStrickerRectangle, setTextureStrickerRectangle] = useState<TexturePlacement | undefined>(undefined);
   const [textureBecf_10803, setTextureBecf_10803] = useState<TexturePlacement | undefined>(undefined);
+  const [texturePreviewUrlStrickerCircle, setTexturePreviewUrlStrickerCircle] = useState<string | null>(null);
+  const [texturePreviewUrlStrickerRectangle, setTexturePreviewUrlStrickerRectangle] = useState<string | null>(null);
+  const [texturePreviewUrlBecf_10803, setTexturePreviewUrlBecf_10803] = useState<string | null>(null);
+  const [textureFileNameStrickerCircle, setTextureFileNameStrickerCircle] = useState("");
+  const [textureFileNameStrickerRectangle, setTextureFileNameStrickerRectangle] = useState("");
+  const [textureFileNameBecf_10803, setTextureFileNameBecf_10803] = useState("");
 
   const [displayUnit, setDisplayUnit] = useState<DisplayUnit>("mm");
   const [showDimensions, setShowDimensions] = useState(true);
   const [measuredBounds, setMeasuredBounds] = useState({ overallWidthMm: 0, overallHeightMm: 0 });
-  const [texturePreviewUrl, setTexturePreviewUrl] = useState<string | null>(null);
-  const [textureFileName, setTextureFileName] = useState<string>("");
   const [tuckFrame, setTuckFrame] = useState(0);
+  const texturePreviewUrlsRef = useRef<string[]>([]);
 
   const isTextureMode = viewMode === "texture";
   const is3DMode = viewMode === "3d";
   const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
   const supports3DView = selectedModelMetadata.dimensionType === "3D";
 
-  // Get current texture state based on shapeType
-  const currentTexture = shapeType === "circle"
-    ? textureStrickerCircle
-    : shapeType === "rectangle"
-      ? textureStrickerRectangle
-      : textureBecf_10803;
+  const currentTexture = getValueByModelId(
+    shapeType,
+    textureStrickerCircle,
+    textureStrickerRectangle,
+    textureBecf_10803,
+  );
+  const currentTexturePreviewUrl = getValueByModelId(
+    shapeType,
+    texturePreviewUrlStrickerCircle,
+    texturePreviewUrlStrickerRectangle,
+    texturePreviewUrlBecf_10803,
+  );
+  const currentTextureFileName = getValueByModelId(
+    shapeType,
+    textureFileNameStrickerCircle,
+    textureFileNameStrickerRectangle,
+    textureFileNameBecf_10803,
+  );
 
-  const setCurrentTexture = (texture: TexturePlacement | undefined) => {
-    if (shapeType === "circle") {
-      setTextureStrickerCircle(texture);
-    } else if (shapeType === "rectangle") {
-      setTextureStrickerRectangle(texture);
-    } else {
-      setTextureBecf_10803(texture);
+  const setTextureForModel = (modelId: DielineModelId, texture: TexturePlacement | undefined) => {
+    switch (modelId) {
+      case "circle":
+        setTextureStrickerCircle(texture);
+        return;
+      case "rectangle":
+        setTextureStrickerRectangle(texture);
+        return;
+      case "tuckEndBox":
+      default:
+        setTextureBecf_10803(texture);
     }
   };
 
-  useEffect(() => () => {
-    if (texturePreviewUrl) {
-      URL.revokeObjectURL(texturePreviewUrl);
+  const setCurrentTexture = (texture: TexturePlacement | undefined) => {
+    setTextureForModel(shapeType, texture);
+  };
+
+  const replaceTexturePreviewUrl = (
+    setPreviewUrl: React.Dispatch<React.SetStateAction<string | null>>,
+    nextTextureUrl: string,
+  ) => {
+    setPreviewUrl((currentUrl) => {
+      if (currentUrl) {
+        URL.revokeObjectURL(currentUrl);
+      }
+
+      return nextTextureUrl;
+    });
+  };
+
+  const setTexturePreviewUrlForModel = (modelId: DielineModelId, nextTextureUrl: string) => {
+    switch (modelId) {
+      case "circle":
+        replaceTexturePreviewUrl(setTexturePreviewUrlStrickerCircle, nextTextureUrl);
+        return;
+      case "rectangle":
+        replaceTexturePreviewUrl(setTexturePreviewUrlStrickerRectangle, nextTextureUrl);
+        return;
+      case "tuckEndBox":
+      default:
+        replaceTexturePreviewUrl(setTexturePreviewUrlBecf_10803, nextTextureUrl);
     }
-  }, [texturePreviewUrl]);
+  };
+
+  const setTextureFileNameForModel = (modelId: DielineModelId, nextTextureFileName: string) => {
+    switch (modelId) {
+      case "circle":
+        setTextureFileNameStrickerCircle(nextTextureFileName);
+        return;
+      case "rectangle":
+        setTextureFileNameStrickerRectangle(nextTextureFileName);
+        return;
+      case "tuckEndBox":
+      default:
+        setTextureFileNameBecf_10803(nextTextureFileName);
+    }
+  };
+
+  useEffect(() => {
+    texturePreviewUrlsRef.current = [
+      texturePreviewUrlStrickerCircle,
+      texturePreviewUrlStrickerRectangle,
+      texturePreviewUrlBecf_10803,
+    ].filter((previewUrl): previewUrl is string => Boolean(previewUrl));
+  }, [
+    texturePreviewUrlBecf_10803,
+    texturePreviewUrlStrickerCircle,
+    texturePreviewUrlStrickerRectangle,
+  ]);
+
+  useEffect(() => () => {
+    texturePreviewUrlsRef.current.forEach((previewUrl) => {
+      URL.revokeObjectURL(previewUrl);
+    });
+  }, []);
 
   useEffect(() => {
     if (!supports3DView && is3DMode) {
@@ -124,20 +213,15 @@ export const App = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const targetShapeType = shapeType;
     const nextTextureUrl = URL.createObjectURL(file);
 
     try {
       const { width, height } = await readImageDimensions(nextTextureUrl);
 
-      setTextureFileName(file.name);
-      setCurrentTexture(createDefaultTexturePlacement(width, height));
-      setTexturePreviewUrl((currentUrl) => {
-        if (currentUrl) {
-          URL.revokeObjectURL(currentUrl);
-        }
-
-        return nextTextureUrl;
-      });
+      setTextureFileNameForModel(targetShapeType, file.name);
+      setTextureForModel(targetShapeType, createDefaultTexturePlacement(width, height));
+      setTexturePreviewUrlForModel(targetShapeType, nextTextureUrl);
     } catch (error) {
       URL.revokeObjectURL(nextTextureUrl);
       console.error(error);
@@ -168,7 +252,7 @@ export const App = () => {
     });
   };
 
-  const textureControlsDisabled = !texturePreviewUrl;
+  const textureControlsDisabled = !currentTexturePreviewUrl;
 
   const exportModelJson = () => {
     downloadJsonFile("react-dieline-models.json", getDielineModels());
@@ -257,8 +341,8 @@ export const App = () => {
                   attribute={attributeStrickerCircle}
                   setAttribute={setAttributeStrickerCircle}
                   texture={currentTexture}
-                  texturePreviewUrl={texturePreviewUrl}
-                  textureFileName={textureFileName}
+                  texturePreviewUrl={currentTexturePreviewUrl}
+                  textureFileName={currentTextureFileName}
                   textureControlsDisabled={textureControlsDisabled}
                   onDisplayUnitChange={setDisplayUnit}
                   onToggleDimensions={() => setShowDimensions((value) => !value)}
@@ -279,8 +363,8 @@ export const App = () => {
                   attribute={attributeStrickerRectangle}
                   setAttribute={setAttributeStrickerRectangle}
                   texture={currentTexture}
-                  texturePreviewUrl={texturePreviewUrl}
-                  textureFileName={textureFileName}
+                  texturePreviewUrl={currentTexturePreviewUrl}
+                  textureFileName={currentTextureFileName}
                   textureControlsDisabled={textureControlsDisabled}
                   onDisplayUnitChange={setDisplayUnit}
                   onToggleDimensions={() => setShowDimensions((value) => !value)}
@@ -302,8 +386,8 @@ export const App = () => {
                   attribute={attributeBecf_10803}
                   setAttribute={setAttributeBecf_10803}
                   texture={currentTexture}
-                  texturePreviewUrl={texturePreviewUrl}
-                  textureFileName={textureFileName}
+                  texturePreviewUrl={currentTexturePreviewUrl}
+                  textureFileName={currentTextureFileName}
                   textureControlsDisabled={textureControlsDisabled}
                   tuckFrame={tuckFrame}
                   onDisplayUnitChange={setDisplayUnit}
@@ -328,7 +412,7 @@ export const App = () => {
                   ref={modelRef}
                   attribute={attributeStrickerCircle}
                   displayUnit={displayUnit}
-                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
                   showDimensions={isTextureMode ? false : showDimensions}
@@ -343,7 +427,7 @@ export const App = () => {
                   ref={modelRef}
                   attribute={attributeStrickerRectangle}
                   displayUnit={displayUnit}
-                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
                   showDimensions={isTextureMode ? false : showDimensions}
@@ -361,7 +445,7 @@ export const App = () => {
                   displayUnit={displayUnit}
                   renderMode={is3DMode ? "folded3d" : "dieline"}
                   frame={is3DMode ? tuckFrame : 0}
-                  textureImageUrl={isTextureMode ? texturePreviewUrl ?? undefined : undefined}
+                  textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
                   texturePlacement={isTextureMode ? currentTexture : undefined}
                   onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
                   showDimensions={isTextureMode ? false : showDimensions}

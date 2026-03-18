@@ -1,9 +1,9 @@
-import { Line } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
 import type { CircleDielineProps, DielineCanvasHandle } from "../../types";
 import { measureCircleBounds } from "../../utils/measure";
 import { createDielinePrintController } from "../../utils/pdfExport";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
+import { SceneLine } from "../ScenePrimitives";
 
 const CIRCLE_SEGMENTS = 96;
 
@@ -53,7 +53,7 @@ export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDieli
             );
           });
 
-          return <Line points={points} color={shapeStrokeColor} lineWidth={2} />;
+          return <SceneLine points={points} color={shapeStrokeColor} lineWidth={2} />;
         }}
       />
     );

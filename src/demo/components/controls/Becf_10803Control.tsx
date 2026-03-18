@@ -1,11 +1,8 @@
 import type { ChangeEvent } from "react";
-import {
-  DEFAULT_TUCK_END_BOX_ATTRIBUTES,
-  TUCK_END_BOX_FOLD_FRAME_COUNT,
-  TUCK_END_BOX_FOLD_SEQUENCE,
-  formatDielineDisplayValue,
-} from "../../../index";
+import { DEFAULT_TUCK_END_BOX_ATTRIBUTES } from "../../../defaults";
 import type { DielineBounds, DisplayUnit, TexturePlacement, TuckEndBoxAttributes } from "../../../types";
+import { TUCK_END_BOX_FOLD_FRAME_COUNT, TUCK_END_BOX_FOLD_SEQUENCE } from "../../../utils/tuckEndBoxGeometry";
+import { formatDielineDisplayValue } from "../../../utils/units";
 import type { DemoViewMode } from "../../demoTypes";
 
 type Becf_10803ControlProps = {

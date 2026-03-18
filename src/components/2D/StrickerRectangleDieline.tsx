@@ -1,9 +1,9 @@
-import { Line } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, RectangleDielineProps } from "../../types";
 import { measureRectangleBounds } from "../../utils/measure";
 import { createDielinePrintController } from "../../utils/pdfExport";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
+import { SceneLine } from "../ScenePrimitives";
 
 export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, RectangleDielineProps>(
   function RectangleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
@@ -36,7 +36,7 @@ export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, Rectangl
           if (!showShapeLines) return null;
 
           return (
-            <Line
+            <SceneLine
               points={[
                 createScenePoint(layout.leftX, layout.topY, 2),
                 createScenePoint(layout.rightX, layout.topY, 2),

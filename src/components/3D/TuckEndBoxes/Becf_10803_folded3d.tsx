@@ -1,8 +1,8 @@
-import { OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { DoubleSide, Shape, ShapeGeometry, Vector2 } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { OrbitControls as ThreeOrbitControls } from "three-stdlib";
 import type { DielineCanvasHandle, DielinePrintController, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
 import { createDielinePrintController } from "../../../utils/pdfExport";
@@ -15,6 +15,14 @@ import {
 type PanelMeshProps = {
   points: Point[];
   color: string;
+};
+
+type LocalOrbitControlsProps = {
+  controlsRef: React.MutableRefObject<OrbitControlsImpl | null>;
+  enableDamping?: boolean;
+  dampingFactor?: number;
+  minDistance?: number;
+  maxDistance?: number;
 };
 
 const localizePoints = (points: Point[], originX: number, originY: number) =>
@@ -40,6 +48,43 @@ const PanelMesh = ({ points, color }: PanelMeshProps) => {
       <meshStandardMaterial color={color} side={DoubleSide} roughness={0.6} metalness={0.1} />
     </mesh>
   );
+};
+
+const LocalOrbitControls = ({
+  controlsRef,
+  enableDamping = false,
+  dampingFactor = 0.05,
+  minDistance,
+  maxDistance,
+}: LocalOrbitControlsProps) => {
+  const camera = useThree((state) => state.camera);
+  const gl = useThree((state) => state.gl);
+
+  const controls = useMemo(() => new ThreeOrbitControls(camera, gl.domElement), [camera, gl.domElement]);
+
+  useEffect(() => {
+    controlsRef.current = controls;
+    return () => {
+      if (controlsRef.current === controls) {
+        controlsRef.current = null;
+      }
+      controls.dispose();
+    };
+  }, [controls, controlsRef]);
+
+  useEffect(() => {
+    controls.enableDamping = enableDamping;
+    controls.dampingFactor = dampingFactor;
+    controls.minDistance = minDistance ?? 0;
+    controls.maxDistance = maxDistance ?? Infinity;
+    controls.update();
+  }, [controls, dampingFactor, enableDamping, maxDistance, minDistance]);
+
+  useFrame(() => {
+    controls.update();
+  });
+
+  return null;
 };
 
 const FoldedTuckEndBoxModel = ({ attribute, frame = 0 }: Pick<TuckEndBoxDielineProps, "attribute" | "frame">) => {
@@ -190,8 +235,8 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
           {/* Top Soft Light */}
           <directionalLight position={[0, 250, 0]} intensity={0.3} />
           <FoldedTuckEndBoxModel attribute={attribute} frame={frame} />
-          <OrbitControls
-            ref={controlsRef}
+          <LocalOrbitControls
+            controlsRef={controlsRef}
             enableDamping
             dampingFactor={0.08}
             minDistance={cameraDistance * 0.45}

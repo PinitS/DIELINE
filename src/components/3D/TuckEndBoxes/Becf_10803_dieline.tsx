@@ -1,4 +1,4 @@
-import { Line, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../types";
 import { measureTuckEndBoxBounds } from "../../../utils/measure";
@@ -6,6 +6,7 @@ import { createDielinePrintController } from "../../../utils/pdfExport";
 import { resolveTuckEndBoxAttributes } from "../../../utils/tuckEndBox";
 import { formatDielineDisplayValue } from "../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../BaseDielineCanvas";
+import { SceneLine } from "../../ScenePrimitives";
 import { Becf_10803_folded3d } from "./Becf_10803_folded3d";
 
 type Point = { x: number; y: number };
@@ -392,7 +393,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
           return (
             <>
               {showShapeLines && cutSegments.map((segment, index) => (
-                <Line
+                <SceneLine
                   key={`cut-${index}`}
                   points={toScenePoints(segment, createScenePoint)}
                   color={shapeStrokeColor}
@@ -400,7 +401,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                 />
               ))}
               {showShapeLines && foldSegments.map((segment, index) => (
-                <Line
+                <SceneLine
                   key={`fold-${index}`}
                   points={toScenePoints(segment, createScenePoint, 1.5)}
                   color={FOLD_LINE_COLOR}
@@ -412,7 +413,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                 />
               ))}
               {showDimensions && [...bottomDimensionGuides, ...heightDimensionGuides].map((segment, index) => (
-                <Line
+                <SceneLine
                   key={`guide-${index}`}
                   points={toScenePoints(segment, createScenePoint, 1.7)}
                   color={FOLD_LINE_COLOR}
@@ -425,7 +426,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
               ))}
               {showDimensions && (
                 <>
-                  <Line
+                  <SceneLine
                     points={[
                       createScenePoint(pxX(x1), dimensionY, 2.6),
                       createScenePoint(pxX(x2), dimensionY, 2.6),
@@ -433,7 +434,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     color={DIMENSION_COLOR}
                     lineWidth={1.4}
                   />
-                  <Line
+                  <SceneLine
                     points={[
                       createScenePoint(pxX(x2), dimensionY, 2.6),
                       createScenePoint(pxX(x3), dimensionY, 2.6),
@@ -441,7 +442,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     color={DIMENSION_COLOR}
                     lineWidth={1.4}
                   />
-                  <Line
+                  <SceneLine
                     points={[
                       createScenePoint(rightDimensionX, pxY(y1), 2.6),
                       createScenePoint(rightDimensionX, pxY(y2), 2.6),
@@ -456,7 +457,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     [rightDimensionX - dimensionTick / 2, pxY(y1), rightDimensionX + dimensionTick / 2, pxY(y1)],
                     [rightDimensionX - dimensionTick / 2, pxY(y2), rightDimensionX + dimensionTick / 2, pxY(y2)],
                   ].map(([xStart, yStart, xEnd, yEnd], index) => (
-                    <Line
+                    <SceneLine
                       key={`dimension-tick-${index}`}
                       points={[
                         createScenePoint(xStart, yStart, 2.6),
@@ -476,7 +477,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     [closureDimensionX, pxY(y0), closureDimensionX, pxY(y1)],
                     [dustDimensionX, pxY(topDustY), dustDimensionX, pxY(y1)],
                   ].map(([xStart, yStart, xEnd, yEnd], index) => (
-                    <Line
+                    <SceneLine
                       key={`advanced-dimension-${index}`}
                       points={[
                         createScenePoint(xStart, yStart, 2.8),
@@ -496,7 +497,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
                     [dustDimensionX - advancedDimensionTick / 2, pxY(topDustY), dustDimensionX + advancedDimensionTick / 2, pxY(topDustY)],
                     [dustDimensionX - advancedDimensionTick / 2, pxY(y1), dustDimensionX + advancedDimensionTick / 2, pxY(y1)],
                   ].map(([xStart, yStart, xEnd, yEnd], index) => (
-                    <Line
+                    <SceneLine
                       key={`advanced-dimension-tick-${index}`}
                       points={[
                         createScenePoint(xStart, yStart, 2.8),

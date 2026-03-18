@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
-import { Line, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import {
   Float32BufferAttribute,
   Shape,
@@ -29,6 +29,7 @@ import type {
   SharedCanvasProps,
   TexturePlacement,
 } from "../types";
+import { SceneLine } from "./ScenePrimitives";
 import { createCanvasLayout, VIEWBOX_HEIGHT, VIEWBOX_WIDTH } from "../utils/layout";
 import { formatDielineDisplayValue } from "../utils/units";
 
@@ -597,14 +598,14 @@ export const BaseDielineCanvas = forwardRef<DielineCanvasHandle, BaseDielineCanv
                   : <DefaultTextureOverlay imageUrl={textureImageUrl} layout={layout} textureBounds={textureBounds} />)
               : null}
             {showDimensions && <>
-              <Line points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topDimensionY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              <Line points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.leftX, layout.topY - layout.tickSize, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              <Line points={[createScenePoint(layout.rightX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topY - layout.tickSize, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              <Line points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftDimensionX, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              <Line points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.topY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
-              <Line points={[createScenePoint(layout.leftDimensionX, layout.bottomY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topDimensionY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.leftX, layout.topDimensionY, 1), createScenePoint(layout.leftX, layout.topY - layout.tickSize, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.rightX, layout.topDimensionY, 1), createScenePoint(layout.rightX, layout.topY - layout.tickSize, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftDimensionX, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.leftDimensionX, layout.topY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.topY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
+              <SceneLine points={[createScenePoint(layout.leftDimensionX, layout.bottomY, 1), createScenePoint(layout.leftX - layout.tickSize, layout.bottomY, 1)]} color={dimensionColor} lineWidth={LINE_WIDTH} />
               {overallDimensionTicks.map((segment, index) => (
-                <Line
+                <SceneLine
                   key={`overall-dimension-tick-${index}`}
                   points={[
                     createScenePoint(segment[0], segment[1], 1),
