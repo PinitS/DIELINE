@@ -298,6 +298,15 @@ export const Becf_10803Control = ({
             onChange={(event) => setAttribute({ ...attribute, tuckFlap: Number(event.target.value) || 1 })}
           />
         </label>
+        <label className="field">flapInset (mm)
+          <input
+            type="number"
+            min={0.1}
+            step={0.1}
+            value={attribute.flapInset ?? DEFAULT_TUCK_END_BOX_ATTRIBUTES.flapInset}
+            onChange={(event) => setAttribute({ ...attribute, flapInset: Number(event.target.value) || 0.1 })}
+          />
+        </label>
       </div>
 
       <div className="toggle-row">

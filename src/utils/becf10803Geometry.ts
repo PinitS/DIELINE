@@ -10,6 +10,7 @@ export const DEFAULT_TUCK_END_BOX_ATTRIBUTES = {
   dustFlap: 32,
   glueWidth: 12,
   tuckFlap: 15,
+  flapInset: 1,
 } as const;
 
 export type ResolvedTuckEndBoxAttributes = {
@@ -20,6 +21,7 @@ export type ResolvedTuckEndBoxAttributes = {
   dustFlap: number;
   glueWidth: number;
   tuckFlap: number;
+  flapInset: number;
 };
 
 export type TuckEndBoxFoldAngles = {
@@ -186,6 +188,7 @@ export const resolveTuckEndBoxAttributes = (
   dustFlap: resolveDimension(attribute.dustFlap, DEFAULT_TUCK_END_BOX_ATTRIBUTES.dustFlap),
   glueWidth: resolveDimension(attribute.glueWidth, DEFAULT_TUCK_END_BOX_ATTRIBUTES.glueWidth),
   tuckFlap: resolveDimension(attribute.tuckFlap, DEFAULT_TUCK_END_BOX_ATTRIBUTES.tuckFlap),
+  flapInset: resolveDimension(attribute.flapInset, DEFAULT_TUCK_END_BOX_ATTRIBUTES.flapInset),
 });
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -206,7 +209,7 @@ export const getTuckEndBoxGeometry = (
   attribute: TuckEndBoxAttributes = {},
 ): TuckEndBoxGeometry => {
   const resolved = resolveTuckEndBoxAttributes(attribute);
-  const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel } = resolved;
+  const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel, flapInset } = resolved;
   const x0 = glueWidth;
   const x1 = x0 + length;
   const x2 = x1 + width;
@@ -223,8 +226,8 @@ export const getTuckEndBoxGeometry = (
   const glueInset = Math.min(glueWidth * 0.45, Math.max(glueWidth * 0.18, 1));
   const closureCornerRadius = Math.max(3, Math.min(closurePanel * 0.34, length * 0.08, 6));
   const bounds = { overallWidthMm: x4, overallHeightMm: y4 };
-  const topTuck = createRoundedTopTuckFlap(x2, x3, y0, 0, closureCornerRadius);
-  const bottomTuck = createRoundedBottomTuckFlap(x0, x1, y3, y4, closureCornerRadius);
+  const topTuck = createRoundedTopTuckFlap(x2 + flapInset, x3 - flapInset, y0, 0, closureCornerRadius);
+  const bottomTuck = createRoundedBottomTuckFlap(x0 + flapInset, x1 - flapInset, y3, y4, closureCornerRadius);
   const glueTab = [
     { x: 0, y: y1 + glueInset },
     { x: x0, y: y1 },
@@ -236,18 +239,18 @@ export const getTuckEndBoxGeometry = (
   const back = createRectangle(x2, y1, x3, y2);
   const sideLeft = createRectangle(x3, y1, x4, y2);
   const topClosureOutline = [
-    { x: x2, y: y1 },
-    { x: x2, y: y0 },
+    { x: x2 + flapInset, y: y1 },
+    { x: x2 + flapInset, y: y0 },
     ...topTuck.slice(1, -1),
-    { x: x3, y: y0 },
-    { x: x3, y: y1 },
+    { x: x3 - flapInset, y: y0 },
+    { x: x3 - flapInset, y: y1 },
   ];
   const bottomClosureOutline = [
-    { x: x0, y: y2 },
-    { x: x0, y: y3 },
+    { x: x0 + flapInset, y: y2 },
+    { x: x0 + flapInset, y: y3 },
     ...bottomTuck.slice(1, -1),
-    { x: x1, y: y3 },
-    { x: x1, y: y2 },
+    { x: x1 - flapInset, y: y3 },
+    { x: x1 - flapInset, y: y2 },
   ];
   const topDustLeft = [
     { x: x1, y: y1 },
@@ -313,9 +316,9 @@ export const getTuckEndBoxGeometry = (
     sideRight,
     back,
     sideLeft,
-    topClosure: createRectangle(x2, y0, x3, y1),
+    topClosure: createRectangle(x2 + flapInset, y0, x3 - flapInset, y1),
     topTuck,
-    bottomClosure: createRectangle(x0, y2, x1, y3),
+    bottomClosure: createRectangle(x0 + flapInset, y2, x1 - flapInset, y3),
     bottomTuck,
     topDustLeft,
     topDustRight,
@@ -332,8 +335,14 @@ export const getTuckEndBoxGeometry = (
     bottomClosureOutline,
     bottomDustLeftCut,
     bottomDustRightCut,
-    [{ x: x0, y: y1 }, { x: x1, y: y1 }],
-    [{ x: x2, y: y2 }, { x: x3, y: y2 }],
+    [{ x: x0, y: y1 }, { x: x0 + flapInset, y: y1 }],
+    [{ x: x1 - flapInset, y: y1 }, { x: x1, y: y1 }],
+    [{ x: x2, y: y1 }, { x: x2 + flapInset, y: y1 }],
+    [{ x: x3 - flapInset, y: y1 }, { x: x3, y: y1 }],
+    [{ x: x0, y: y2 }, { x: x0 + flapInset, y: y2 }],
+    [{ x: x1 - flapInset, y: y2 }, { x: x1, y: y2 }],
+    [{ x: x2, y: y2 }, { x: x2 + flapInset, y: y2 }],
+    [{ x: x3 - flapInset, y: y2 }, { x: x3, y: y2 }],
     [{ x: x4, y: y1 }, { x: x4, y: y2 }],
   ];
   const folds: Point[][] = [
@@ -343,8 +352,8 @@ export const getTuckEndBoxGeometry = (
     [{ x: x1, y: y1 }, { x: x1, y: y2 }],
     [{ x: x2, y: y1 }, { x: x2, y: y2 }],
     [{ x: x3, y: y1 }, { x: x3, y: y2 }],
-    [{ x: x2, y: y0 }, { x: x3, y: y0 }],
-    [{ x: x0, y: y3 }, { x: x1, y: y3 }],
+    [{ x: x2 + flapInset, y: y0 }, { x: x3 - flapInset, y: y0 }],
+    [{ x: x0 + flapInset, y: y3 }, { x: x1 - flapInset, y: y3 }],
   ];
 
   return {

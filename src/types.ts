@@ -31,6 +31,7 @@ export type TuckEndBoxAttributes = {
   dustFlap?: number;
   glueWidth?: number;
   tuckFlap?: number;
+  flapInset?: number;
 };
 export type Becf11d01Attributes = {
   length?: number;
