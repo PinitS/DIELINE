@@ -90,7 +90,7 @@ const FoldedBecf11d01Model = ({ attribute, frame = 0 }: Pick<Becf11d01DielinePro
   const panelColor = "#cbd5e1";
 
   return (
-    <group position={[-resolved.panelWidth / 2, resolved.panelHeight / 2, resolved.sideDepth / 2]}>
+    <group position={[-resolved.length / 2, resolved.height / 2, resolved.width / 2]}>
       <PanelMesh points={panels3d.front} color={panelColor} />
 
       <group rotation={[0, angles.glueTab, 0]}>
@@ -101,40 +101,40 @@ const FoldedBecf11d01Model = ({ attribute, frame = 0 }: Pick<Becf11d01DielinePro
         <PanelMesh points={panels3d.topFront} color={panelColor} />
       </group>
 
-      <group position={[0, -resolved.panelHeight, 0]} rotation={[angles.bottomMajorFront, 0, 0]}>
+      <group position={[0, -resolved.height, 0]} rotation={[angles.bottomMajorFront, 0, 0]}>
         <PanelMesh points={panels3d.bottomFront} color={panelColor} />
       </group>
 
-      <group position={[resolved.panelWidth, 0, 0]} rotation={[0, angles.sideRight, 0]}>
+      <group position={[resolved.length, 0, 0]} rotation={[0, angles.sideRight, 0]}>
         <PanelMesh points={panels3d.sideRight} color={panelColor} />
 
         <group rotation={[angles.topDustRight, 0, 0]}>
           <PanelMesh points={panels3d.topSideRight} color={panelColor} />
         </group>
 
-        <group position={[0, -resolved.panelHeight, 0]} rotation={[angles.bottomDustRight, 0, 0]}>
+        <group position={[0, -resolved.height, 0]} rotation={[angles.bottomDustRight, 0, 0]}>
           <PanelMesh points={panels3d.bottomSideRight} color={panelColor} />
         </group>
 
-        <group position={[resolved.sideDepth, 0, 0]} rotation={[0, angles.back, 0]}>
+        <group position={[resolved.width, 0, 0]} rotation={[0, angles.back, 0]}>
           <PanelMesh points={panels3d.back} color={panelColor} />
 
           <group rotation={[angles.topMajorBack, 0, 0]}>
             <PanelMesh points={panels3d.topBack} color={panelColor} />
           </group>
 
-          <group position={[0, -resolved.panelHeight, 0]} rotation={[angles.bottomMajorBack, 0, 0]}>
+          <group position={[0, -resolved.height, 0]} rotation={[angles.bottomMajorBack, 0, 0]}>
             <PanelMesh points={panels3d.bottomBack} color={panelColor} />
           </group>
 
-          <group position={[resolved.panelWidth, 0, 0]} rotation={[0, angles.sideLeft, 0]}>
+          <group position={[resolved.length, 0, 0]} rotation={[0, angles.sideLeft, 0]}>
             <PanelMesh points={panels3d.sideLeft} color={panelColor} />
 
             <group rotation={[angles.topDustLeft, 0, 0]}>
               <PanelMesh points={panels3d.topSideLeft} color={panelColor} />
             </group>
 
-            <group position={[0, -resolved.panelHeight, 0]} rotation={[angles.bottomDustLeft, 0, 0]}>
+            <group position={[0, -resolved.height, 0]} rotation={[angles.bottomDustLeft, 0, 0]}>
               <PanelMesh points={panels3d.bottomSideLeft} color={panelColor} />
             </group>
           </group>
@@ -166,10 +166,10 @@ export const Becf_11d01_folded3d = forwardRef<DielineCanvasHandle, Becf11d01Diel
 
     const cameraDistance = useMemo(() => {
       const span = Math.max(
-        geometry.resolved.panelWidth,
-        geometry.resolved.panelHeight,
-        geometry.resolved.sideDepth * 2,
-        geometry.resolved.flapHeight + geometry.resolved.sideDepth,
+        geometry.resolved.length,
+        geometry.resolved.height,
+        geometry.resolved.width * 2,
+        geometry.resolved.dustFlap + geometry.resolved.width,
       );
       return span * 2.75;
     }, [geometry.resolved]);

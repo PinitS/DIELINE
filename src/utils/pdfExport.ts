@@ -253,7 +253,7 @@ const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: D
   const bounds = measureBecf11d01Bounds(attributes);
   const { resolved, guides } = geometry;
   const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
-  const labelFontSize = clamp(Math.min(resolved.panelWidth, resolved.panelHeight, resolved.sideDepth) * 0.08, 4, 10);
+  const labelFontSize = clamp(Math.min(resolved.length, resolved.height, resolved.width) * 0.08, 4, 10);
   const secondaryFontSize = Math.max(3.4, labelFontSize * 0.78);
 
   return {
@@ -266,31 +266,31 @@ const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: D
       {
         x: (guides.frontLeft + guides.frontRight) / 2,
         y: (guides.bodyTopY + guides.bodyBottomY) / 2,
-        text: formatDielineDisplayValue(resolved.panelWidth, displayUnit),
+        text: formatDielineDisplayValue(resolved.length, displayUnit),
         fontSize: labelFontSize,
       },
       {
         x: (guides.frontRight + guides.sideRightRight) / 2,
         y: (guides.bodyTopY + guides.bodyBottomY) / 2,
-        text: formatDielineDisplayValue(resolved.sideDepth, displayUnit),
+        text: formatDielineDisplayValue(resolved.width, displayUnit),
         fontSize: secondaryFontSize,
       },
       {
         x: (guides.sideRightRight + guides.backRight) / 2,
         y: (guides.bodyTopY + guides.bodyBottomY) / 2,
-        text: formatDielineDisplayValue(resolved.panelWidth, displayUnit),
+        text: formatDielineDisplayValue(resolved.length, displayUnit),
         fontSize: labelFontSize,
       },
       {
         x: (guides.backRight + guides.sideLeftRight) / 2,
         y: (guides.bodyTopY + guides.bodyBottomY) / 2,
-        text: formatDielineDisplayValue(resolved.sideLeftWidth, displayUnit),
+        text: formatDielineDisplayValue(resolved.width, displayUnit),
         fontSize: secondaryFontSize,
       },
       {
-        x: guides.frontLeft + resolved.panelWidth * 0.26,
+        x: guides.frontLeft + resolved.length * 0.26,
         y: (guides.bodyTopY + guides.bodyBottomY) / 2,
-        text: formatDielineDisplayValue(resolved.panelHeight, displayUnit),
+        text: formatDielineDisplayValue(resolved.height, displayUnit),
         fontSize: secondaryFontSize,
         rotate: true,
       },

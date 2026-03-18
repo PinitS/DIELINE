@@ -41,16 +41,15 @@ export const measureBecf11d01Bounds = (
   attribute: Becf11d01Attributes,
 ): DielineBounds => {
   const {
-    panelWidth,
-    panelHeight,
-    sideDepth,
-    sideLeftWidth,
-    flapHeight,
+    length,
+    height,
+    width,
+    dustFlap,
     glueWidth,
   } = resolveBecf11d01Attributes(attribute);
 
   return {
-    overallWidthMm: glueWidth + panelWidth + sideDepth + panelWidth + sideLeftWidth,
-    overallHeightMm: flapHeight + panelHeight + flapHeight,
+    overallWidthMm: glueWidth + length + width + length + width,
+    overallHeightMm: dustFlap + height + dustFlap,
   };
 };

@@ -3,25 +3,23 @@ import type { Becf11d01Attributes } from "../types";
 export type Point = { x: number; y: number };
 
 export const DEFAULT_BECF11D01_ATTRIBUTES = {
-  panelWidth: 175,
-  panelHeight: 230,
-  sideDepth: 74,
-  sideLeftWidth: 73.5,
-  flapHeight: 74,
+  length: 175,
+  height: 230,
+  width: 74,
+  closurePanel: 74,
+  dustFlap: 74,
   glueWidth: 15,
   flapInset: 2,
-  glueSkew: 4.019,
 } as const;
 
 export type ResolvedBecf11d01Attributes = {
-  panelWidth: number;
-  panelHeight: number;
-  sideDepth: number;
-  sideLeftWidth: number;
-  flapHeight: number;
+  length: number;
+  height: number;
+  width: number;
+  closurePanel: number;
+  dustFlap: number;
   glueWidth: number;
   flapInset: number;
-  glueSkew: number;
 };
 
 export type Becf11d01FoldAngles = {
@@ -65,6 +63,8 @@ export type Becf11d01Geometry = {
     frontMajorRight: number;
     backMajorLeft: number;
     backMajorRight: number;
+    closureFlapTopY: number;
+    closureFlapBottomY: number;
   };
   panels2d: {
     glueTab: Point[];
@@ -129,14 +129,13 @@ const stageProgress = (frame: number, start: number, end: number) => {
 export const resolveBecf11d01Attributes = (
   attribute: Becf11d01Attributes = {},
 ): ResolvedBecf11d01Attributes => ({
-  panelWidth: resolveDimension(attribute.panelWidth, DEFAULT_BECF11D01_ATTRIBUTES.panelWidth),
-  panelHeight: resolveDimension(attribute.panelHeight, DEFAULT_BECF11D01_ATTRIBUTES.panelHeight),
-  sideDepth: resolveDimension(attribute.sideDepth, DEFAULT_BECF11D01_ATTRIBUTES.sideDepth),
-  sideLeftWidth: resolveDimension(attribute.sideLeftWidth, DEFAULT_BECF11D01_ATTRIBUTES.sideLeftWidth),
-  flapHeight: resolveDimension(attribute.flapHeight, DEFAULT_BECF11D01_ATTRIBUTES.flapHeight),
+  length: resolveDimension(attribute.length, DEFAULT_BECF11D01_ATTRIBUTES.length),
+  height: resolveDimension(attribute.height, DEFAULT_BECF11D01_ATTRIBUTES.height),
+  width: resolveDimension(attribute.width, DEFAULT_BECF11D01_ATTRIBUTES.width),
+  closurePanel: resolveDimension(attribute.closurePanel, DEFAULT_BECF11D01_ATTRIBUTES.closurePanel),
+  dustFlap: resolveDimension(attribute.dustFlap, DEFAULT_BECF11D01_ATTRIBUTES.dustFlap),
   glueWidth: resolveDimension(attribute.glueWidth, DEFAULT_BECF11D01_ATTRIBUTES.glueWidth),
   flapInset: resolveDimension(attribute.flapInset, DEFAULT_BECF11D01_ATTRIBUTES.flapInset),
-  glueSkew: resolveDimension(attribute.glueSkew, DEFAULT_BECF11D01_ATTRIBUTES.glueSkew),
 });
 
 export const getBecf11d01Geometry = (
@@ -144,30 +143,34 @@ export const getBecf11d01Geometry = (
 ): Becf11d01Geometry => {
   const resolved = resolveBecf11d01Attributes(attribute);
   const {
-    panelWidth,
-    panelHeight,
-    sideDepth,
-    sideLeftWidth,
-    flapHeight,
+    length,
+    height,
+    width,
+    closurePanel,
+    dustFlap,
     glueWidth,
     flapInset,
-    glueSkew,
   } = resolved;
+
+  // Calculate glueSkew from glueWidth (diagonal calculation)
+  const glueSkew = Math.sqrt(glueWidth * glueWidth + (dustFlap / 2) * (dustFlap / 2)) - (dustFlap / 2);
 
   const leftX = 0;
   const frontLeft = glueWidth;
-  const frontRight = frontLeft + panelWidth;
-  const sideRightRight = frontRight + sideDepth;
-  const backRight = sideRightRight + panelWidth;
-  const sideLeftRight = backRight + sideLeftWidth;
+  const frontRight = frontLeft + length;
+  const sideRightRight = frontRight + width;
+  const backRight = sideRightRight + length;
+  const sideLeftRight = backRight + width;
   const topY = 0;
-  const bodyTopY = flapHeight;
-  const bodyBottomY = flapHeight + panelHeight;
-  const bottomY = bodyBottomY + flapHeight;
+  const bodyTopY = dustFlap;
+  const bodyBottomY = dustFlap + height;
+  const bottomY = bodyBottomY + dustFlap;
   const frontMajorLeft = frontLeft + flapInset;
   const frontMajorRight = frontRight - flapInset;
   const backMajorLeft = sideRightRight + flapInset;
   const backMajorRight = backRight - flapInset;
+  const closureFlapTopY = bodyTopY - closurePanel;
+  const closureFlapBottomY = bodyBottomY + closurePanel;
 
   const glueTab2d = [
     { x: leftX, y: bodyTopY + glueSkew },
@@ -182,13 +185,13 @@ export const getBecf11d01Geometry = (
     sideRight: createRectangle(frontRight, bodyTopY, sideRightRight, bodyBottomY),
     back: createRectangle(sideRightRight, bodyTopY, backRight, bodyBottomY),
     sideLeft: createRectangle(backRight, bodyTopY, sideLeftRight, bodyBottomY),
-    topFront: createRectangle(frontMajorLeft, topY, frontMajorRight, bodyTopY),
+    topFront: createRectangle(frontMajorLeft, closureFlapTopY, frontMajorRight, bodyTopY),
     topSideRight: createRectangle(frontRight, topY, sideRightRight, bodyTopY),
-    topBack: createRectangle(backMajorLeft, topY, backMajorRight, bodyTopY),
+    topBack: createRectangle(backMajorLeft, closureFlapTopY, backMajorRight, bodyTopY),
     topSideLeft: createRectangle(backRight, topY, sideLeftRight, bodyTopY),
-    bottomFront: createRectangle(frontMajorLeft, bodyBottomY, frontMajorRight, bottomY),
+    bottomFront: createRectangle(frontMajorLeft, bodyBottomY, frontMajorRight, closureFlapBottomY),
     bottomSideRight: createRectangle(frontRight, bodyBottomY, sideRightRight, bottomY),
-    bottomBack: createRectangle(backMajorLeft, bodyBottomY, backMajorRight, bottomY),
+    bottomBack: createRectangle(backMajorLeft, bodyBottomY, backMajorRight, closureFlapBottomY),
     bottomSideLeft: createRectangle(backRight, bodyBottomY, sideLeftRight, bottomY),
   };
 
@@ -196,21 +199,21 @@ export const getBecf11d01Geometry = (
     glueTab: [
       { x: 0, y: 0 },
       { x: -glueWidth, y: glueSkew },
-      { x: -glueWidth, y: panelHeight - glueSkew },
-      { x: 0, y: panelHeight },
+      { x: -glueWidth, y: height - glueSkew },
+      { x: 0, y: height },
     ],
-    front: createRectangle(0, 0, panelWidth, panelHeight),
-    sideRight: createRectangle(0, 0, sideDepth, panelHeight),
-    back: createRectangle(0, 0, panelWidth, panelHeight),
-    sideLeft: createRectangle(0, 0, sideDepth, panelHeight),
-    topFront: createRectangle(flapInset, -flapHeight, panelWidth - flapInset, 0),
-    topSideRight: createRectangle(0, -flapHeight, sideDepth, 0),
-    topBack: createRectangle(flapInset, -flapHeight, panelWidth - flapInset, 0),
-    topSideLeft: createRectangle(0, -flapHeight, sideDepth, 0),
-    bottomFront: createRectangle(flapInset, 0, panelWidth - flapInset, flapHeight),
-    bottomSideRight: createRectangle(0, 0, sideDepth, flapHeight),
-    bottomBack: createRectangle(flapInset, 0, panelWidth - flapInset, flapHeight),
-    bottomSideLeft: createRectangle(0, 0, sideDepth, flapHeight),
+    front: createRectangle(0, 0, length, height),
+    sideRight: createRectangle(0, 0, width, height),
+    back: createRectangle(0, 0, length, height),
+    sideLeft: createRectangle(0, 0, width, height),
+    topFront: createRectangle(flapInset, -closurePanel, length - flapInset, 0),
+    topSideRight: createRectangle(0, -dustFlap, width, 0),
+    topBack: createRectangle(flapInset, -closurePanel, length - flapInset, 0),
+    topSideLeft: createRectangle(0, -dustFlap, width, 0),
+    bottomFront: createRectangle(flapInset, 0, length - flapInset, closurePanel),
+    bottomSideRight: createRectangle(0, 0, width, dustFlap),
+    bottomBack: createRectangle(flapInset, 0, length - flapInset, closurePanel),
+    bottomSideLeft: createRectangle(0, 0, width, dustFlap),
   };
 
   const cuts: Point[][] = [
@@ -218,22 +221,22 @@ export const getBecf11d01Geometry = (
     [{ x: leftX, y: bodyTopY + glueSkew }, { x: leftX, y: bodyBottomY - glueSkew }],
     [{ x: frontLeft, y: bodyBottomY }, { x: leftX, y: bodyBottomY - glueSkew }],
     [{ x: frontLeft, y: bodyTopY }, { x: frontMajorLeft, y: bodyTopY }],
-    [{ x: frontMajorLeft, y: bodyTopY }, { x: frontMajorLeft, y: topY }, { x: frontMajorRight, y: topY }, { x: frontMajorRight, y: bodyTopY }],
+    [{ x: frontMajorLeft, y: bodyTopY }, { x: frontMajorLeft, y: closureFlapTopY }, { x: frontMajorRight, y: closureFlapTopY }, { x: frontMajorRight, y: bodyTopY }],
     [{ x: frontMajorRight, y: bodyTopY }, { x: frontRight, y: bodyTopY }],
     [{ x: frontRight, y: bodyTopY }, { x: frontRight, y: topY }, { x: sideRightRight, y: topY }, { x: sideRightRight, y: bodyTopY }],
     [{ x: sideRightRight, y: bodyTopY }, { x: backMajorLeft, y: bodyTopY }],
-    [{ x: backMajorLeft, y: bodyTopY }, { x: backMajorLeft, y: topY }, { x: backMajorRight, y: topY }, { x: backMajorRight, y: bodyTopY }],
+    [{ x: backMajorLeft, y: bodyTopY }, { x: backMajorLeft, y: closureFlapTopY }, { x: backMajorRight, y: closureFlapTopY }, { x: backMajorRight, y: bodyTopY }],
     [{ x: backMajorRight, y: bodyTopY }, { x: backRight, y: bodyTopY }],
     [{ x: backRight, y: bodyTopY }, { x: backRight, y: topY }, { x: sideLeftRight, y: topY }, { x: sideLeftRight, y: bodyTopY }],
     [{ x: sideLeftRight, y: bodyTopY }, { x: sideLeftRight, y: bodyBottomY }],
     [{ x: backRight, y: bodyBottomY }, { x: backRight, y: bottomY }, { x: sideLeftRight, y: bottomY }, { x: sideLeftRight, y: bodyBottomY }],
     [{ x: backMajorRight, y: bodyBottomY }, { x: backRight, y: bodyBottomY }],
-    [{ x: backMajorLeft, y: bodyBottomY }, { x: backMajorLeft, y: bottomY }, { x: backMajorRight, y: bottomY }, { x: backMajorRight, y: bodyBottomY }],
+    [{ x: backMajorLeft, y: bodyBottomY }, { x: backMajorLeft, y: closureFlapBottomY }, { x: backMajorRight, y: closureFlapBottomY }, { x: backMajorRight, y: bodyBottomY }],
     [{ x: sideRightRight, y: bodyBottomY }, { x: backMajorLeft, y: bodyBottomY }],
     [{ x: frontRight, y: bodyBottomY }, { x: frontRight, y: bottomY }, { x: sideRightRight, y: bottomY }, { x: sideRightRight, y: bodyBottomY }],
     [{ x: frontMajorRight, y: bodyBottomY }, { x: frontRight, y: bodyBottomY }],
     [{ x: frontLeft, y: bodyBottomY }, { x: frontMajorLeft, y: bodyBottomY }],
-    [{ x: frontMajorLeft, y: bodyBottomY }, { x: frontMajorLeft, y: bottomY }, { x: frontMajorRight, y: bottomY }, { x: frontMajorRight, y: bodyBottomY }],
+    [{ x: frontMajorLeft, y: bodyBottomY }, { x: frontMajorLeft, y: closureFlapBottomY }, { x: frontMajorRight, y: closureFlapBottomY }, { x: frontMajorRight, y: bodyBottomY }],
   ];
 
   const folds: Point[][] = [
@@ -269,6 +272,8 @@ export const getBecf11d01Geometry = (
       frontMajorRight,
       backMajorLeft,
       backMajorRight,
+      closureFlapTopY,
+      closureFlapBottomY,
     },
     panels2d,
     panels3d,

@@ -97,14 +97,13 @@ export const Becf_11d01Control = ({
         </label>
       </div>
       <div className="section-grid">
-        <label className="field">panelWidth (mm)<input type="number" min={1} step={0.5} value={attribute.panelWidth ?? DEFAULT_BECF11D01_ATTRIBUTES.panelWidth} onChange={(event) => setAttribute({ ...attribute, panelWidth: Number(event.target.value) || 1 })} /></label>
-        <label className="field">panelHeight (mm)<input type="number" min={1} step={0.5} value={attribute.panelHeight ?? DEFAULT_BECF11D01_ATTRIBUTES.panelHeight} onChange={(event) => setAttribute({ ...attribute, panelHeight: Number(event.target.value) || 1 })} /></label>
-        <label className="field">sideDepth (mm)<input type="number" min={1} step={0.5} value={attribute.sideDepth ?? DEFAULT_BECF11D01_ATTRIBUTES.sideDepth} onChange={(event) => setAttribute({ ...attribute, sideDepth: Number(event.target.value) || 1 })} /></label>
-        <label className="field">sideLeftWidth (mm)<input type="number" min={1} step={0.5} value={attribute.sideLeftWidth ?? DEFAULT_BECF11D01_ATTRIBUTES.sideLeftWidth} onChange={(event) => setAttribute({ ...attribute, sideLeftWidth: Number(event.target.value) || 1 })} /></label>
-        <label className="field">flapHeight (mm)<input type="number" min={1} step={0.5} value={attribute.flapHeight ?? DEFAULT_BECF11D01_ATTRIBUTES.flapHeight} onChange={(event) => setAttribute({ ...attribute, flapHeight: Number(event.target.value) || 1 })} /></label>
+        <label className="field">length (mm)<input type="number" min={1} step={0.5} value={attribute.length ?? DEFAULT_BECF11D01_ATTRIBUTES.length} onChange={(event) => setAttribute({ ...attribute, length: Number(event.target.value) || 1 })} /></label>
+        <label className="field">height (mm)<input type="number" min={1} step={0.5} value={attribute.height ?? DEFAULT_BECF11D01_ATTRIBUTES.height} onChange={(event) => setAttribute({ ...attribute, height: Number(event.target.value) || 1 })} /></label>
+        <label className="field">width (mm)<input type="number" min={1} step={0.5} value={attribute.width ?? DEFAULT_BECF11D01_ATTRIBUTES.width} onChange={(event) => setAttribute({ ...attribute, width: Number(event.target.value) || 1 })} /></label>
+        <label className="field">closurePanel (mm)<input type="number" min={1} step={0.5} value={attribute.closurePanel ?? DEFAULT_BECF11D01_ATTRIBUTES.closurePanel} onChange={(event) => setAttribute({ ...attribute, closurePanel: Number(event.target.value) || 1 })} /></label>
+        <label className="field">dustFlap (mm)<input type="number" min={1} step={0.5} value={attribute.dustFlap ?? DEFAULT_BECF11D01_ATTRIBUTES.dustFlap} onChange={(event) => setAttribute({ ...attribute, dustFlap: Number(event.target.value) || 1 })} /></label>
         <label className="field">glueWidth (mm)<input type="number" min={1} step={0.5} value={attribute.glueWidth ?? DEFAULT_BECF11D01_ATTRIBUTES.glueWidth} onChange={(event) => setAttribute({ ...attribute, glueWidth: Number(event.target.value) || 1 })} /></label>
         <label className="field">flapInset (mm)<input type="number" min={0.1} step={0.1} value={attribute.flapInset ?? DEFAULT_BECF11D01_ATTRIBUTES.flapInset} onChange={(event) => setAttribute({ ...attribute, flapInset: Number(event.target.value) || 0.1 })} /></label>
-        <label className="field">glueSkew (mm)<input type="number" min={0.1} step={0.001} value={attribute.glueSkew ?? DEFAULT_BECF11D01_ATTRIBUTES.glueSkew} onChange={(event) => setAttribute({ ...attribute, glueSkew: Number(event.target.value) || 0.1 })} /></label>
       </div>
       <div className="toggle-row"><button type="button" onClick={onToggleDimensions}>{showDimensions ? "Hide" : "Show"} dimensions</button></div>
       <div className="summary-card">

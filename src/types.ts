@@ -33,14 +33,13 @@ export type TuckEndBoxAttributes = {
   tuckFlap?: number;
 };
 export type Becf11d01Attributes = {
-  panelWidth?: number;
-  panelHeight?: number;
-  sideDepth?: number;
-  sideLeftWidth?: number;
-  flapHeight?: number;
+  length?: number;
+  height?: number;
+  width?: number;
+  closurePanel?: number;
+  dustFlap?: number;
   glueWidth?: number;
   flapInset?: number;
-  glueSkew?: number;
 };
 
 export type TuckEndBoxRenderMode = "dieline" | "folded3d";
