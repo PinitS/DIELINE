@@ -294,9 +294,10 @@ export const getBecf11d01FoldAngles = (frame: number): Becf11d01FoldAngles => {
     topDustLeft: toRadians(90) * stageProgress(currentFrame, 120, 240),
     bottomDustRight: -toRadians(90) * stageProgress(currentFrame, 120, 240),
     bottomDustLeft: -toRadians(90) * stageProgress(currentFrame, 120, 240),
-    topMajorFront: toRadians(90) * stageProgress(currentFrame, 240, 359),
-    topMajorBack: toRadians(90) * stageProgress(currentFrame, 240, 359),
-    bottomMajorFront: -toRadians(90) * stageProgress(currentFrame, 240, 359),
-    bottomMajorBack: -toRadians(90) * stageProgress(currentFrame, 240, 359),
+    topMajorFront: toRadians(90) * stageProgress(currentFrame, 240, 300),
+    bottomMajorFront: -toRadians(90) * stageProgress(currentFrame, 240, 300),
+
+    topMajorBack: toRadians(90) * stageProgress(currentFrame, 300, 359),
+    bottomMajorBack: -toRadians(90) * stageProgress(currentFrame, 300, 359),
   };
 };
