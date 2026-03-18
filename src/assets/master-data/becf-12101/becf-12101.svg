@@ -1,0 +1,260 @@
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   xml:space="preserve"
+   preserveAspectRatio="none"
+   viewBox="0 0 2463.30708723 1434.33070902"
+   version="1.1"
+   id="Die Cut Templates"
+  >
+    <g id="crease">
+        <path d="M31.18110237 1221.73228377 L2463.30708723 1221.73228377" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M938.26771677 1434.33070902 L938.26771677 31.18110237" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M2463.30708723 144.56692917 L31.18110237 144.56692917" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M87.87401577 31.18110237 L87.87401577 1434.33070902" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M1108.34645697 1434.33070902 L1108.34645697 31.18110237" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M1278.42519717 1434.33070902 L1278.42519717 31.18110237" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M2128.81889817 1434.33070902 L2128.81889817 31.18110237" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M2298.89763837 1434.33070902 L2298.89763837 31.18110237" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M31.18110237 1051.65354357 L2463.30708723 1051.65354357" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M768.18897657 1391.81102397 L1108.34645697 1051.65354357" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M1108.34645697 1051.65354357 L1448.50393737 1391.81102397" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M1958.74015797 1391.81102397 L2298.89763837 1051.65354357" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M2298.89763837 1051.65354357 L2463.30708723 1216.06299243" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+        <path d="M31.18110237 1165.03937037 L257.95275597 1391.81102397" fill="none" stroke="#00FF00" stroke-width="1" id="Line"/>
+
+    </g>
+    <g id="cut">
+        <path d="M2463.30708723 1434.33070902 L2463.30708723 31.18110237" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M31.18110237 31.18110237 L31.18110237 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M2463.30708723 31.18110237 L31.18110237 31.18110237" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M31.18110237 1434.33070902 L2463.30708723 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M257.95275597 1391.81102397 L257.95275597 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M768.18897657 1391.81102397 L768.18897657 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M1448.50393737 1391.81102397 L1448.50393737 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <path d="M1958.74015797 1391.81102397 L1958.74015797 1434.33070902" fill="none" stroke="#FF0000" stroke-width="1" id="Line"/>
+
+        <circle
+  cx="357.16535442"
+  cy="201.25984257"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="357.16535442"
+  cy="87.87401577"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="668.97637812"
+  cy="87.87401577"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="668.97637812"
+  cy="201.25984257"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="1547.71653582"
+  cy="201.25984257"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="1547.71653582"
+  cy="87.87401577"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="1859.52755952"
+  cy="201.25984257"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+        <circle
+  cx="1859.52755952"
+  cy="87.87401577"
+  r="8.50393701"
+  fill="none"
+  stroke="#FF0000" stroke-width="1"
+  id="Circle" />
+/>
+
+    </g>
+    <g id="dimensions">
+          <text
+    x="1195.0299215586"
+    y="-0.16535433"
+    font-size="18px"
+    fill="black"
+    style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+   858.00mm
+  </text>
+
+<path d="M31.18110237 0.0 L31.18110237 22.67716536"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2463.30708723 0.0 L2463.30708723 22.67716536"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M31.18110237 2.83464567 L36.4818897729 1.417322835"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M31.18110237 2.83464567 L36.4818897729 4.251968505"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2463.30708723 2.83464567 L2458.0062998271 4.251968505"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2463.30708723 2.83464567 L2458.0062998271 1.417322835"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M31.18110237 2.83464567 L2463.30708723 2.83464567"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+            <text
+      text-anchor="middle"
+      dominant-baseline="central"
+      transform="rotate(-90, -0.16535433, 786.4440946848)"
+      x="-0.16535433"
+      y="786.4440946848"
+      font-size="18px"
+      fill="black"
+      style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+     495.00mm
+    </text>
+
+<path d="M0.0 31.18110237 L22.67716536 31.18110237"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M0.0 1434.33070902 L22.67716536 1434.33070902"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2.83464567 31.18110237 L4.251968505 36.4818897729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2.83464567 31.18110237 L1.417322835 36.4818897729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2.83464567 1434.33070902 L1.417322835 1429.0299216171"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2.83464567 1434.33070902 L4.251968505 1429.0299216171"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M2.83464567 31.18110237 L2.83464567 1434.33070902"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+          <text
+    x="460.8566930286"
+    y="1020.30708687"
+    font-size="18px"
+    fill="black"
+    style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+   300.00mm
+  </text>
+
+<path d="M87.87401577 1023.30708687 L93.1748031729 1021.889764035"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M87.87401577 1023.30708687 L93.1748031729 1024.724409705"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M938.26771677 1023.30708687 L932.9669293671 1024.724409705"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M938.26771677 1023.30708687 L932.9669293671 1021.889764035"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M87.87401577 1023.30708687 L938.26771677 1023.30708687"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+          <text
+    x="1065.9401577468"
+    y="1020.30708687"
+    font-size="18px"
+    fill="black"
+    style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+   120.00mm
+  </text>
+
+<path d="M938.26771677 1023.30708687 L943.5685041729 1021.889764035"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M938.26771677 1023.30708687 L943.5685041729 1024.724409705"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1278.42519717 1023.30708687 L1273.1244097671 1024.724409705"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1278.42519717 1023.30708687 L1273.1244097671 1021.889764035"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M938.26771677 1023.30708687 L1278.42519717 1023.30708687"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+            <text
+      text-anchor="middle"
+      dominant-baseline="central"
+      transform="rotate(-90, 1700.62204767, 735.3637797114)"
+      x="1700.62204767"
+      y="735.3637797114"
+      font-size="18px"
+      fill="black"
+      style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+     380.00mm
+    </text>
+
+<path d="M1703.62204767 1221.73228377 L1702.204724835 1216.4314963671"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1221.73228377 L1705.039370505 1216.4314963671"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 144.56692917 L1705.039370505 149.8677165729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 144.56692917 L1702.204724835 149.8677165729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1221.73228377 L1703.62204767 144.56692917"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+            <text
+      text-anchor="middle"
+      dominant-baseline="central"
+      transform="rotate(-90, 510.07086627, 130.2803149932)"
+      x="510.07086627"
+      y="130.2803149932"
+      font-size="18px"
+      fill="black"
+      style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+     40.00mm
+    </text>
+
+<path d="M513.07086627 144.56692917 L511.653543435 139.2661417671"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M513.07086627 144.56692917 L514.488189105 139.2661417671"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M513.07086627 31.18110237 L514.488189105 36.4818897729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M513.07086627 31.18110237 L511.653543435 36.4818897729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M513.07086627 144.56692917 L513.07086627 31.18110237"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+            <text
+      text-anchor="middle"
+      dominant-baseline="central"
+      transform="rotate(-90, 1700.62204767, 1370.4377956182)"
+      x="1700.62204767"
+      y="1370.4377956182"
+      font-size="18px"
+      fill="black"
+      style="stroke:rgb(0,0,0); stroke-width:0; font-weight: small; font-style: normal; ">
+     75.00mm
+    </text>
+
+<path d="M1703.62204767 1434.33070902 L1702.204724835 1429.0299216171"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1434.33070902 L1705.039370505 1429.0299216171"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1221.73228377 L1705.039370505 1227.0330711729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1221.73228377 L1702.204724835 1227.0330711729"
+    fill="none" stroke="#000000" stroke-width="1" /><path d="M1703.62204767 1434.33070902 L1703.62204767 1221.73228377"
+    fill="none" stroke="#000000" stroke-width="1" />
+
+    </g>
+
+</svg>
