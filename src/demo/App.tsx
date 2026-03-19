@@ -338,6 +338,7 @@ export const App = () => {
         <div>
           <p className="eyebrow">react-dieline</p>
           <h1>React Three Fiber dieline demo</h1>
+          <a href="#/auto-layout" style={{ fontSize: 13, color: "#3b82f6" }}>Go to Auto Layout →</a>
         </div>
 
         <div className="section-row">
