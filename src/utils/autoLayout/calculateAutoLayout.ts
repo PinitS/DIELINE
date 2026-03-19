@@ -92,16 +92,31 @@ const prepareModel = (
   const allPolylines = extractShapePolylines(svgDoc.svg);
   const outlinePolylines = extractOutlinePolylines(svgDoc.svg);
 
-  // Create boundary (offset) polylines from outlines for visual display
-  const boundaryPolylines: ShapePolyline[] = outlinePolylines.map((pl) => {
-    const closedPoints = pl.points.length > 2 ? pl.points : pl.points;
-    const offsetPoints = offsetPolyline(closedPoints, layoutDistance);
-    return {
-      points: offsetPoints,
-      stroke: "#22c55e",
-      strokeWidth: 0.2,
-    };
-  });
+  const outlineBounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  for (const pl of outlinePolylines) {
+    for (const pt of pl.points) {
+      outlineBounds.minX = Math.min(outlineBounds.minX, pt.x);
+      outlineBounds.minY = Math.min(outlineBounds.minY, pt.y);
+      outlineBounds.maxX = Math.max(outlineBounds.maxX, pt.x);
+      outlineBounds.maxY = Math.max(outlineBounds.maxY, pt.y);
+    }
+  }
+  const svgPaddingX = (svgDoc.widthMm - (outlineBounds.maxX - outlineBounds.minX)) / 2;
+  const svgPaddingY = (svgDoc.heightMm - (outlineBounds.maxY - outlineBounds.minY)) / 2;
+  const svgPadding = Math.max(svgPaddingX, svgPaddingY, 0);
+
+  let boundaryPolylines: ShapePolyline[] = [];
+  if (layoutDistance > 0) {
+    boundaryPolylines = outlinePolylines.map((pl) => {
+      const closedPoints = pl.points.length > 2 ? pl.points : pl.points;
+      const offsetPoints = offsetPolyline(closedPoints, layoutDistance / 2);
+      return {
+        points: offsetPoints,
+        stroke: "#22c55e",
+        strokeWidth: 0.2,
+      };
+    });
+  }
 
   return {
     entryId,
@@ -109,6 +124,7 @@ const prepareModel = (
     svgContent: svgDoc.svg,
     widthMm: svgDoc.widthMm,
     heightMm: svgDoc.heightMm,
+    svgPadding,
     shapePolylines: allPolylines,
     boundaryPolylines,
   };
@@ -195,10 +211,26 @@ export const calculateAutoLayout = async (
       { name: "original", items: allItems },
     ];
 
+    const svgPadding = allItems[0]?.svgPadding ?? 0;
+    const effectiveGap = layoutDistance - 2 * svgPadding;
+    const edgeMargin = Math.max(layoutDistance / 2 - svgPadding, 0);
+    const packWidth = usableWidth - 2 * edgeMargin;
+    const packHeight = usableHeight - 2 * edgeMargin;
+
     const layoutResults: { name: string; placements: ReturnType<typeof shelfPack> }[] = [];
 
     for (const strategy of strategies) {
-      const placements = shelfPack(strategy.items, usableWidth, usableHeight, layoutDistance);
+      const placements = shelfPack(strategy.items, packWidth, packHeight, effectiveGap);
+      for (const p of placements) {
+        p.x += edgeMargin;
+        p.y += edgeMargin;
+        for (const sp of p.shapePolylines) {
+          for (const pt of sp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
+        }
+        for (const bp of p.boundaryPolylines) {
+          for (const pt of bp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
+        }
+      }
       layoutResults.push({ name: strategy.name, placements });
     }
 

@@ -45,9 +45,8 @@ export type PreparedModel = {
   widthMm: number;
   /** Original SVG bounding box height in mm */
   heightMm: number;
-  /** Shape polylines from the SVG */
+  svgPadding: number;
   shapePolylines: ShapePolyline[];
-  /** Boundary polylines (offset outlines for visual display) */
   boundaryPolylines: ShapePolyline[];
 };
 

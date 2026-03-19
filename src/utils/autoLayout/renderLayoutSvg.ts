@@ -1,4 +1,4 @@
-import type { Placement, Point, ShapePolyline } from "./types";
+import type { Placement, ShapePolyline } from "./types";
 
 const PAPER_BORDER_COLOR = "#000000";
 const PAPER_BORDER_WIDTH = 0.5;
@@ -7,7 +7,6 @@ const GRIPER_FILL = "rgba(34,197,94,0.08)";
 const GRIPER_BORDER_WIDTH = 0.3;
 const BOUNDARY_COLOR = "#22c55e";
 const BOUNDARY_WIDTH = 0.2;
-const BOUNDARY_DASH = "2 1.5";
 const USABLE_AREA_DASH = "4 2";
 const USABLE_AREA_COLOR = "#94a3b8";
 const USABLE_AREA_WIDTH = 0.2;
@@ -66,7 +65,6 @@ export const renderLayoutSvg = (options: RenderLayoutSvgOptions): string => {
         stroke: BOUNDARY_COLOR,
         strokeWidth: BOUNDARY_WIDTH,
         dashArray: undefined,
-        // Translate to paper coordinates
         points: bp.points.map((p) => ({ x: p.x + usableLeft, y: p.y + usableTop })),
       }));
     }
