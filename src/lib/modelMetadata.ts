@@ -98,33 +98,33 @@ const MODEL_DEFINITIONS: readonly DielineModelMetadata[] = [
 
     attributes: [
       {
-        name: "panelWidth",
+        name: "length",
         type: "number",
-        description: "Front and back panel width in millimeters",
+        description: "Front and back panel length in millimeters",
         defaultValue: 175,
       },
       {
-        name: "panelHeight",
+        name: "height",
         type: "number",
         description: "Body panel height in millimeters",
         defaultValue: 230,
       },
       {
-        name: "sideDepth",
+        name: "width",
         type: "number",
-        description: "Right side panel depth in millimeters",
+        description: "Side panel width in millimeters",
         defaultValue: 74,
       },
       {
-        name: "sideLeftWidth",
+        name: "closurePanel",
         type: "number",
-        description: "Left side panel width in millimeters",
-        defaultValue: 73.5,
+        description: "Closure panel depth in millimeters",
+        defaultValue: 74,
       },
       {
-        name: "flapHeight",
+        name: "dustFlap",
         type: "number",
-        description: "Major and dust flap height in millimeters",
+        description: "Dust flap depth in millimeters",
         defaultValue: 74,
       },
       {
@@ -138,12 +138,6 @@ const MODEL_DEFINITIONS: readonly DielineModelMetadata[] = [
         type: "number",
         description: "Inset from panel edge to major flap cut in millimeters",
         defaultValue: 2,
-      },
-      {
-        name: "glueSkew",
-        type: "number",
-        description: "Glue tab skew offset in millimeters",
-        defaultValue: 4.019,
       },
     ],
   },

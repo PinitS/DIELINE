@@ -235,7 +235,7 @@ export const Becf_10803Control = ({
       </div>
 
       <div className="section-grid">
-        <label className="field">A : length (mm)
+        <label className="field">length (mm)
           <input
             type="number"
             min={1}
@@ -244,7 +244,7 @@ export const Becf_10803Control = ({
             onChange={(event) => setAttribute({ ...attribute, length: Number(event.target.value) || 1 })}
           />
         </label>
-        <label className="field">B : width (mm)
+        <label className="field">width (mm)
           <input
             type="number"
             min={1}
@@ -253,7 +253,7 @@ export const Becf_10803Control = ({
             onChange={(event) => setAttribute({ ...attribute, width: Number(event.target.value) || 1 })}
           />
         </label>
-        <label className="field">C : height (mm)
+        <label className="field">height (mm)
           <input
             type="number"
             min={1}

@@ -98,8 +98,8 @@ export const Becf_11d01Control = ({
       </div>
       <div className="section-grid">
         <label className="field">length (mm)<input type="number" min={1} step={0.5} value={attribute.length ?? DEFAULT_BECF11D01_ATTRIBUTES.length} onChange={(event) => setAttribute({ ...attribute, length: Number(event.target.value) || 1 })} /></label>
-        <label className="field">height (mm)<input type="number" min={1} step={0.5} value={attribute.height ?? DEFAULT_BECF11D01_ATTRIBUTES.height} onChange={(event) => setAttribute({ ...attribute, height: Number(event.target.value) || 1 })} /></label>
         <label className="field">width (mm)<input type="number" min={1} step={0.5} value={attribute.width ?? DEFAULT_BECF11D01_ATTRIBUTES.width} onChange={(event) => setAttribute({ ...attribute, width: Number(event.target.value) || 1 })} /></label>
+        <label className="field">height (mm)<input type="number" min={1} step={0.5} value={attribute.height ?? DEFAULT_BECF11D01_ATTRIBUTES.height} onChange={(event) => setAttribute({ ...attribute, height: Number(event.target.value) || 1 })} /></label>
         <label className="field">closurePanel (mm)<input type="number" min={1} step={0.5} value={attribute.closurePanel ?? DEFAULT_BECF11D01_ATTRIBUTES.closurePanel} onChange={(event) => setAttribute({ ...attribute, closurePanel: Number(event.target.value) || 1 })} /></label>
         <label className="field">dustFlap (mm)<input type="number" min={1} step={0.5} value={attribute.dustFlap ?? DEFAULT_BECF11D01_ATTRIBUTES.dustFlap} onChange={(event) => setAttribute({ ...attribute, dustFlap: Number(event.target.value) || 1 })} /></label>
         <label className="field">glueWidth (mm)<input type="number" min={1} step={0.5} value={attribute.glueWidth ?? DEFAULT_BECF11D01_ATTRIBUTES.glueWidth} onChange={(event) => setAttribute({ ...attribute, glueWidth: Number(event.target.value) || 1 })} /></label>
