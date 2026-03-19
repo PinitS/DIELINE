@@ -17,6 +17,12 @@ button, input, select { font: inherit; }
   padding: 24px;
 }
 
+.section-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
 .control-panel, .canvas-panel {
   background: #fff;
   border-radius: 24px;

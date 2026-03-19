@@ -91,7 +91,7 @@ export const Becf_11d01Control = ({
 
   return (
     <>
-      <div className="section-grid">
+      <div className="section-row">
         <label className="field">Display unit
           <select value={displayUnit} onChange={(event) => onDisplayUnitChange(event.target.value as DisplayUnit)}><option value="mm">mm</option><option value="cm">cm</option><option value="in">in</option></select>
         </label>

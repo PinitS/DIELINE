@@ -224,7 +224,7 @@ export const Becf_10803Control = ({
   // dieline view mode
   return (
     <>
-      <div className="section-grid">
+      <div className="section-row">
         <label className="field">Display unit
           <select value={displayUnit} onChange={(event) => onDisplayUnitChange(event.target.value as DisplayUnit)}>
             <option value="mm">mm</option>

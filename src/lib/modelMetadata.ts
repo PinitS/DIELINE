@@ -147,62 +147,6 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
       },
     ],
   },
-  {
-    id: "becf10a0a",
-    name: "Tuck End Box (10a0a)",
-    exportName: "Becf_10a0a_dieline",
-    componentPath: "src/components/3D/TuckEndBoxes/Becf_10a0a/Becf_10a0a_dieline.tsx",
-    attributes: [
-      {
-        name: "length",
-        type: "number",
-        description: "Main body panel length in millimeters",
-        defaultValue: 135,
-      },
-      {
-        name: "width",
-        type: "number",
-        description: "Main body side width in millimeters",
-        defaultValue: 70,
-      },
-      {
-        name: "height",
-        type: "number",
-        description: "Body height in millimeters",
-        defaultValue: 140,
-      },
-      {
-        name: "closurePanel",
-        type: "number",
-        description: "Top closure panel depth in millimeters",
-        defaultValue: 50,
-      },
-      {
-        name: "dustFlap",
-        type: "number",
-        description: "Dust flap depth in millimeters",
-        defaultValue: 48.75,
-      },
-      {
-        name: "glueWidth",
-        type: "number",
-        description: "Glue area width in millimeters",
-        defaultValue: 15,
-      },
-      {
-        name: "tuckFlap",
-        type: "number",
-        description: "Tuck flap depth in millimeters",
-        defaultValue: 15,
-      },
-      {
-        name: "topClosurePanel",
-        type: "number",
-        description: "Top closure panel height in millimeters",
-        defaultValue: 70,
-      },
-    ],
-  },
 ];
 
 export const DIELINE_MODELS: readonly DielineModelMetadata[] = MODEL_DEFINITIONS.map((model) => ({

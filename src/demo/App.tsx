@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Becf_10803_dieline } from "../components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline";
-import { Becf_10a0a_dieline } from "../components/3D/TuckEndBoxes/Becf_10a0a/Becf_10a0a_dieline";
 import { Becf_11d01_dieline } from "../components/3D/TuckEndBoxes/Becf_11d01/Becf_11d01_dieline";
 import { StrickerCircleDieline } from "../components/2D/StrickerCircleDieline";
 import { StrickerRectangleDieline } from "../components/2D/StrickerRectangleDieline";
@@ -336,7 +335,7 @@ export const App = () => {
           <h1>React Three Fiber dieline demo</h1>
         </div>
 
-        <div className="section-grid">
+        <div className="section-row">
           <label className="field">Dieline type
             <select value={shapeType} onChange={(event) => setShapeType(event.target.value as DielineModelId)}>
               {MODEL_METADATA.map((model) => (
@@ -570,22 +569,6 @@ export const App = () => {
                   onMeasure={setMeasuredBounds}
                 />
               );
-
-            case "becf10a0a":
-              return (
-                <Becf_10a0a_dieline
-                  ref={modelRef}
-                  attribute={attributeBecf_10a0a}
-                  displayUnit={displayUnit}
-                  textureImageUrl={isTextureMode ? currentTexturePreviewUrl ?? undefined : undefined}
-                  texturePlacement={isTextureMode ? currentTexture : undefined}
-                  onTexturePlacementChange={isTextureMode ? setCurrentTexture : undefined}
-                  showDimensions={isTextureMode ? false : showDimensions}
-                  showShapeLines
-                  onMeasure={setMeasuredBounds}
-                />
-              );
-
             default:
               return null;
           }
