@@ -100,7 +100,6 @@ const prepareModel = (
       points: offsetPoints,
       stroke: "#22c55e",
       strokeWidth: 0.2,
-      dashArray: "2 1.5",
     };
   });
 

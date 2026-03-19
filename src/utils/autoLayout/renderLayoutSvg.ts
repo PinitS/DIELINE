@@ -65,7 +65,7 @@ export const renderLayoutSvg = (options: RenderLayoutSvgOptions): string => {
         ...bp,
         stroke: BOUNDARY_COLOR,
         strokeWidth: BOUNDARY_WIDTH,
-        dashArray: BOUNDARY_DASH,
+        dashArray: undefined,
         // Translate to paper coordinates
         points: bp.points.map((p) => ({ x: p.x + usableLeft, y: p.y + usableTop })),
       }));
