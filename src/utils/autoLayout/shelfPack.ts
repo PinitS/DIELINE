@@ -1,8 +1,10 @@
 import type { Placement, PreparedModel, Point, ShapePolyline } from "./types";
 
+type Rotation = 0 | 90 | 180 | 270;
+
 type ShelfItem = {
   prepared: PreparedModel;
-  rotated: boolean;
+  rotation: Rotation;
 };
 
 type Shelf = {
@@ -12,14 +14,11 @@ type Shelf = {
   items: Array<{ item: ShelfItem; x: number }>;
 };
 
-/**
- * Transform polylines: if rotated, rotate 90° CW, then translate to (x, y).
- */
 const transformPolylines = (
   polylines: ShapePolyline[],
   x: number,
   y: number,
-  rotated: boolean,
+  rotation: Rotation,
   originalWidth: number,
   originalHeight: number,
 ): ShapePolyline[] =>
@@ -28,11 +27,15 @@ const transformPolylines = (
     points: pl.points.map((pt) => {
       let px: number;
       let py: number;
-      if (rotated) {
-        // 90° CW rotation: (px, py) → (originalHeight - py, px)
-        // Then the bounding box becomes (originalHeight × originalWidth)
+      if (rotation === 90) {
         px = originalHeight - pt.y;
         py = pt.x;
+      } else if (rotation === 180) {
+        px = originalWidth - pt.x;
+        py = originalHeight - pt.y;
+      } else if (rotation === 270) {
+        px = pt.y;
+        py = originalWidth - pt.x;
       } else {
         px = pt.x;
         py = pt.y;
@@ -41,18 +44,16 @@ const transformPolylines = (
     }),
   }));
 
-/**
- * Shelf-packing algorithm.
- *
- * Places items into horizontal shelves within the usable area.
- * Each item can optionally be rotated 90° to fit better.
- *
- * @param items        – prepared models to place (already in desired sort order)
- * @param usableWidth  – available width (mm)
- * @param usableHeight – available height (mm)
- * @param layoutDistance – gap between items (mm)
- * @returns array of placements that fit on one sheet
- */
+const rotatedDims = (
+  prepared: PreparedModel,
+  rotation: Rotation,
+): { itemW: number; itemH: number } => {
+  if (rotation === 90 || rotation === 270) {
+    return { itemW: prepared.heightMm, itemH: prepared.widthMm };
+  }
+  return { itemW: prepared.widthMm, itemH: prepared.heightMm };
+};
+
 export const shelfPack = (
   items: PreparedModel[],
   usableWidth: number,
@@ -62,30 +63,25 @@ export const shelfPack = (
   const shelves: Shelf[] = [];
   const placements: Placement[] = [];
 
+  const ROTATIONS: Rotation[] = [0, 90, 180, 270];
+
   const tryFitInShelf = (shelf: Shelf, prepared: PreparedModel): ShelfItem | null => {
-    // Try normal orientation
-    const normalW = prepared.widthMm;
-    const normalH = prepared.heightMm;
     const gapX = shelf.usedWidth > 0 ? layoutDistance : 0;
-
-    if (shelf.usedWidth + gapX + normalW <= usableWidth + 0.001 && normalH <= shelf.height + 0.001) {
-      return { prepared, rotated: false };
+    for (const rotation of ROTATIONS) {
+      const { itemW, itemH } = rotatedDims(prepared, rotation);
+      if (
+        shelf.usedWidth + gapX + itemW <= usableWidth + 0.001 &&
+        itemH <= shelf.height + 0.001
+      ) {
+        return { prepared, rotation };
+      }
     }
-
-    // Try rotated 90°
-    const rotW = prepared.heightMm;
-    const rotH = prepared.widthMm;
-    if (shelf.usedWidth + gapX + rotW <= usableWidth + 0.001 && rotH <= shelf.height + 0.001) {
-      return { prepared, rotated: true };
-    }
-
     return null;
   };
 
   for (const prepared of items) {
     let placed = false;
 
-    // Try to fit in an existing shelf (best-fit: choose shelf with least remaining width)
     let bestShelfIdx = -1;
     let bestFit: ShelfItem | null = null;
     let bestRemaining = Infinity;
@@ -93,7 +89,7 @@ export const shelfPack = (
     for (let i = 0; i < shelves.length; i++) {
       const fit = tryFitInShelf(shelves[i], prepared);
       if (fit) {
-        const itemW = fit.rotated ? prepared.heightMm : prepared.widthMm;
+        const { itemW } = rotatedDims(prepared, fit.rotation);
         const gapX = shelves[i].usedWidth > 0 ? layoutDistance : 0;
         const remaining = usableWidth - (shelves[i].usedWidth + gapX + itemW);
         if (remaining < bestRemaining) {
@@ -109,43 +105,39 @@ export const shelfPack = (
       const gapX = shelf.usedWidth > 0 ? layoutDistance : 0;
       const x = shelf.usedWidth + gapX;
       shelf.items.push({ item: bestFit, x });
-      const itemW = bestFit.rotated ? prepared.heightMm : prepared.widthMm;
+      const { itemW, itemH } = rotatedDims(prepared, bestFit.rotation);
       shelf.usedWidth = x + itemW;
       placed = true;
 
-      const itemH = bestFit.rotated ? prepared.widthMm : prepared.heightMm;
       placements.push(createPlacement(bestFit, x, shelf.y, itemW, itemH, prepared));
     }
 
     if (!placed) {
-      // Create a new shelf
-      const normalH = prepared.heightMm;
-      const normalW = prepared.widthMm;
-      const rotH = prepared.widthMm;
-      const rotW = prepared.heightMm;
-
-      // Calculate y position for new shelf
       const shelfGap = shelves.length > 0 ? layoutDistance : 0;
-      const lastShelfBottom = shelves.length > 0
-        ? shelves[shelves.length - 1].y + shelves[shelves.length - 1].height
-        : 0;
+      const lastShelfBottom =
+        shelves.length > 0
+          ? shelves[shelves.length - 1].y + shelves[shelves.length - 1].height
+          : 0;
       const newShelfY = lastShelfBottom + shelfGap;
 
-      // Try normal first, then rotated
-      let rotated = false;
-      let itemW = normalW;
-      let itemH = normalH;
+      let chosenRotation: Rotation | null = null;
+      let itemW = 0;
+      let itemH = 0;
 
-      if (normalW <= usableWidth + 0.001 && newShelfY + normalH <= usableHeight + 0.001) {
-        rotated = false;
-        itemW = normalW;
-        itemH = normalH;
-      } else if (rotW <= usableWidth + 0.001 && newShelfY + rotH <= usableHeight + 0.001) {
-        rotated = true;
-        itemW = rotW;
-        itemH = rotH;
-      } else {
-        // Doesn't fit at all – skip this item
+      for (const rotation of ROTATIONS) {
+        const dims = rotatedDims(prepared, rotation);
+        if (
+          dims.itemW <= usableWidth + 0.001 &&
+          newShelfY + dims.itemH <= usableHeight + 0.001
+        ) {
+          chosenRotation = rotation;
+          itemW = dims.itemW;
+          itemH = dims.itemH;
+          break;
+        }
+      }
+
+      if (chosenRotation === null) {
         continue;
       }
 
@@ -153,11 +145,13 @@ export const shelfPack = (
         y: newShelfY,
         height: itemH,
         usedWidth: itemW,
-        items: [{ item: { prepared, rotated }, x: 0 }],
+        items: [{ item: { prepared, rotation: chosenRotation }, x: 0 }],
       };
       shelves.push(shelf);
 
-      placements.push(createPlacement({ prepared, rotated }, 0, newShelfY, itemW, itemH, prepared));
+      placements.push(
+        createPlacement({ prepared, rotation: chosenRotation }, 0, newShelfY, itemW, itemH, prepared),
+      );
     }
   }
 
@@ -176,16 +170,24 @@ const createPlacement = (
   modelId: prepared.modelId,
   x,
   y,
-  rotated: fit.rotated,
+  rotation: fit.rotation,
   widthMm: itemW,
   heightMm: itemH,
   svgContent: prepared.svgContent,
   shapePolylines: transformPolylines(
-    prepared.shapePolylines, x, y, fit.rotated,
-    prepared.widthMm, prepared.heightMm,
+    prepared.shapePolylines,
+    x,
+    y,
+    fit.rotation,
+    prepared.widthMm,
+    prepared.heightMm,
   ),
   boundaryPolylines: transformPolylines(
-    prepared.boundaryPolylines, x, y, fit.rotated,
-    prepared.widthMm, prepared.heightMm,
+    prepared.boundaryPolylines,
+    x,
+    y,
+    fit.rotation,
+    prepared.widthMm,
+    prepared.heightMm,
   ),
 });

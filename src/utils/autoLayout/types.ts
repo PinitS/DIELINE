@@ -56,7 +56,7 @@ export type Placement = {
   modelId: DielineModelId;
   x: number;
   y: number;
-  rotated: boolean;
+  rotation: 0 | 90 | 180 | 270;
   widthMm: number;
   heightMm: number;
   /** SVG content of this dieline */

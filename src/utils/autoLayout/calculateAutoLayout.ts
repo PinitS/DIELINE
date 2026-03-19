@@ -215,7 +215,7 @@ export const calculateAutoLayout = async (
     const uniqueLayouts: typeof topLayouts = [];
     for (const layout of topLayouts) {
       const sig = layout.placements
-        .map((p) => `${p.modelEntryId}:${p.x.toFixed(1)},${p.y.toFixed(1)}:${p.rotated}`)
+        .map((p) => `${p.modelEntryId}:${p.x.toFixed(1)},${p.y.toFixed(1)}:${p.rotation}`)
         .join("|");
       if (seen.has(sig)) continue;
       seen.add(sig);
