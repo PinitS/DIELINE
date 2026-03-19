@@ -1,14 +1,14 @@
 import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, RectangleDielineProps } from "../../types";
 import { measureRectangleBounds } from "../../utils/measure";
-import { createDielinePrintController } from "../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../utils/export/exportPreviewLayout";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
 import { SceneLine } from "../ScenePrimitives";
 
 export const StrickerRectangleDieline = forwardRef<DielineCanvasHandle, RectangleDielineProps>(
   function RectangleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const bounds = measureRectangleBounds(attribute);
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "rectangle", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "StrickerRectangleDieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);

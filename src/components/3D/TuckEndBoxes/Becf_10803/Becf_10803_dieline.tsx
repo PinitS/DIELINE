@@ -1,7 +1,7 @@
 import { Text } from "@react-three/drei";
 import { forwardRef, useMemo } from "react";
 import type { DielineCanvasHandle, DisplayUnit, TuckEndBoxDielineProps } from "../../../../types";
-import { createDielinePrintController } from "../../../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../../../utils/export/exportPreviewLayout";
 import { getTuckEndBoxGeometry } from "../../../../utils/becf10803Geometry";
 import { formatDielineDisplayValue } from "../../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../../BaseDielineCanvas";
@@ -26,7 +26,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
   function TuckEndBoxDieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = geometry.bounds;
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "becf10803", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf", },
     ), [attribute, canvasProps.displayUnit]);

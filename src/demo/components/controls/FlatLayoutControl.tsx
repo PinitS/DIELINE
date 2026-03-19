@@ -1,6 +1,6 @@
 import type { DielineBounds, DisplayUnit } from "../../../types";
 import { formatDielineDisplayValue } from "../../../utils/units";
-import { DEFAULT_FLAT_LAYOUT_ATTRIBUTES, type FlatLayoutAttributes } from "../../../../TEST/FlatLayoutDieline";
+import { DEFAULT_FLAT_LAYOUT_ATTRIBUTES, type FlatLayoutAttributes } from "../../../components/TEST/FlatLayoutDieline";
 
 type FlatLayoutControlProps = {
   displayUnit: DisplayUnit;

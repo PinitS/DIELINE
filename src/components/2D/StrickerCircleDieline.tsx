@@ -1,7 +1,7 @@
 import { forwardRef, useMemo } from "react";
 import type { CircleDielineProps, DielineCanvasHandle } from "../../types";
 import { measureCircleBounds } from "../../utils/measure";
-import { createDielinePrintController } from "../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../utils/export/exportPreviewLayout";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../BaseDielineCanvas";
 import { SceneLine } from "../ScenePrimitives";
 
@@ -10,7 +10,7 @@ const CIRCLE_SEGMENTS = 96;
 export const StrickerCircleDieline = forwardRef<DielineCanvasHandle, CircleDielineProps>(
   function CircleDieline({ attribute, onMeasure, ...canvasProps }, ref) {
     const bounds = measureCircleBounds(attribute);
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "circle", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "StrickerCircleDieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);

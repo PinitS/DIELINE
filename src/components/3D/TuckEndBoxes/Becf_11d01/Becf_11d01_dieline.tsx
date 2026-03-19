@@ -3,7 +3,7 @@ import { forwardRef, useMemo } from "react";
 import type { Becf11d01DielineProps, DielineCanvasHandle, DisplayUnit } from "../../../../types";
 import { getBecf11d01Geometry } from "../../../../utils/becf11d01Geometry";
 import { measureBecf11d01Bounds } from "../../../../utils/measure";
-import { createDielinePrintController } from "../../../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../../../utils/export/exportPreviewLayout";
 import { formatDielineDisplayValue } from "../../../../utils/units";
 import { BaseDielineCanvas, TexturedPolygonMesh } from "../../../BaseDielineCanvas";
 import { SceneLine } from "../../../ScenePrimitives";
@@ -26,7 +26,7 @@ export const Becf_11d01_dieline = forwardRef<DielineCanvasHandle, Becf11d01Dieli
   function Becf11d01Dieline({ attribute, onMeasure, renderMode = "dieline", ...canvasProps }, ref) {
     const bounds = useMemo(() => measureBecf11d01Bounds(attribute), [attribute]);
     const geometry = useMemo(() => getBecf11d01Geometry(attribute), [attribute]);
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "becf11d01", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_11d01_dieline.pdf" },
     ), [attribute, canvasProps.displayUnit]);

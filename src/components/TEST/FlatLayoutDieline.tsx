@@ -4,13 +4,13 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineMeasureCallback,
-  DielinePrintController,
+  DielineExportPreviewLayoutController,
   DisplayUnit,
   SharedCanvasProps,
-} from "../src/types";
-import { formatDielineDisplayValue } from "../src/utils/units";
-import { BaseDielineCanvas } from "../src/components/BaseDielineCanvas";
-import { SceneLine } from "../src/components/ScenePrimitives";
+} from "../../types";
+import { formatDielineDisplayValue } from "../../utils/units";
+import { BaseDielineCanvas } from "../BaseDielineCanvas";
+import { SceneLine } from "../ScenePrimitives";
 
 /* ── Attribute type ────────────────────────────────────────────── */
 
@@ -87,11 +87,11 @@ const getOutlinePoints = (r: Required<FlatLayoutAttributes>): Point[] => {
   ];
 };
 
-/** No-op print controller – this model is demo-only. */
-const NOOP_PRINT_CONTROLLER: DielinePrintController = {
-  createPrintSvg: () => ({ svg: "", widthMm: 0, heightMm: 0 }),
-  openPrintPreview: () => { throw new Error("FlatLayoutDieline does not support print preview."); },
-  printToPdf: () => { throw new Error("FlatLayoutDieline does not support PDF export."); },
+/** No-op export controller – this model is demo-only. */
+const NOOP_EXPORT_CONTROLLER: DielineExportPreviewLayoutController = {
+  convertToSvg: () => ({ svg: "", widthMm: 0, heightMm: 0 }),
+  openPreview: () => { throw new Error("FlatLayoutDieline does not support export preview."); },
+  exportToPdf: () => { throw new Error("FlatLayoutDieline does not support PDF export."); },
 };
 
 /* ── Component ─────────────────────────────────────────────────── */
@@ -111,7 +111,7 @@ export const FlatLayoutDieline = forwardRef<DielineCanvasHandle, FlatLayoutDieli
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        exportPreviewLayout={NOOP_PRINT_CONTROLLER}
+        exportPreviewLayout={NOOP_EXPORT_CONTROLLER}
         renderShape={(layout, shapeStrokeColor, createScenePoint, showShapeLines) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;

@@ -20,7 +20,7 @@ import { StrickerRectangleControl } from "./components/controls/StrickerRectangl
 import { Becf_10803Control } from "./components/controls/Becf_10803Control";
 import { Becf_11d01Control } from "./components/controls/Becf_11d01Control";
 import { FlatLayoutControl } from "./components/controls/FlatLayoutControl";
-import { FlatLayoutDieline, type FlatLayoutAttributes } from "../../TEST/FlatLayoutDieline";
+import { FlatLayoutDieline, type FlatLayoutAttributes } from "../components/TEST/FlatLayoutDieline";
 import type { DemoViewMode } from "./demoTypes";
 
 const MODEL_METADATA = getDielineModels();
@@ -322,7 +322,7 @@ export const App = () => {
         throw new Error("Preview export API is not ready yet.");
       }
 
-      exportPreviewLayout.printToPdf({
+      exportPreviewLayout.exportToPdf({
         title: `${selectedModelMetadata?.exportName ?? "flat-layout"}.pdf`,
         displayUnit,
       });

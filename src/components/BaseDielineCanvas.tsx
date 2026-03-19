@@ -25,7 +25,7 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineMeasureCallback,
-  DielinePrintController,
+  DielineExportPreviewLayoutController,
   SharedCanvasProps,
   TexturePlacement,
 } from "../types";
@@ -41,7 +41,7 @@ export type TextureBounds = { left: number; top: number; width: number; height: 
 type BaseDielineCanvasProps = SharedCanvasProps & {
   bounds: DielineBounds;
   onMeasure?: DielineMeasureCallback;
-  exportPreviewLayout: DielinePrintController;
+  exportPreviewLayout: DielineExportPreviewLayoutController;
   renderShape: (
     layout: DielineLayout,
     shapeStrokeColor: string,

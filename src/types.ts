@@ -74,7 +74,7 @@ export type TexturePlacement = {
 export type DielineCanvasHandle = {
   getOverall: () => DielineBounds;
   resetView: () => void;
-  exportPreviewLayout: DielinePrintController;
+  exportPreviewLayout: DielineExportPreviewLayoutController;
 };
 
 export type DielineSvgDocument = {
@@ -83,21 +83,28 @@ export type DielineSvgDocument = {
   heightMm: number;
 };
 
-export type DielinePrintOptions = {
+export type DielineExportOptions = {
   title?: string;
   displayUnit?: DisplayUnit;
-  autoPrint?: boolean;
-  closeAfterPrint?: boolean;
+  autoExport?: boolean;
+  closeAfterExport?: boolean;
   marginMm?: number;
 };
 
-export type DielinePrintSvgOptions = Pick<DielinePrintOptions, "displayUnit">;
-export type DielinePrintPdfOptions = Omit<DielinePrintOptions, "autoPrint">;
+export type DielineExportSvgOptions = Pick<DielineExportOptions, "displayUnit"> & {
+  isShowDimension?: boolean;
+};
+export type DielineExportPdfOptions = Omit<DielineExportOptions, "autoExport">;
 
-export type DielinePrintController = {
-  createPrintSvg: (options?: DielinePrintSvgOptions) => DielineSvgDocument;
-  openPrintPreview: (options?: DielinePrintOptions) => Window;
-  printToPdf: (options?: DielinePrintPdfOptions) => void;
+export type DielineExportData = {
+  modelId: DielineModelId;
+  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes | Becf10a0aAttributes;
+};
+
+export type DielineExportPreviewLayoutController = {
+  convertToSvg: (options?: DielineExportSvgOptions) => DielineSvgDocument;
+  openPreview: (options?: DielineExportOptions) => Window;
+  exportToPdf: (options?: DielineExportPdfOptions) => void;
 };
 
 export type SharedCanvasProps = {

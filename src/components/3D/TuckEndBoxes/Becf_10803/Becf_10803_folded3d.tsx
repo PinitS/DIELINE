@@ -5,7 +5,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { OrbitControls as ThreeOrbitControls } from "three-stdlib";
 import type { DielineCanvasHandle, TuckEndBoxDielineProps } from "../../../../types";
 import { measureTuckEndBoxBounds } from "../../../../utils/measure";
-import { createDielinePrintController } from "../../../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../../../utils/export/exportPreviewLayout";
 import {
   getTuckEndBoxFoldAngles,
   getTuckEndBoxGeometry,
@@ -166,7 +166,7 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
     const controlsRef = useRef<OrbitControlsImpl | null>(null);
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = useMemo(() => measureTuckEndBoxBounds(geometry.resolved), [geometry.resolved]);
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "becf10803", attributes: attribute },
       { displayUnit, title: "Becf_10803_folded3d.pdf" },
     ), [attribute, displayUnit]);

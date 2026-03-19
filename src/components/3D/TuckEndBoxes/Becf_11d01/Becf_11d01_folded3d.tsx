@@ -10,7 +10,7 @@ import {
   type Point,
 } from "../../../../utils/becf11d01Geometry";
 import { measureBecf11d01Bounds } from "../../../../utils/measure";
-import { createDielinePrintController } from "../../../../utils/pdfExport";
+import { createDielineExportPreviewLayoutController } from "../../../../utils/export/exportPreviewLayout";
 
 type PanelMeshProps = {
   points: Point[];
@@ -159,7 +159,7 @@ export const Becf_11d01_folded3d = forwardRef<DielineCanvasHandle, Becf11d01Diel
     const controlsRef = useRef<OrbitControlsImpl | null>(null);
     const geometry = useMemo(() => getBecf11d01Geometry(attribute), [attribute]);
     const bounds = useMemo(() => measureBecf11d01Bounds(geometry.resolved), [geometry.resolved]);
-    const exportPreviewLayout = useMemo(() => createDielinePrintController(
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
       { modelId: "becf11d01", attributes: attribute },
       { displayUnit, title: "Becf_11d01_folded3d.pdf" },
     ), [attribute, displayUnit]);

@@ -2,25 +2,22 @@ import type {
   Becf10a0aAttributes,
   Becf11d01Attributes,
   CircleAttributes,
+  DielineExportData,
+  DielineExportSvgOptions,
   DielineModelId,
-  DielinePrintController,
-  DielinePrintOptions,
-  DielinePrintPdfOptions,
-  DielinePrintSvgOptions,
   DielineSvgDocument,
   DisplayUnit,
   RectangleAttributes,
   TuckEndBoxAttributes,
-} from "../types";
-import { getBecf10a0aGeometry } from "./becf10a0aGeometry";
-import { getBecf11d01Geometry } from "./becf11d01Geometry";
-import { getTuckEndBoxGeometry } from "./becf10803Geometry";
-import { measureBecf10a0aBounds, measureBecf11d01Bounds, measureCircleBounds, measureRectangleBounds } from "./measure";
-import { formatDielineDisplayValue } from "./units";
+} from "../../types";
+import { getBecf10a0aGeometry } from "../becf10a0aGeometry";
+import { getBecf11d01Geometry } from "../becf11d01Geometry";
+import { getTuckEndBoxGeometry } from "../becf10803Geometry";
+import { measureBecf10a0aBounds, measureBecf11d01Bounds, measureCircleBounds, measureRectangleBounds } from "../measure";
+import { formatDielineDisplayValue } from "../units";
 
-const PDF_MARGIN_MM = 10;
 const SVG_PADDING_MM = 2;
-const CUT_LINE_COLOR = "#000000";
+const CUT_LINE_COLOR = "#ff2d2d";
 const CUT_LINE_WIDTH_MM = 0.3;
 const FOLD_LINE_COLOR = "#22c55e";
 const FOLD_LINE_WIDTH_MM = 0.25;
@@ -34,11 +31,6 @@ type Polyline = { points: Point[]; stroke: string; strokeWidth: number; dashArra
 type Label = { x: number; y: number; text: string; fontSize: number; rotate?: boolean };
 type ExportGeometry = { polylines: Polyline[]; labels: Label[] };
 type ExportBounds = { left: number; top: number; right: number; bottom: number };
-
-export type DielinePrintData = {
-  modelId: DielineModelId;
-  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes | Becf10a0aAttributes;
-};
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -144,14 +136,16 @@ const createOverallDimensions = (width: number, height: number, displayUnit: Dis
   };
 };
 
-const createCircleGeometry = (attributes: CircleAttributes, displayUnit: DisplayUnit): ExportGeometry => {
+
+
+const createCircleGeometry = (attributes: CircleAttributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   const { overallWidthMm: size } = measureCircleBounds(attributes);
   const radius = size / 2;
   const circlePoints = Array.from({ length: CIRCLE_SEGMENTS + 1 }, (_, index) => {
     const angle = (index / CIRCLE_SEGMENTS) * Math.PI * 2;
     return { x: radius + Math.cos(angle) * radius, y: radius + Math.sin(angle) * radius };
   });
-  const dimensions = createOverallDimensions(size, size, displayUnit);
+  const dimensions = isShowDimension ? createOverallDimensions(size, size, displayUnit) : { polylines: [], labels: [] };
 
   return {
     polylines: [{ points: circlePoints, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM }, ...dimensions.polylines],
@@ -159,9 +153,9 @@ const createCircleGeometry = (attributes: CircleAttributes, displayUnit: Display
   };
 };
 
-const createRectangleGeometry = (attributes: RectangleAttributes, displayUnit: DisplayUnit): ExportGeometry => {
+const createRectangleGeometry = (attributes: RectangleAttributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   const bounds = measureRectangleBounds(attributes);
-  const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
+  const dimensions = isShowDimension ? createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit) : { polylines: [], labels: [] };
 
   return {
     polylines: [
@@ -182,7 +176,7 @@ const createRectangleGeometry = (attributes: RectangleAttributes, displayUnit: D
   };
 };
 
-const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit: DisplayUnit): ExportGeometry => {
+const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   const geometry = getTuckEndBoxGeometry(attributes);
   const { bounds, guides, resolved } = geometry;
   const { length, width, height, glueWidth, dustFlap, tuckFlap, closurePanel } = resolved;
@@ -206,10 +200,18 @@ const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit:
   const closureLabelX = Math.max(x2 + Math.max(3.5, advancedLabelFontSize * 0.72), closureDimensionX - Math.max(5, advancedLabelFontSize * 0.92));
   const dustLabelX = Math.max(x3 + Math.max(3.5, advancedLabelFontSize * 0.72), dustDimensionX - Math.max(5, advancedLabelFontSize * 0.92));
 
+  const shapePolylines: Polyline[] = [
+    ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+    ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+  ];
+
+  if (!isShowDimension) {
+    return { polylines: shapePolylines, labels: [] };
+  }
+
   return {
     polylines: [
-      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
-      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+      ...shapePolylines,
       { points: [{ x: x1, y: y2 }, { x: x1, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
       { points: [{ x: x2, y: y2 }, { x: x2, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
       { points: [{ x: x3, y: y2 }, { x: x3, y: dimensionY - dimensionTick * 0.4 }], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY },
@@ -250,20 +252,26 @@ const createTuckEndBoxGeometry = (attributes: TuckEndBoxAttributes, displayUnit:
   };
 };
 
-const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: DisplayUnit): ExportGeometry => {
+const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   const geometry = getBecf11d01Geometry(attributes);
   const bounds = measureBecf11d01Bounds(attributes);
   const { resolved, guides } = geometry;
-  const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
+  const dimensions = isShowDimension ? createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit) : { polylines: [], labels: [] };
   const labelFontSize = clamp(Math.min(resolved.length, resolved.height, resolved.width) * 0.08, 4, 10);
   const secondaryFontSize = Math.max(3.4, labelFontSize * 0.78);
 
+  const shapePolylines: Polyline[] = [
+    ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+    ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+    ...dimensions.polylines,
+  ];
+
+  if (!isShowDimension) {
+    return { polylines: shapePolylines, labels: [] };
+  }
+
   return {
-    polylines: [
-      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
-      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
-      ...dimensions.polylines,
-    ],
+    polylines: shapePolylines,
     labels: [
       {
         x: (guides.frontLeft + guides.frontRight) / 2,
@@ -301,20 +309,26 @@ const createBecf11d01Geometry = (attributes: Becf11d01Attributes, displayUnit: D
   };
 };
 
-const createBecf10a0aGeometry = (attributes: Becf10a0aAttributes, displayUnit: DisplayUnit): ExportGeometry => {
+const createBecf10a0aGeometry = (attributes: Becf10a0aAttributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   const geometry = getBecf10a0aGeometry(attributes);
   const bounds = measureBecf10a0aBounds(attributes);
   const { resolved, guides } = geometry;
-  const dimensions = createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit);
+  const dimensions = isShowDimension ? createOverallDimensions(bounds.overallWidthMm, bounds.overallHeightMm, displayUnit) : { polylines: [], labels: [] };
   const labelFontSize = clamp(Math.min(resolved.length, resolved.height, resolved.width) * 0.08, 4, 10);
   const secondaryFontSize = Math.max(3.4, labelFontSize * 0.78);
 
+  const shapePolylines: Polyline[] = [
+    ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
+    ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
+    ...dimensions.polylines,
+  ];
+
+  if (!isShowDimension) {
+    return { polylines: shapePolylines, labels: [] };
+  }
+
   return {
-    polylines: [
-      ...geometry.cuts.map((points) => ({ points, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM })),
-      ...geometry.folds.map((points) => ({ points, stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY })),
-      ...dimensions.polylines,
-    ],
+    polylines: shapePolylines,
     labels: [
       {
         x: (guides.frontLeft + guides.frontRight) / 2,
@@ -346,28 +360,29 @@ const createBecf10a0aGeometry = (attributes: Becf10a0aAttributes, displayUnit: D
   };
 };
 
-const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): ExportGeometry => {
+const createGeometry = (data: DielineExportData, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   switch (data.modelId) {
     case "circle":
-      return createCircleGeometry(data.attributes as CircleAttributes, displayUnit);
+      return createCircleGeometry(data.attributes as CircleAttributes, displayUnit, isShowDimension);
     case "rectangle":
-      return createRectangleGeometry(data.attributes as RectangleAttributes, displayUnit);
+      return createRectangleGeometry(data.attributes as RectangleAttributes, displayUnit, isShowDimension);
     case "becf10803":
-      return createTuckEndBoxGeometry(data.attributes as TuckEndBoxAttributes, displayUnit);
+      return createTuckEndBoxGeometry(data.attributes as TuckEndBoxAttributes, displayUnit, isShowDimension);
     case "becf11d01":
-      return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit);
+      return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit, isShowDimension);
     case "becf10a0a":
-      return createBecf10a0aGeometry(data.attributes as Becf10a0aAttributes, displayUnit);
+      return createBecf10a0aGeometry(data.attributes as Becf10a0aAttributes, displayUnit, isShowDimension);
     default:
       throw new Error(`Unsupported model: ${data.modelId}`);
   }
 };
 
-export const createDielinePrintSvg = (
-  data: DielinePrintData,
-  options: DielinePrintSvgOptions = {},
+export const convertDielineToSvg = (
+  data: DielineExportData,
+  options: DielineExportSvgOptions = {},
 ): DielineSvgDocument => {
-  const geometry = createGeometry(data, options.displayUnit ?? "mm");
+  const isShowDimension = options.isShowDimension ?? true;
+  const geometry = createGeometry(data, options.displayUnit ?? "mm", isShowDimension);
   const bounds = buildBounds(geometry);
   const widthMm = Number((bounds.right - bounds.left).toFixed(3));
   const heightMm = Number((bounds.bottom - bounds.top).toFixed(3));
@@ -383,134 +398,4 @@ export const createDielinePrintSvg = (
     widthMm,
     heightMm,
   };
-};
-
-const createPrintHtml = (
-  documentTitle: string,
-  svgDocument: DielineSvgDocument,
-  options: Required<Pick<DielinePrintOptions, "autoPrint" | "closeAfterPrint" | "marginMm">>,
-) => {
-  const pageWidthMm = svgDocument.widthMm + options.marginMm * 2;
-  const pageHeightMm = svgDocument.heightMm + options.marginMm * 2;
-  const printScript = options.autoPrint
-    ? `<script>window.addEventListener("load",()=>window.setTimeout(()=>window.print(),150));${options.closeAfterPrint ? "window.addEventListener(\"afterprint\",()=>window.close());" : ""}</script>`
-    : "";
-
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>${escapeHtml(documentTitle)}</title>
-    <style>
-      @page { size: ${pageWidthMm}mm ${pageHeightMm}mm; margin: 0; }
-      html, body { margin: 0; padding: 0; background: #f3f4f6; }
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .sheet {
-        box-sizing: border-box;
-        width: ${pageWidthMm}mm;
-        min-height: ${pageHeightMm}mm;
-        padding: ${options.marginMm}mm;
-        background: #ffffff;
-        margin: 16px auto;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      }
-      .sheet svg { display: block; }
-      @media print {
-        html, body { background: #ffffff; }
-        .sheet { margin: 0; box-shadow: none; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="sheet">${svgDocument.svg}</div>
-    ${printScript}
-  </body>
-</html>`;
-};
-
-export const openDielinePrintPreview = (data: DielinePrintData, options: DielinePrintOptions = {}) => {
-  if (typeof window === "undefined") {
-    throw new Error("Dieline print preview is only available in the browser.");
-  }
-
-  const svgDocument = createDielinePrintSvg(data, { displayUnit: options.displayUnit });
-  const printWindow = window.open("", "_blank", "width=1100,height=800");
-
-  if (!printWindow) {
-    throw new Error("Unable to open print window. Please allow pop-ups and try again.");
-  }
-
-  const title = options.title ?? `${data.modelId}-print-test.pdf`;
-  const html = createPrintHtml(title, svgDocument, {
-    autoPrint: options.autoPrint ?? false,
-    closeAfterPrint: options.closeAfterPrint ?? true,
-    marginMm: options.marginMm ?? PDF_MARGIN_MM,
-  });
-  const blob = new Blob([html], { type: "text/html" });
-  const objectUrl = URL.createObjectURL(blob);
-
-  printWindow.location.replace(objectUrl);
-  window.setTimeout(() => {
-    URL.revokeObjectURL(objectUrl);
-  }, 60_000);
-
-  return printWindow;
-};
-
-export const printDielineToPdf = (data: DielinePrintData, options: Omit<DielinePrintOptions, "autoPrint"> = {}) => {
-  openDielinePrintPreview(data, { ...options, autoPrint: true });
-};
-
-export const createDielinePrintController = (
-  data: DielinePrintData,
-  defaults: Partial<DielinePrintOptions> = {},
-): DielinePrintController => ({
-  createPrintSvg: (options = {}) => createDielinePrintSvg(data, {
-    displayUnit: options.displayUnit ?? defaults.displayUnit,
-  }),
-  openPrintPreview: (options = {}) => openDielinePrintPreview(data, {
-    ...defaults,
-    ...options,
-    displayUnit: options.displayUnit ?? defaults.displayUnit,
-  }),
-  printToPdf: (options: DielinePrintPdfOptions = {}) => printDielineToPdf(data, {
-    ...defaults,
-    ...options,
-    displayUnit: options.displayUnit ?? defaults.displayUnit,
-  }),
-});
-
-export const printCircleDielineToPdf = (
-  attributes: CircleAttributes,
-  options?: Omit<DielinePrintOptions, "autoPrint">,
-) => {
-  printDielineToPdf({ modelId: "circle", attributes }, options);
-};
-
-export const printRectangleDielineToPdf = (
-  attributes: RectangleAttributes,
-  options?: Omit<DielinePrintOptions, "autoPrint">,
-) => {
-  printDielineToPdf({ modelId: "rectangle", attributes }, options);
-};
-
-export const printTuckEndBoxDielineToPdf = (
-  attributes: TuckEndBoxAttributes,
-  options?: Omit<DielinePrintOptions, "autoPrint">,
-) => {
-  printDielineToPdf({ modelId: "becf10803", attributes }, options);
-};
-
-export const printBecf11d01DielineToPdf = (
-  attributes: Becf11d01Attributes,
-  options?: Omit<DielinePrintOptions, "autoPrint">,
-) => {
-  printDielineToPdf({ modelId: "becf11d01", attributes }, options);
-};
-
-export const printBecf10a0aDielineToPdf = (
-  attributes: Becf10a0aAttributes,
-  options?: Omit<DielinePrintOptions, "autoPrint">,
-) => {
-  printDielineToPdf({ modelId: "becf10a0a", attributes }, options);
 };
