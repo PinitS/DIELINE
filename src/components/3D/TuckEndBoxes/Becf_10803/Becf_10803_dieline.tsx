@@ -27,7 +27,7 @@ export const Becf_10803_dieline = forwardRef<DielineCanvasHandle, TuckEndBoxDiel
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = geometry.bounds;
     const exportPreviewLayout = useMemo(() => createDielinePrintController(
-      { modelId: "tuckEndBox", attributes: attribute },
+      { modelId: "becf10803", attributes: attribute },
       { displayUnit: canvasProps.displayUnit, title: "Becf_10803_dieline.pdf", },
     ), [attribute, canvasProps.displayUnit]);
 

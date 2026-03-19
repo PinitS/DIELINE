@@ -167,7 +167,7 @@ export const Becf_10803_folded3d = forwardRef<DielineCanvasHandle, TuckEndBoxDie
     const geometry = useMemo(() => getTuckEndBoxGeometry(attribute), [attribute]);
     const bounds = useMemo(() => measureTuckEndBoxBounds(geometry.resolved), [geometry.resolved]);
     const exportPreviewLayout = useMemo(() => createDielinePrintController(
-      { modelId: "tuckEndBox", attributes: attribute },
+      { modelId: "becf10803", attributes: attribute },
       { displayUnit, title: "Becf_10803_folded3d.pdf" },
     ), [attribute, displayUnit]);
 

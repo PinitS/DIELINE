@@ -352,7 +352,7 @@ const createGeometry = (data: DielinePrintData, displayUnit: DisplayUnit): Expor
       return createCircleGeometry(data.attributes as CircleAttributes, displayUnit);
     case "rectangle":
       return createRectangleGeometry(data.attributes as RectangleAttributes, displayUnit);
-    case "tuckEndBox":
+    case "becf10803":
       return createTuckEndBoxGeometry(data.attributes as TuckEndBoxAttributes, displayUnit);
     case "becf11d01":
       return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit);
@@ -498,7 +498,7 @@ export const printTuckEndBoxDielineToPdf = (
   attributes: TuckEndBoxAttributes,
   options?: Omit<DielinePrintOptions, "autoPrint">,
 ) => {
-  printDielineToPdf({ modelId: "tuckEndBox", attributes }, options);
+  printDielineToPdf({ modelId: "becf10803", attributes }, options);
 };
 
 export const printBecf11d01DielineToPdf = (

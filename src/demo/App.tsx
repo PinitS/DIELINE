@@ -18,7 +18,6 @@ import type {
 import { StrickerCircleControl } from "./components/controls/StrickerCircleControl";
 import { StrickerRectangleControl } from "./components/controls/StrickerRectangleControl";
 import { Becf_10803Control } from "./components/controls/Becf_10803Control";
-import { Becf_10a0aControl } from "./components/controls/Becf_10a0aControl";
 import { Becf_11d01Control } from "./components/controls/Becf_11d01Control";
 import type { DemoViewMode } from "./demoTypes";
 
@@ -76,7 +75,7 @@ const getValueByModelId = <T,>(
       return circleValue;
     case "rectangle":
       return rectangleValue;
-    case "tuckEndBox":
+    case "becf10803":
       return tuckEndBoxValue;
     case "becf11d01":
       return becf11d01Value;
@@ -125,7 +124,7 @@ export const App = () => {
   const isTextureMode = viewMode === "texture";
   const is3DMode = viewMode === "3d";
   const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
-  const supports3DView = selectedModelMetadata.dimensionType === "3D";
+  const supports3DView = selectedModelMetadata.modelDimensionType === "3D";
 
   const currentTexture = getValueByModelId(
     shapeType,
@@ -160,7 +159,7 @@ export const App = () => {
       case "rectangle":
         setTextureStrickerRectangle(texture);
         return;
-      case "tuckEndBox":
+      case "becf10803":
         setTextureBecf_10803(texture);
         return;
       case "becf11d01":
@@ -199,7 +198,7 @@ export const App = () => {
       case "rectangle":
         replaceTexturePreviewUrl(setTexturePreviewUrlStrickerRectangle, nextTextureUrl);
         return;
-      case "tuckEndBox":
+      case "becf10803":
         replaceTexturePreviewUrl(setTexturePreviewUrlBecf_10803, nextTextureUrl);
         return;
       case "becf11d01":
@@ -221,7 +220,7 @@ export const App = () => {
       case "rectangle":
         setTextureFileNameStrickerRectangle(nextTextureFileName);
         return;
-      case "tuckEndBox":
+      case "becf10803":
         setTextureFileNameBecf_10803(nextTextureFileName);
         return;
       case "becf11d01":
@@ -339,7 +338,7 @@ export const App = () => {
           <label className="field">Dieline type
             <select value={shapeType} onChange={(event) => setShapeType(event.target.value as DielineModelId)}>
               {MODEL_METADATA.map((model) => (
-                <option key={model.id} value={model.id}>{`${model.name} (${model.dimensionType})`}</option>
+                <option key={model.id} value={model.id}>{`${model.name} (${model.modelDimensionType})`}</option>
               ))}
             </select>
           </label>
@@ -372,7 +371,7 @@ export const App = () => {
 
         <div className="summary-card">
           <h2>Model registry</h2>
-          <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.dimensionType}`}</p>
+          <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.modelDimensionType}`}</p>
           <div className="toggle-row">
             <button type="button" onClick={exportModelJson}>Export model JSON</button>
             <button type="button" onClick={exportPreviewTestPdf}>Export preview PDF (1:1)</button>
@@ -427,7 +426,7 @@ export const App = () => {
                 />
               );
 
-            case "tuckEndBox":
+            case "becf10803":
               return (
                 <Becf_10803Control
                   viewMode={viewMode}
@@ -475,28 +474,6 @@ export const App = () => {
                 />
               );
 
-            case "becf10a0a":
-              return (
-                <Becf_10a0aControl
-                  viewMode={viewMode}
-                  displayUnit={displayUnit}
-                  showDimensions={showDimensions}
-                  measuredBounds={measuredBounds}
-                  attribute={attributeBecf_10a0a}
-                  setAttribute={setAttributeBecf_10a0a}
-                  texture={currentTexture}
-                  texturePreviewUrl={currentTexturePreviewUrl}
-                  textureFileName={currentTextureFileName}
-                  textureControlsDisabled={textureControlsDisabled}
-                  onDisplayUnitChange={setDisplayUnit}
-                  onToggleDimensions={() => setShowDimensions((value) => !value)}
-                  onTextureUpload={handleTextureUpload}
-                  onUpdateTexturePlacement={updateTexturePlacement}
-                  onResetTexturePlacement={resetTexturePlacement}
-                  onResetCanvasView={() => modelRef.current?.resetView()}
-                />
-              );
-
             default:
               return null;
           }
@@ -536,7 +513,7 @@ export const App = () => {
                 />
               );
 
-            case "tuckEndBox":
+            case "becf10803":
               return (
                 <Becf_10803_dieline
                   ref={modelRef}

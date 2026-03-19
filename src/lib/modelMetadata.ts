@@ -1,17 +1,12 @@
-import type { DielineModelDimension, DielineModelId, DielineModelMetadata } from "../types";
+import type { DielineModelId, DielineModelMetadata } from "../types";
 
-type ModelDefinition = Omit<DielineModelMetadata, "dimensionType">;
-
-const resolveModelDimensionType = (componentPath: string): DielineModelDimension => (
-  componentPath.includes("/3D/") ? "3D" : "2D"
-);
-
-const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
+const MODEL_DEFINITIONS: readonly DielineModelMetadata[] = [
   {
     id: "circle",
     name: "Circle",
     exportName: "StrickerCircleDieline",
     componentPath: "src/components/2D/StrickerCircleDieline.tsx",
+    modelDimensionType:'2D',
     attributes: [
       {
         name: "size",
@@ -26,6 +21,7 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
     name: "Rectangle",
     exportName: "StrickerRectangleDieline",
     componentPath: "src/components/2D/StrickerRectangleDieline.tsx",
+        modelDimensionType:'2D',
     attributes: [
       {
         name: "width",
@@ -42,10 +38,12 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
     ],
   },
   {
-    id: "tuckEndBox",
-    name: "Tuck End Box",
+    id: "becf10803",
+    name: "Model (10803)",
     exportName: "Becf_10803_dieline",
     componentPath: "src/components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline.tsx",
+        modelDimensionType:'3D',
+
     attributes: [
       {
         name: "length",
@@ -93,9 +91,11 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
   },
   {
     id: "becf11d01",
-    name: "Square Flap Skillet Box",
+    name: "Model (11d01)",
     exportName: "Becf_11d01_dieline",
     componentPath: "src/components/3D/TuckEndBoxes/Becf_11d01/Becf_11d01_dieline.tsx",
+            modelDimensionType:'3D',
+
     attributes: [
       {
         name: "panelWidth",
@@ -149,10 +149,7 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
   },
 ];
 
-export const DIELINE_MODELS: readonly DielineModelMetadata[] = MODEL_DEFINITIONS.map((model) => ({
-  ...model,
-  dimensionType: resolveModelDimensionType(model.componentPath),
-}));
+export const DIELINE_MODELS: readonly DielineModelMetadata[] = MODEL_DEFINITIONS;
 
 export const getDielineModels = (): readonly DielineModelMetadata[] => DIELINE_MODELS;
 

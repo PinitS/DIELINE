@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 export type DisplayUnit = "mm" | "cm" | "in";
 
 export type DielineModelDimension = "2D" | "3D";
-export type DielineModelId = "circle" | "rectangle" | "tuckEndBox" | "becf11d01" | "becf10a0a";
+export type DielineModelId = "circle" | "rectangle" | "becf10803" | "becf11d01" | "becf10a0a";
 
 export type DielineModelAttributeMetadata = {
   name: string;
@@ -17,7 +17,7 @@ export type DielineModelMetadata = {
   name: string;
   exportName: string;
   componentPath: string;
-  dimensionType: DielineModelDimension;
+  modelDimensionType: DielineModelDimension;
   attributes: readonly DielineModelAttributeMetadata[];
 };
 
