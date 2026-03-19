@@ -19,9 +19,13 @@ import { StrickerCircleControl } from "./components/controls/StrickerCircleContr
 import { StrickerRectangleControl } from "./components/controls/StrickerRectangleControl";
 import { Becf_10803Control } from "./components/controls/Becf_10803Control";
 import { Becf_11d01Control } from "./components/controls/Becf_11d01Control";
+import { FlatLayoutControl } from "./components/controls/FlatLayoutControl";
+import { FlatLayoutDieline, type FlatLayoutAttributes } from "../../TEST/FlatLayoutDieline";
 import type { DemoViewMode } from "./demoTypes";
 
 const MODEL_METADATA = getDielineModels();
+
+type DemoModelId = DielineModelId | "FLAT_LAYOUT_TEST";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -63,7 +67,7 @@ const createDefaultTexturePlacement = (imageWidth: number, imageHeight: number):
 });
 
 const getValueByModelId = <T,>(
-  modelId: DielineModelId,
+  modelId: DemoModelId,
   circleValue: T,
   rectangleValue: T,
   tuckEndBoxValue: T,
@@ -89,7 +93,7 @@ const getValueByModelId = <T,>(
 export const App = () => {
   const modelRef = useRef<DielineCanvasHandle | null>(null);
   const [viewMode, setViewMode] = useState<DemoViewMode>("dieline");
-  const [shapeType, setShapeType] = useState<DielineModelId>("circle");
+  const [shapeType, setShapeType] = useState<DemoModelId>("circle");
 
   // Attribute states per model type
   const [attributeStrickerCircle, setAttributeStrickerCircle] = useState<CircleAttributes>({});
@@ -97,6 +101,7 @@ export const App = () => {
   const [attributeBecf_10803, setAttributeBecf_10803] = useState<TuckEndBoxAttributes>({});
   const [attributeBecf_11d01, setAttributeBecf_11d01] = useState<Becf11d01Attributes>({});
   const [attributeBecf_10a0a, setAttributeBecf_10a0a] = useState<Becf10a0aAttributes>({});
+  const [attributeFlatLayout, setAttributeFlatLayout] = useState<FlatLayoutAttributes>({});
 
   // Texture states per model type
   const [textureStrickerCircle, setTextureStrickerCircle] = useState<TexturePlacement | undefined>(undefined);
@@ -123,8 +128,9 @@ export const App = () => {
 
   const isTextureMode = viewMode === "texture";
   const is3DMode = viewMode === "3d";
-  const selectedModelMetadata = getDielineModelById(shapeType) ?? MODEL_METADATA[0];
-  const supports3DView = selectedModelMetadata.modelDimensionType === "3D";
+  const isFlatLayoutTest = shapeType === "FLAT_LAYOUT_TEST";
+  const selectedModelMetadata = isFlatLayoutTest ? null : (getDielineModelById(shapeType) ?? MODEL_METADATA[0]);
+  const supports3DView = selectedModelMetadata?.modelDimensionType === "3D";
 
   const currentTexture = getValueByModelId(
     shapeType,
@@ -151,7 +157,7 @@ export const App = () => {
     textureFileNameBecf_10a0a,
   );
 
-  const setTextureForModel = (modelId: DielineModelId, texture: TexturePlacement | undefined) => {
+  const setTextureForModel = (modelId: DemoModelId, texture: TexturePlacement | undefined) => {
     switch (modelId) {
       case "circle":
         setTextureStrickerCircle(texture);
@@ -190,7 +196,7 @@ export const App = () => {
     });
   };
 
-  const setTexturePreviewUrlForModel = (modelId: DielineModelId, nextTextureUrl: string) => {
+  const setTexturePreviewUrlForModel = (modelId: DemoModelId, nextTextureUrl: string) => {
     switch (modelId) {
       case "circle":
         replaceTexturePreviewUrl(setTexturePreviewUrlStrickerCircle, nextTextureUrl);
@@ -212,7 +218,7 @@ export const App = () => {
     }
   };
 
-  const setTextureFileNameForModel = (modelId: DielineModelId, nextTextureFileName: string) => {
+  const setTextureFileNameForModel = (modelId: DemoModelId, nextTextureFileName: string) => {
     switch (modelId) {
       case "circle":
         setTextureFileNameStrickerCircle(nextTextureFileName);
@@ -317,7 +323,7 @@ export const App = () => {
       }
 
       exportPreviewLayout.printToPdf({
-        title: `${selectedModelMetadata.exportName}.pdf`,
+        title: `${selectedModelMetadata?.exportName ?? "flat-layout"}.pdf`,
         displayUnit,
       });
     } catch (error) {
@@ -336,10 +342,11 @@ export const App = () => {
 
         <div className="section-row">
           <label className="field">Dieline type
-            <select value={shapeType} onChange={(event) => setShapeType(event.target.value as DielineModelId)}>
+            <select value={shapeType} onChange={(event) => setShapeType(event.target.value as DemoModelId)}>
               {MODEL_METADATA.map((model) => (
                 <option key={model.id} value={model.id}>{`${model.name} (${model.modelDimensionType})`}</option>
               ))}
+              <option value="FLAT_LAYOUT_TEST">Flat Layout (TEST)</option>
             </select>
           </label>
         </div>
@@ -371,7 +378,7 @@ export const App = () => {
 
         <div className="summary-card">
           <h2>Model registry</h2>
-          <p>{`${selectedModelMetadata.name} · ${selectedModelMetadata.modelDimensionType}`}</p>
+          <p>{isFlatLayoutTest ? "Flat Layout · TEST (demo only)" : `${selectedModelMetadata?.name} · ${selectedModelMetadata?.modelDimensionType}`}</p>
           <div className="toggle-row">
             <button type="button" onClick={exportModelJson}>Export model JSON</button>
             <button type="button" onClick={exportPreviewTestPdf}>Export preview PDF (1:1)</button>
@@ -474,6 +481,20 @@ export const App = () => {
                 />
               );
 
+            case "FLAT_LAYOUT_TEST":
+              return (
+                <FlatLayoutControl
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  measuredBounds={measuredBounds}
+                  attribute={attributeFlatLayout}
+                  setAttribute={setAttributeFlatLayout}
+                  onDisplayUnitChange={setDisplayUnit}
+                  onToggleDimensions={() => setShowDimensions((value) => !value)}
+                  onResetCanvasView={() => modelRef.current?.resetView()}
+                />
+              );
+
             default:
               return null;
           }
@@ -546,6 +567,19 @@ export const App = () => {
                   onMeasure={setMeasuredBounds}
                 />
               );
+
+            case "FLAT_LAYOUT_TEST":
+              return (
+                <FlatLayoutDieline
+                  ref={modelRef}
+                  attribute={attributeFlatLayout}
+                  displayUnit={displayUnit}
+                  showDimensions={showDimensions}
+                  showShapeLines
+                  onMeasure={setMeasuredBounds}
+                />
+              );
+
             default:
               return null;
           }
