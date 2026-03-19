@@ -42,8 +42,7 @@ const MODEL_DEFINITIONS: readonly DielineModelMetadata[] = [
     name: "Model (10803)",
     exportName: "Becf_10803_dieline",
     componentPath: "src/components/3D/TuckEndBoxes/Becf_10803/Becf_10803_dieline.tsx",
-        modelDimensionType:'3D',
-
+    modelDimensionType:'3D',
     attributes: [
       {
         name: "length",
@@ -94,8 +93,7 @@ const MODEL_DEFINITIONS: readonly DielineModelMetadata[] = [
     name: "Model (11d01)",
     exportName: "Becf_11d01_dieline",
     componentPath: "src/components/3D/TuckEndBoxes/Becf_11d01/Becf_11d01_dieline.tsx",
-            modelDimensionType:'3D',
-
+    modelDimensionType:'3D',
     attributes: [
       {
         name: "length",
