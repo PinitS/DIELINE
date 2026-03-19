@@ -8,9 +8,11 @@ export {
   exportBecf10a0aDielineToPdf,
   exportBecf11d01DielineToPdf,
   exportCircleDielineToPdf,
+  exportFlatLayoutDielineToPdf,
   exportRectangleDielineToPdf,
   exportTuckEndBoxDielineToPdf,
 } from "./utils/export/exportPreviewLayout";
+export { FlatLayoutDieline } from "./components/TEST/FlatLayoutDieline";
 export { convertDielineToSvg } from "./utils/export/convertDielineToSvg";
 export { openDielineExportPreview } from "./utils/export/openExportPreview";
 export { exportDielineToPdf } from "./utils/export/exportToPdf";
@@ -44,6 +46,7 @@ export type {
   DielineExportSvgOptions,
   DielineSvgDocument,
   DisplayUnit,
+  FlatLayoutAttributes,
   RectangleAttributes,
   RectangleDielineProps,
   SharedCanvasProps,

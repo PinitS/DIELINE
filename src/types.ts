@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 export type DisplayUnit = "mm" | "cm" | "in";
 
 export type DielineModelDimension = "2D" | "3D";
-export type DielineModelId = "circle" | "rectangle" | "becf10803" | "becf11d01" | "becf10a0a";
+export type DielineModelId = "circle" | "rectangle" | "becf10803" | "becf11d01" | "becf10a0a" | "flatlayout";
 
 export type DielineModelAttributeMetadata = {
   name: string;
@@ -52,6 +52,14 @@ export type Becf10a0aAttributes = {
   tuckFlap?: number;
   topClosurePanel?: number;
 };
+export type FlatLayoutAttributes = {
+  wingWidth?: number;
+  wingHeight?: number;
+  slotWidth?: number;
+  barHeight?: number;
+  tabWidth?: number;
+  tabHeight?: number;
+};
 
 export type TuckEndBoxRenderMode = "dieline" | "folded3d";
 
@@ -98,7 +106,7 @@ export type DielineExportPdfOptions = Omit<DielineExportOptions, "autoExport">;
 
 export type DielineExportData = {
   modelId: DielineModelId;
-  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes | Becf10a0aAttributes;
+  attributes: CircleAttributes | RectangleAttributes | TuckEndBoxAttributes | Becf11d01Attributes | Becf10a0aAttributes | FlatLayoutAttributes;
 };
 
 export type DielineExportPreviewLayoutController = {

@@ -7,6 +7,7 @@ import type {
   DielineModelId,
   DielineSvgDocument,
   DisplayUnit,
+  FlatLayoutAttributes,
   RectangleAttributes,
   TuckEndBoxAttributes,
 } from "../../types";
@@ -360,6 +361,111 @@ const createBecf10a0aGeometry = (attributes: Becf10a0aAttributes, displayUnit: D
   };
 };
 
+const DEFAULT_FLAT_LAYOUT: Required<FlatLayoutAttributes> = {
+  wingWidth: 100, wingHeight: 80, slotWidth: 70, barHeight: 15, tabWidth: 45, tabHeight: 55,
+};
+
+const createFlatLayoutGeometry = (attributes: FlatLayoutAttributes, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
+  const r = { ...DEFAULT_FLAT_LAYOUT, ...attributes };
+  const totalWidth = r.wingWidth * 2 + r.slotWidth;
+  const tabStartX = r.wingWidth + (r.slotWidth - r.tabWidth) / 2;
+  const tabEndX = r.wingWidth + (r.slotWidth + r.tabWidth) / 2;
+  const barBottom = r.wingHeight + r.barHeight;
+  const totalHeight = barBottom + r.tabHeight;
+
+  // Outline (cut line) - 12 points, closed
+  const outline: Point[] = [
+    { x: 0, y: 0 }, { x: r.wingWidth, y: 0 },
+    { x: r.wingWidth, y: r.wingHeight }, { x: r.wingWidth + r.slotWidth, y: r.wingHeight },
+    { x: r.wingWidth + r.slotWidth, y: 0 }, { x: totalWidth, y: 0 },
+    { x: totalWidth, y: barBottom }, { x: tabEndX, y: barBottom },
+    { x: tabEndX, y: totalHeight }, { x: tabStartX, y: totalHeight },
+    { x: tabStartX, y: barBottom }, { x: 0, y: barBottom },
+    { x: 0, y: 0 },
+  ];
+
+  // Fold lines
+  const foldLines: [Point, Point][] = [
+    [{ x: 0, y: r.wingHeight }, { x: r.wingWidth, y: r.wingHeight }],
+    [{ x: r.wingWidth + r.slotWidth, y: r.wingHeight }, { x: totalWidth, y: r.wingHeight }],
+    [{ x: tabStartX, y: barBottom }, { x: tabEndX, y: barBottom }],
+  ];
+
+  const shapePolylines: Polyline[] = [
+    { points: outline, stroke: CUT_LINE_COLOR, strokeWidth: CUT_LINE_WIDTH_MM },
+    ...foldLines.map(([a, b]) => ({
+      points: [a, b], stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY,
+    })),
+  ];
+
+  if (!isShowDimension) {
+    return { polylines: shapePolylines, labels: [] };
+  }
+
+  const minDim = Math.min(r.wingWidth, r.wingHeight, r.slotWidth, r.barHeight, r.tabWidth, r.tabHeight);
+  const labelFontSize = clamp(minDim * 0.12, 4, 8.7);
+  const dimOffset = clamp(Math.max(10, r.wingHeight * 0.14), 10, 24);
+  const tickSize = clamp(minDim * 0.08, 4, 7.4);
+  const hDimY = -dimOffset;
+  const hTextY = hDimY - Math.max(labelFontSize * 1.1, 6);
+  const vDimX = -dimOffset;
+  const tabDimY = totalHeight + dimOffset;
+  const tabTextY = tabDimY + Math.max(labelFontSize * 1.1, 6);
+  const tabHeightDimX = tabEndX + dimOffset;
+
+  return {
+    polylines: [
+      ...shapePolylines,
+      // Top horizontal dimensions: wingWidth | slotWidth | wingWidth
+      { points: [{ x: 0, y: hDimY }, { x: r.wingWidth, y: hDimY }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      { points: [{ x: r.wingWidth, y: hDimY }, { x: r.wingWidth + r.slotWidth, y: hDimY }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      { points: [{ x: r.wingWidth + r.slotWidth, y: hDimY }, { x: totalWidth, y: hDimY }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      // Top ticks
+      ...[0, r.wingWidth, r.wingWidth + r.slotWidth, totalWidth].map((xMm) => ({
+        points: [{ x: xMm, y: hDimY - tickSize / 2 }, { x: xMm, y: hDimY + tickSize / 2 }] as Point[],
+        stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM,
+      })),
+      // Left vertical dimensions: wingHeight + barHeight
+      { points: [{ x: vDimX, y: 0 }, { x: vDimX, y: r.wingHeight }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      { points: [{ x: vDimX, y: r.wingHeight }, { x: vDimX, y: barBottom }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      ...[0, r.wingHeight, barBottom].map((yMm) => ({
+        points: [{ x: vDimX - tickSize / 2, y: yMm }, { x: vDimX + tickSize / 2, y: yMm }] as Point[],
+        stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM,
+      })),
+      // Bottom tab width
+      { points: [{ x: tabStartX, y: tabDimY }, { x: tabEndX, y: tabDimY }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      ...[tabStartX, tabEndX].map((xMm) => ({
+        points: [{ x: xMm, y: tabDimY - tickSize / 2 }, { x: xMm, y: tabDimY + tickSize / 2 }] as Point[],
+        stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM,
+      })),
+      // Right tab height
+      { points: [{ x: tabHeightDimX, y: barBottom }, { x: tabHeightDimX, y: totalHeight }], stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM },
+      ...[barBottom, totalHeight].map((yMm) => ({
+        points: [{ x: tabHeightDimX - tickSize / 2, y: yMm }, { x: tabHeightDimX + tickSize / 2, y: yMm }] as Point[],
+        stroke: DIMENSION_COLOR, strokeWidth: DIMENSION_LINE_WIDTH_MM,
+      })),
+      // Guide lines (shape to dimension lines)
+      ...[0, r.wingWidth, r.wingWidth + r.slotWidth, totalWidth].map((xMm) => ({
+        points: [{ x: xMm, y: 0 }, { x: xMm, y: hDimY }] as Point[],
+        stroke: FOLD_LINE_COLOR, strokeWidth: FOLD_LINE_WIDTH_MM, dashArray: FOLD_DASH_ARRAY,
+      })),
+    ],
+    labels: [
+      // Top: wingWidth | slotWidth | wingWidth
+      { x: r.wingWidth / 2, y: hTextY, text: formatDielineDisplayValue(r.wingWidth, displayUnit), fontSize: labelFontSize },
+      { x: r.wingWidth + r.slotWidth / 2, y: hTextY, text: formatDielineDisplayValue(r.slotWidth, displayUnit), fontSize: labelFontSize },
+      { x: r.wingWidth + r.slotWidth + r.wingWidth / 2, y: hTextY, text: formatDielineDisplayValue(r.wingWidth, displayUnit), fontSize: labelFontSize },
+      // Left: wingHeight, barHeight
+      { x: vDimX - Math.max(labelFontSize * 1.1, 6), y: r.wingHeight / 2, text: formatDielineDisplayValue(r.wingHeight, displayUnit), fontSize: labelFontSize, rotate: true },
+      { x: vDimX - Math.max(labelFontSize * 1.1, 6), y: r.wingHeight + r.barHeight / 2, text: formatDielineDisplayValue(r.barHeight, displayUnit), fontSize: labelFontSize * 0.85, rotate: true },
+      // Bottom: tabWidth
+      { x: r.wingWidth + r.slotWidth / 2, y: tabTextY, text: formatDielineDisplayValue(r.tabWidth, displayUnit), fontSize: labelFontSize },
+      // Right: tabHeight
+      { x: tabHeightDimX + Math.max(labelFontSize * 1.1, 6), y: barBottom + r.tabHeight / 2, text: formatDielineDisplayValue(r.tabHeight, displayUnit), fontSize: labelFontSize, rotate: true },
+    ],
+  };
+};
+
 const createGeometry = (data: DielineExportData, displayUnit: DisplayUnit, isShowDimension: boolean): ExportGeometry => {
   switch (data.modelId) {
     case "circle":
@@ -372,6 +478,8 @@ const createGeometry = (data: DielineExportData, displayUnit: DisplayUnit, isSho
       return createBecf11d01Geometry(data.attributes as Becf11d01Attributes, displayUnit, isShowDimension);
     case "becf10a0a":
       return createBecf10a0aGeometry(data.attributes as Becf10a0aAttributes, displayUnit, isShowDimension);
+    case "flatlayout":
+      return createFlatLayoutGeometry(data.attributes as FlatLayoutAttributes, displayUnit, isShowDimension);
     default:
       throw new Error(`Unsupported model: ${data.modelId}`);
   }

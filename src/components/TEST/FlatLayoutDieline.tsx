@@ -4,24 +4,18 @@ import type {
   DielineBounds,
   DielineCanvasHandle,
   DielineMeasureCallback,
-  DielineExportPreviewLayoutController,
   DisplayUnit,
+  FlatLayoutAttributes,
   SharedCanvasProps,
 } from "../../types";
+import { createDielineExportPreviewLayoutController } from "../../utils/export/exportPreviewLayout";
 import { formatDielineDisplayValue } from "../../utils/units";
 import { BaseDielineCanvas } from "../BaseDielineCanvas";
 import { SceneLine } from "../ScenePrimitives";
 
 /* ── Attribute type ────────────────────────────────────────────── */
 
-export type FlatLayoutAttributes = {
-  wingWidth?: number;
-  wingHeight?: number;
-  slotWidth?: number;
-  barHeight?: number;
-  tabWidth?: number;
-  tabHeight?: number;
-};
+export type { FlatLayoutAttributes } from "../../types";
 
 export const DEFAULT_FLAT_LAYOUT_ATTRIBUTES: Required<FlatLayoutAttributes> = {
   wingWidth: 100,
@@ -87,13 +81,6 @@ const getOutlinePoints = (r: Required<FlatLayoutAttributes>): Point[] => {
   ];
 };
 
-/** No-op export controller – this model is demo-only. */
-const NOOP_EXPORT_CONTROLLER: DielineExportPreviewLayoutController = {
-  convertToSvg: () => ({ svg: "", widthMm: 0, heightMm: 0 }),
-  openPreview: () => { throw new Error("FlatLayoutDieline does not support export preview."); },
-  exportToPdf: () => { throw new Error("FlatLayoutDieline does not support PDF export."); },
-};
-
 /* ── Component ─────────────────────────────────────────────────── */
 
 export const FlatLayoutDieline = forwardRef<DielineCanvasHandle, FlatLayoutDielineProps>(
@@ -101,6 +88,10 @@ export const FlatLayoutDieline = forwardRef<DielineCanvasHandle, FlatLayoutDieli
     const r = useMemo(() => resolve(attribute), [attribute]);
     const bounds = useMemo(() => measureBounds(attribute), [attribute]);
     const outline = useMemo(() => getOutlinePoints(r), [r]);
+    const exportPreviewLayout = useMemo(() => createDielineExportPreviewLayoutController(
+      { modelId: "flatlayout", attributes: attribute },
+      { displayUnit: canvasProps.displayUnit, title: "FlatLayoutDieline.pdf" },
+    ), [attribute, canvasProps.displayUnit]);
 
     const displayUnit: DisplayUnit = canvasProps.displayUnit ?? "mm";
     const showDimensions = canvasProps.showDimensions ?? true;
@@ -111,7 +102,7 @@ export const FlatLayoutDieline = forwardRef<DielineCanvasHandle, FlatLayoutDieli
         {...canvasProps}
         bounds={bounds}
         onMeasure={onMeasure}
-        exportPreviewLayout={NOOP_EXPORT_CONTROLLER}
+        exportPreviewLayout={exportPreviewLayout}
         renderShape={(layout, shapeStrokeColor, createScenePoint, showShapeLines) => {
           const scale = layout.shapeWidthPx / bounds.overallWidthMm;
           const pxX = (mm: number) => layout.leftX + mm * scale;

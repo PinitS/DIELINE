@@ -7,6 +7,7 @@ import type {
   DielineExportPdfOptions,
   DielineExportPreviewLayoutController,
   DielineExportSvgOptions,
+  FlatLayoutAttributes,
   RectangleAttributes,
   TuckEndBoxAttributes,
 } from "../../types";
@@ -71,3 +72,9 @@ export const exportBecf10a0aDielineToPdf = (
   exportDielineToPdf({ modelId: "becf10a0a", attributes }, options);
 };
 
+export const exportFlatLayoutDielineToPdf = (
+  attributes: FlatLayoutAttributes,
+  options?: Omit<DielineExportOptions, "autoExport">,
+) => {
+  exportDielineToPdf({ modelId: "flatlayout", attributes }, options);
+};
