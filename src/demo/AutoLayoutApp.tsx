@@ -404,25 +404,7 @@ export const AutoLayoutApp = () => {
         {/* --- Algorithm Selection + Calculate --- */}
         <div className="summary-card">
           <h2>Algorithm</h2>
-
-          {/* Dropdown + Calculate */}
-          <label className="field">
-            Select algorithm
-            <select value={selectedStrategy} onChange={(e) => setSelectedStrategy(e.target.value as AutoLayoutStrategy)}>
-              {ALL_STRATEGIES.map((s) => (
-                <option key={s} value={s}>{STRATEGY_LABELS[s]}</option>
-              ))}
-            </select>
-          </label>
           <div className="toggle-row" style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => handleCalculate(selectedStrategy)}
-              disabled={!canCalculate}
-              style={{ background: STRATEGY_COLORS[selectedStrategy], color: "#fff", borderColor: STRATEGY_COLORS[selectedStrategy], fontWeight: 700, flex: 1 }}
-            >
-              {isCalculating ? "Calculating..." : "Calculate"}
-            </button>
             <button
               type="button"
               onClick={handleCompareAll}
@@ -581,6 +563,7 @@ export const AutoLayoutApp = () => {
                   {/* ===== Horizontal grid of algorithm cards ===== */}
                   <div className="al-algo-grid">
                     {sorted.map((item, idx) => {
+                      console.log('item :>> ', item);
                       const downloadName = `${paper.name}-${item.strategy}.png`;
                       return (
                         <div key={item.strategy} className={`al-algo-card ${idx === 0 && sorted.length > 1 ? "al-algo-card--best" : ""}`}>
@@ -593,7 +576,7 @@ export const AutoLayoutApp = () => {
                           </div>
 
                           {/* Image */}
-                          {item.imageUrl && (
+                          {item.result.summary.totalSheets>0 && item.imageUrl && (
                             <div className="al-image-wrap">
                               <img src={item.imageUrl} alt={`${STRATEGY_LABELS[item.strategy]} — ${paper.name}`} draggable={false} />
                             </div>

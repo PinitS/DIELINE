@@ -58,17 +58,6 @@ export const renderLayoutSvg = (options: RenderLayoutSvgOptions): string => {
 
   // Each placement
   for (const pl of placements) {
-    // Boundary polylines (green offset shape)
-    for (const bp of pl.boundaryPolylines) {
-      parts.push(polylineToSvg({
-        ...bp,
-        stroke: BOUNDARY_COLOR,
-        strokeWidth: BOUNDARY_WIDTH,
-        dashArray: undefined,
-        points: bp.points.map((p) => ({ x: p.x + usableLeft, y: p.y + usableTop })),
-      }));
-    }
-
     // Shape polylines (red cut lines / green fold lines)
     for (const sp of pl.shapePolylines) {
       parts.push(polylineToSvg({
