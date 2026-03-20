@@ -265,6 +265,89 @@ const nestColumn = (
 
 // ---------- Main entry point ----------
 
+type ColumnDef = {
+  prepared: PreparedModel;
+  count: number;
+  rotation: Rotation;
+  columnWidth: number;
+};
+
+/**
+ * For a given rotation per model, compute how many columns of each model
+ * fit across the usable width, then return the column layout.
+ *
+ * Strategy: each model gets at least 1 column. Remaining width is filled
+ * by adding more columns round-robin (model with most remaining items first).
+ */
+const buildColumns = (
+  modelGroups: { prepared: PreparedModel; count: number }[],
+  rotationChoices: Rotation[],
+  usableWidth: number,
+  usableHeight: number,
+): ColumnDef[] | null => {
+  // Determine column width for each model at chosen rotation
+  const modelInfos = modelGroups.map((g, i) => {
+    const rotation = rotationChoices[i];
+    const { w, h } = rotatedDims(g.prepared, rotation);
+    return { ...g, rotation, colW: w, colH: h };
+  });
+
+  // Check that at least 1 column of each model fits
+  const minWidth = modelInfos.reduce((s, m) => s + m.colW, 0);
+  if (minWidth > usableWidth + 0.001) return null;
+
+  // Start with 1 column per model
+  const columnCounts = modelInfos.map(() => 1);
+  let usedWidth = minWidth;
+
+  // Greedily add more columns — prioritise model with most remaining items
+  let changed = true;
+  while (changed) {
+    changed = false;
+    // Find model with most items still needing columns
+    let bestIdx = -1;
+    let bestNeed = 0;
+    for (let i = 0; i < modelInfos.length; i++) {
+      const m = modelInfos[i];
+      // Rough estimate of items per column
+      const perCol = Math.max(Math.floor(usableHeight / m.colH), 1);
+      const totalCapacity = columnCounts[i] * perCol;
+      const need = m.count - totalCapacity;
+      if (need > bestNeed && m.colW <= usableWidth - usedWidth + 0.001) {
+        bestNeed = need;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx >= 0) {
+      columnCounts[bestIdx]++;
+      usedWidth += modelInfos[bestIdx].colW;
+      changed = true;
+    }
+  }
+
+  // Build the column list
+  const columns: ColumnDef[] = [];
+  for (let i = 0; i < modelInfos.length; i++) {
+    const m = modelInfos[i];
+    const numCols = columnCounts[i];
+    // Distribute items evenly across columns for this model
+    const perCol = Math.ceil(m.count / numCols);
+    let remaining = m.count;
+    for (let c = 0; c < numCols; c++) {
+      const count = Math.min(perCol, remaining);
+      remaining -= count;
+      columns.push({
+        prepared: m.prepared,
+        count,
+        rotation: m.rotation,
+        columnWidth: m.colW,
+      });
+    }
+  }
+
+  return columns;
+};
+
 export const guillotineNestPack = (
   items: PreparedModel[],
   usableWidth: number,
@@ -285,43 +368,11 @@ export const guillotineNestPack = (
   }
 
   const modelGroups = [...groups.values()];
-
-  // For each model, determine optimal rotation and column width
-  type ColumnPlan = {
-    prepared: PreparedModel;
-    count: number;
-    rotation: Rotation;
-    columnWidth: number;
-  };
-
-  const ROTATIONS_TO_TRY: Rotation[] = [0, 90];
-
-  // First pass: determine column widths for each rotation option
-  // We need to check if all columns fit within usableWidth
-  const buildColumnPlans = (rotationChoices: Rotation[]): ColumnPlan[] | null => {
-    const plans: ColumnPlan[] = [];
-    let totalWidth = 0;
-
-    for (let i = 0; i < modelGroups.length; i++) {
-      const { prepared, count } = modelGroups[i];
-      const rotation = rotationChoices[i];
-      const { w } = rotatedDims(prepared, rotation);
-      const columnWidth = w;
-      totalWidth += columnWidth;
-      plans.push({ prepared, count, rotation, columnWidth });
-    }
-
-    if (totalWidth > usableWidth + 0.001) return null;
-    return plans;
-  };
-
-  // Try all rotation combinations (2^N for N models, max practical)
-  // For large N, limit to just 0° and 90° per model independently
   const numModels = modelGroups.length;
-  let bestPlans: ColumnPlan[] | null = null;
-  let bestTotalPlaced = 0;
 
-  // Generate rotation combinations (max 2^N, capped at 2^8=256)
+  // Try all rotation combinations (0° and 90° per model, max 2^8=256)
+  let bestColumns: ColumnDef[] | null = null;
+  let bestTotalPlaced = 0;
   const maxCombinations = Math.min(1 << numModels, 256);
 
   for (let mask = 0; mask < maxCombinations; mask++) {
@@ -330,67 +381,36 @@ export const guillotineNestPack = (
       rotationChoices.push((mask & (1 << i)) ? 90 : 0);
     }
 
-    const plans = buildColumnPlans(rotationChoices);
-    if (!plans) continue;
+    const columns = buildColumns(modelGroups, rotationChoices, usableWidth, usableHeight);
+    if (!columns) continue;
 
-    // Calculate total width used and distribute remaining space
-    const totalColumnsWidth = plans.reduce((s, p) => s + p.columnWidth, 0);
-    const remainingWidth = usableWidth - totalColumnsWidth;
-
-    // Quick estimate: how many items can we fit?
+    // Estimate total items placed
     let totalPlaced = 0;
-    for (const plan of plans) {
-      const { h } = rotatedDims(plan.prepared, plan.rotation);
-      // Simple estimate: items stacked vertically (conservative)
-      const rowsFit = Math.floor(usableHeight / h);
-      totalPlaced += Math.min(rowsFit, plan.count);
-    }
-
-    // Also consider if remaining space can fit another column
-    if (remainingWidth > 0 && plans.length > 0) {
-      // Find the narrowest model that could fit in remaining space
-      for (const plan of plans) {
-        const { w, h } = rotatedDims(plan.prepared, plan.rotation);
-        if (w <= remainingWidth + 0.001) {
-          const extraRows = Math.floor(usableHeight / h);
-          totalPlaced += extraRows;
-          break;
-        }
-      }
+    for (const col of columns) {
+      const { h } = rotatedDims(col.prepared, col.rotation);
+      const rowsFit = Math.max(Math.floor(usableHeight / h), 1);
+      totalPlaced += Math.min(rowsFit, col.count);
     }
 
     if (totalPlaced > bestTotalPlaced) {
       bestTotalPlaced = totalPlaced;
-      bestPlans = plans;
+      bestColumns = columns;
     }
   }
 
-  if (!bestPlans) return [];
+  if (!bestColumns) return [];
 
-  // Lay out columns left to right using NFP nesting
+  // Lay out columns left to right, each using NFP nesting
   const allPlacements: Placement[] = [];
   let columnX = 0;
 
-  // Calculate total fixed column width
-  const totalFixedWidth = bestPlans.reduce((s, p) => s + p.columnWidth, 0);
-  const remainingWidth = usableWidth - totalFixedWidth;
-
-  for (let i = 0; i < bestPlans.length; i++) {
-    const plan = bestPlans[i];
-
-    // Give extra width to the last column (or distribute evenly)
-    let effectiveColumnWidth = plan.columnWidth;
-    if (i === bestPlans.length - 1 && remainingWidth > 0) {
-      effectiveColumnWidth += remainingWidth;
-    }
-
-    // Nest items within this column
+  for (const col of bestColumns) {
     const columnPlacements = nestColumn(
-      plan.prepared,
-      plan.count,
-      effectiveColumnWidth,
+      col.prepared,
+      col.count,
+      col.columnWidth,
       usableHeight,
-      plan.rotation,
+      col.rotation,
     );
 
     // Offset placements by column X position
@@ -405,52 +425,7 @@ export const guillotineNestPack = (
       allPlacements.push(p);
     }
 
-    columnX += plan.columnWidth;
-  }
-
-  // If there's remaining width after all columns, try to fill with more items
-  // by adding extra columns for models that still have unfulfilled counts
-  if (remainingWidth > 0 && bestPlans.length > 0) {
-    // Count how many of each model were placed
-    const placedCounts = new Map<string, number>();
-    for (const p of allPlacements) {
-      placedCounts.set(p.modelEntryId, (placedCounts.get(p.modelEntryId) ?? 0) + 1);
-    }
-
-    // Try to add more columns for models with remaining items
-    let extraX = totalFixedWidth;
-    for (const plan of bestPlans) {
-      const placed = placedCounts.get(plan.prepared.entryId) ?? 0;
-      const remaining = plan.count - placed;
-      if (remaining <= 0) continue;
-
-      const { w } = rotatedDims(plan.prepared, plan.rotation);
-      if (w > usableWidth - extraX + 0.001) continue;
-
-      const extraColumnWidth = Math.min(w, usableWidth - extraX);
-      const extraPlacements = nestColumn(
-        plan.prepared,
-        remaining,
-        extraColumnWidth,
-        usableHeight,
-        plan.rotation,
-      );
-
-      for (const p of extraPlacements) {
-        p.x += extraX;
-        for (const sp of p.shapePolylines) {
-          for (const pt of sp.points) pt.x += extraX;
-        }
-        for (const bp of p.boundaryPolylines) {
-          for (const pt of bp.points) pt.x += extraX;
-        }
-        allPlacements.push(p);
-      }
-
-      if (extraPlacements.length > 0) {
-        extraX += w;
-      }
-    }
+    columnX += col.columnWidth;
   }
 
   return allPlacements;

@@ -4,7 +4,6 @@ import { calculateAutoLayout } from "../utils/autoLayout/calculateAutoLayout";
 import type { AutoLayoutPaper, AutoLayoutModelEntry, AutoLayoutPaperResult, AutoLayoutStrategy } from "../utils/autoLayout/types";
 import { STRATEGY_LABELS, ALL_STRATEGIES } from "../utils/autoLayout/types";
 import type { DielineModelId, DielineModelMetadata } from "../types";
-import { ZoomableImage } from "./ZoomableImage";
 
 const LIBRARY_MODELS = getDielineModels();
 
@@ -28,6 +27,7 @@ const FLAT_LAYOUT_META: DielineModelMetadata = {
 const MODEL_METADATA: readonly DielineModelMetadata[] = [...LIBRARY_MODELS, FLAT_LAYOUT_META];
 
 const PAPER_PRESETS = [
+  { label: "A0 (841\u00d71189)", name: "A0", width: 841, height: 1189 },
   { label: "A1 (594\u00d7841)", name: "A1", width: 594, height: 841 },
   { label: "A2 (420\u00d7594)", name: "A2", width: 420, height: 594 },
   { label: "A3 (420\u00d7297)", name: "A3", width: 420, height: 297 },
@@ -507,258 +507,140 @@ export const AutoLayoutApp = () => {
           </div>
         )}
 
-        {/* --- Single Algorithm Results --- */}
-        {results.length > 0 && compareResults.length === 0 && (
-          <div className="auto-layout-results-grid">
-            {results.map((result) => (
-              <div key={result.paperId} className="paper-result-card">
-                <div className="paper-result-header">
-                  <h2>{result.paperName}</h2>
-                  <span className="muted">{result.paperWidth} x {result.paperHeight} mm</span>
-                  <span className="frame-badge" style={{ background: STRATEGY_COLORS[result.strategy], color: "#fff" }}>
-                    {STRATEGY_LABELS[result.strategy]}
-                  </span>
-                  <span className="frame-badge">{result.summary.totalSheets} sheet{result.summary.totalSheets !== 1 ? "s" : ""}</span>
-                  <span className="paper-lost-badge">
-                    Paper lost: {result.summary.paperLost.toFixed(1)}%
-                  </span>
-                  <span className="muted" style={{ fontSize: 12 }}>
-                    {result.summary.computeTimeMs}ms
-                  </span>
-                </div>
-
-                {resultImageUrls.get(result.paperId) && (
-                  <div className="variation-image-wrapper">
-                    <img src={resultImageUrls.get(result.paperId)} alt={`Layout for ${result.paperName}`} className="variation-image" />
-                  </div>
-                )}
-
-                <div className="variation-summary">
-                  <div className="calc-row" style={{ fontWeight: 700 }}>
-                    <span>Total sheets needed</span>
-                    <strong>{result.summary.totalSheets} sheet{result.summary.totalSheets !== 1 ? "s" : ""}</strong>
-                  </div>
-
-                  {result.summary.calculator.length > 0 && (
-                    <>
-                      <h4>Per model:</h4>
-                      {result.summary.calculator.map((calc) => {
-                        const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
-                        return (
-                          <div key={calc.modelId} className="calc-row" style={{ flexWrap: "wrap" }}>
-                            <span>{meta?.name ?? calc.modelId}</span>
-                            <span>
-                              {calc.perSheet}/sheet &times; {result.summary.totalSheets} = {calc.totalProduced} pcs
-                              {calc.excessCount > 0 && (
-                                <span className="surplus-badge" style={{ marginLeft: 6 }}>+{calc.excessCount} excess</span>
-                              )}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* --- Compare All Results --- */}
-        {compareResults.length > 0 && (
-          <div className="auto-layout-results-grid">
+        {/* --- Results grouped by Paper, algorithms in horizontal grid --- */}
+        {(results.length > 0 || compareResults.length > 0) && (
+          <div className="al-results-scroll">
             {papers.map((paper) => {
-              // Gather results for this paper from all algorithms
-              const paperResults = compareResults
-                .map((cr) => {
+              // Collect all results for this paper
+              type AlgoItem = { strategy: AutoLayoutStrategy; result: AutoLayoutPaperResult; imageUrl?: string };
+              const items: AlgoItem[] = [];
+
+              if (compareResults.length > 0) {
+                for (const cr of compareResults) {
                   const r = cr.results.find((r) => r.paperId === paper.id);
-                  if (!r) return null;
-                  const imgKey = `${cr.strategy}-${paper.id}`;
-                  return { ...r, strategy: cr.strategy, imageUrl: cr.imageUrls.get(imgKey) };
-                })
-                .filter((r): r is NonNullable<typeof r> => r !== null);
+                  if (!r) continue;
+                  items.push({ strategy: cr.strategy, result: r, imageUrl: cr.imageUrls.get(`${cr.strategy}-${paper.id}`) });
+                }
+              } else {
+                const r = results.find((r) => r.paperId === paper.id);
+                if (r) items.push({ strategy: r.strategy, result: r, imageUrl: resultImageUrls.get(r.paperId) });
+              }
 
-              const byPaperLost = [...paperResults].sort((a, b) => a.summary.paperLost - b.summary.paperLost);
-              const bySheets = [...paperResults].sort((a, b) => a.summary.totalSheets - b.summary.totalSheets || a.summary.paperLost - b.summary.paperLost);
-              const byTime = [...paperResults].sort((a, b) => a.summary.computeTimeMs - b.summary.computeTimeMs);
-              // Rank by total excess pieces (lower = better)
-              const byExcess = [...paperResults].sort((a, b) => {
-                const exA = a.summary.calculator.reduce((s, c) => s + c.excessCount, 0);
-                const exB = b.summary.calculator.reduce((s, c) => s + c.excessCount, 0);
-                return exA - exB || a.summary.paperLost - b.summary.paperLost;
-              });
-
-              const rankingBlock = (
-                title: string,
-                sorted: typeof paperResults,
-                getValue: (r: typeof paperResults[0]) => string,
-                accentColor: string,
-              ) => (
-                <div style={{
-                  background: "#fff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 8,
-                  padding: 10,
-                }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: accentColor }}>
-                    {title}
-                  </div>
-                  {sorted.map((r, idx) => (
-                    <div
-                      key={r.strategy}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "3px 0",
-                        borderBottom: idx < sorted.length - 1 ? "1px solid #f1f5f9" : "none",
-                      }}
-                    >
-                      <span style={{
-                        background: idx === 0 ? accentColor : "#cbd5e1",
-                        color: "#fff",
-                        borderRadius: 10,
-                        padding: "0 6px",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        minWidth: 20,
-                        textAlign: "center",
-                      }}>
-                        {idx + 1}
-                      </span>
-                      <span style={{
-                        background: STRATEGY_COLORS[r.strategy],
-                        color: "#fff",
-                        borderRadius: 10,
-                        padding: "0 6px",
-                        fontSize: 10,
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                      }}>
-                        {STRATEGY_LABELS[r.strategy]}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: idx === 0 ? 700 : 400, marginLeft: "auto", whiteSpace: "nowrap" }}>
-                        {getValue(r)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              );
+              if (items.length === 0) return null;
+              const sorted = [...items].sort((a, b) => a.result.summary.paperLost - b.result.summary.paperLost);
 
               return (
-                <div key={paper.id} className="paper-result-card">
-                  <div className="paper-result-header">
-                    <h2>{paper.name} — Comparison</h2>
+                <div key={paper.id} className="al-paper-section">
+                  {/* ===== Paper Heading ===== */}
+                  <div className="al-paper-heading">
+                    <h2>{paper.name}</h2>
                     <span className="muted">{paper.width} x {paper.height} mm</span>
                   </div>
 
-                  {/* --- Ranking Summary Blocks --- */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-                    {rankingBlock(
-                      "Rank by Paper Lost %",
-                      byPaperLost,
-                      (r) => `${r.summary.paperLost.toFixed(1)}%`,
-                      "#22c55e",
-                    )}
-                    {rankingBlock(
-                      "Rank by Sheets",
-                      bySheets,
-                      (r) => `${r.summary.totalSheets} sheet${r.summary.totalSheets !== 1 ? "s" : ""}`,
-                      "#2563eb",
-                    )}
-                    {rankingBlock(
-                      "Rank by Speed",
-                      byTime,
-                      (r) => `${r.summary.computeTimeMs}ms`,
-                      "#d97706",
-                    )}
-                    {rankingBlock(
-                      "Rank by Excess Pieces",
-                      byExcess,
-                      (r) => {
-                        const totalExcess = r.summary.calculator.reduce((s, c) => s + c.excessCount, 0);
-                        const details = r.summary.calculator
-                          .filter((c) => c.excessCount > 0)
-                          .map((c) => {
-                            const meta = MODEL_METADATA.find((m) => m.id === c.modelId);
-                            return `${meta?.name ?? c.modelId}: +${c.excessCount}`;
-                          });
-                        return totalExcess === 0 ? "0 excess" : `+${totalExcess} (${details.join(", ")})`;
-                      },
-                      "#be185d",
-                    )}
-                  </div>
-
-                  {/* --- Detailed Results (sorted by paper lost) --- */}
-                  {byPaperLost.map((r, idx) => (
-                    <div
-                      key={r.strategy}
-                      style={{
-                        border: idx === 0 ? "2px solid #22c55e" : "1px solid #e2e8f0",
-                        borderRadius: 8,
-                        padding: 12,
-                        marginBottom: 10,
-                        background: idx === 0 ? "#f0fdf4" : "#fff",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-                        <span style={{
-                          background: idx === 0 ? "#22c55e" : "#94a3b8",
-                          color: "#fff",
-                          borderRadius: 12,
-                          padding: "2px 10px",
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}>
-                          #{idx + 1}
-                        </span>
-                        <span style={{
-                          background: STRATEGY_COLORS[r.strategy],
-                          color: "#fff",
-                          borderRadius: 12,
-                          padding: "2px 10px",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}>
-                          {STRATEGY_LABELS[r.strategy]}
-                        </span>
-                        <span style={{ fontWeight: 700 }}>
-                          Lost: {r.summary.paperLost.toFixed(1)}%
-                        </span>
-                        <span className="muted" style={{ fontSize: 12 }}>
-                          {r.summary.totalSheets} sheet{r.summary.totalSheets !== 1 ? "s" : ""}
-                        </span>
-                        <span className="muted" style={{ fontSize: 12 }}>
-                          {r.summary.computeTimeMs}ms
-                        </span>
-                      </div>
-
-                      {r.imageUrl && (
-                        <div className="variation-image-wrapper">
-                          <img src={r.imageUrl} alt={`${STRATEGY_LABELS[r.strategy]} layout`} className="variation-image" />
-                        </div>
-                      )}
-
-                      {r.summary.calculator.length > 0 && (
-                        <div className="variation-summary" style={{ marginTop: 6 }}>
-                          {r.summary.calculator.map((calc) => {
-                            const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
+                  {/* ===== Summary Score (compare mode) ===== */}
+                  {sorted.length > 1 && (
+                    <div className="al-summary-bar">
+                      <table className="al-summary-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Algorithm</th>
+                            <th>Sheets</th>
+                            <th>Paper Lost</th>
+                            <th>Time</th>
+                            <th>Excess</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sorted.map((item, idx) => {
+                            const totalExcess = item.result.summary.calculator.reduce((s, c) => s + c.excessCount, 0);
+                            const bestLost = sorted[0].result.summary.paperLost;
+                            const bestSheets = Math.min(...sorted.map((s) => s.result.summary.totalSheets));
+                            const bestTime = Math.min(...sorted.map((s) => s.result.summary.computeTimeMs));
+                            const bestExcess = Math.min(...sorted.map((s) => s.result.summary.calculator.reduce((sum, c) => sum + c.excessCount, 0)));
                             return (
-                              <div key={calc.modelId} className="calc-row" style={{ fontSize: 12 }}>
-                                <span>{meta?.name ?? calc.modelId}</span>
-                                <span>
-                                  {calc.perSheet}/sheet &times; {r.summary.totalSheets} = {calc.totalProduced} pcs
-                                  {calc.excessCount > 0 && (
-                                    <span className="surplus-badge" style={{ marginLeft: 4 }}>+{calc.excessCount}</span>
-                                  )}
-                                </span>
-                              </div>
+                              <tr key={item.strategy} className={idx === 0 ? "al-row-best" : ""}>
+                                <td>{idx + 1}</td>
+                                <td>
+                                  <span className="al-algo-badge" style={{ background: STRATEGY_COLORS[item.strategy] }}>
+                                    {STRATEGY_LABELS[item.strategy]}
+                                  </span>
+                                </td>
+                                <td className={item.result.summary.totalSheets === bestSheets ? "al-cell-best" : ""}>{item.result.summary.totalSheets}</td>
+                                <td className={item.result.summary.paperLost === bestLost ? "al-cell-best" : ""}>{item.result.summary.paperLost.toFixed(1)}%</td>
+                                <td className={item.result.summary.computeTimeMs === bestTime ? "al-cell-best" : ""}>{item.result.summary.computeTimeMs}ms</td>
+                                <td className={totalExcess === bestExcess ? "al-cell-best" : ""}>{totalExcess === 0 ? "0" : `+${totalExcess}`}</td>
+                              </tr>
                             );
                           })}
-                        </div>
-                      )}
+                        </tbody>
+                      </table>
                     </div>
-                  ))}
+                  )}
+
+                  {/* ===== Horizontal grid of algorithm cards ===== */}
+                  <div className="al-algo-grid">
+                    {sorted.map((item, idx) => {
+                      const downloadName = `${paper.name}-${item.strategy}.png`;
+                      return (
+                        <div key={item.strategy} className={`al-algo-card ${idx === 0 && sorted.length > 1 ? "al-algo-card--best" : ""}`}>
+                          {/* Algorithm label */}
+                          <div className="al-algo-card-head">
+                            <span className="al-algo-badge" style={{ background: STRATEGY_COLORS[item.strategy] }}>
+                              {STRATEGY_LABELS[item.strategy]}
+                            </span>
+                            {sorted.length > 1 && idx === 0 && <span className="al-best-tag">Best</span>}
+                          </div>
+
+                          {/* Image */}
+                          {item.imageUrl && (
+                            <div className="al-image-wrap">
+                              <img src={item.imageUrl} alt={`${STRATEGY_LABELS[item.strategy]} — ${paper.name}`} draggable={false} />
+                            </div>
+                          )}
+
+                          {/* Stats + download */}
+                          <div className="al-algo-stats">
+                            <div className="al-stat-row">
+                              <span>Sheets</span>
+                              <strong>{item.result.summary.totalSheets}</strong>
+                            </div>
+                            <div className="al-stat-row">
+                              <span>Paper Lost</span>
+                              <strong>{item.result.summary.paperLost.toFixed(1)}%</strong>
+                            </div>
+                            <div className="al-stat-row">
+                              <span>Time</span>
+                              <strong>{item.result.summary.computeTimeMs}ms</strong>
+                            </div>
+
+                            {item.result.summary.calculator.map((calc) => {
+                              const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
+                              return (
+                                <div key={calc.modelId} className="al-stat-row al-stat-row--detail">
+                                  <span>{meta?.name ?? calc.modelId}</span>
+                                  <span>
+                                    {calc.perSheet}/sheet = {calc.totalProduced} pcs
+                                    {calc.excessCount > 0 && <span className="surplus-badge"> +{calc.excessCount}</span>}
+                                  </span>
+                                </div>
+                              );
+                            })}
+
+                            {/* Download button */}
+                            {item.imageUrl && (
+                              <a href={item.imageUrl} download={downloadName} className="al-download-btn" title={`Download ${downloadName}`}>
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                  <path d="M8 1v9m0 0L5 7m3 3l3-3M2 12v1.5A1.5 1.5 0 003.5 15h9a1.5 1.5 0 001.5-1.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                Download PNG
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}

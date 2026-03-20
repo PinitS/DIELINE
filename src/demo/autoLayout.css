@@ -21,11 +21,172 @@
   text-align: center;
 }
 
-.auto-layout-results-grid {
+/* Scrollable results container inside canvas-panel */
+.al-results-scroll {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
   width: 100%;
+  overflow-y: auto;
+  align-self: flex-start;
+}
+
+/* Paper section */
+.al-paper-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.al-paper-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 8px;
+}
+.al-paper-heading h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* Summary table */
+.al-summary-bar {
+  overflow-x: auto;
+}
+.al-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.al-summary-table th {
+  text-align: left;
+  padding: 6px 10px;
+  background: #f1f5f9;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  white-space: nowrap;
+}
+.al-summary-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+.al-row-best td {
+  background: #f0fdf4;
+  font-weight: 600;
+}
+.al-cell-best {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* Algorithm badge */
+.al-algo-badge {
+  display: inline-block;
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Horizontal grid of algorithm cards */
+.al-algo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+/* Individual algorithm card */
+.al-algo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 0;
+}
+.al-algo-card--best {
+  border: 2px solid #22c55e;
+  background: #f0fdf4;
+}
+
+.al-algo-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.al-best-tag {
+  background: #22c55e;
+  color: #fff;
+  border-radius: 8px;
+  padding: 1px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Image wrapper */
+.al-image-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.al-image-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Stats below image */
+.al-algo-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.al-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.al-stat-row:last-of-type {
+  border-bottom: none;
+}
+.al-stat-row--detail {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Download button */
+.al-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  align-self: flex-start;
+}
+.al-download-btn:hover {
+  background: #1e293b;
 }
 
 /* Model / Paper entry items */
