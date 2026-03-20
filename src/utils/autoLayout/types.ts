@@ -19,7 +19,7 @@ export type AutoLayoutModelEntry = {
 export type AutoLayoutStrategy =
   | 'shelf' | 'nest'
   | 'shelf-standard' | 'nfp-standard'
-  | 'guillotine' | 'maxrects' | 'skyline' | 'bottom-left';
+  | 'guillotine' | 'guillotine-nest' | 'maxrects' | 'skyline' | 'bottom-left';
 
 export const STRATEGY_LABELS: Record<AutoLayoutStrategy, string> = {
   'shelf': 'Shelf (Custom)',
@@ -27,6 +27,7 @@ export const STRATEGY_LABELS: Record<AutoLayoutStrategy, string> = {
   'shelf-standard': 'Shelf (FFDH)',
   'nfp-standard': 'NFP (Standard)',
   'guillotine': 'Guillotine',
+  'guillotine-nest': 'Guillotine Nest',
   'maxrects': 'MaxRects (BSSF)',
   'skyline': 'Skyline (BL)',
   'bottom-left': 'Bottom-Left',
@@ -34,7 +35,7 @@ export const STRATEGY_LABELS: Record<AutoLayoutStrategy, string> = {
 
 export const ALL_STRATEGIES: AutoLayoutStrategy[] = [
   'shelf', 'nest', 'shelf-standard', 'nfp-standard',
-  'guillotine', 'maxrects', 'skyline', 'bottom-left',
+  'guillotine', 'guillotine-nest', 'maxrects', 'skyline', 'bottom-left',
 ];
 
 

@@ -4,6 +4,7 @@ import { calculateAutoLayout } from "../utils/autoLayout/calculateAutoLayout";
 import type { AutoLayoutPaper, AutoLayoutModelEntry, AutoLayoutPaperResult, AutoLayoutStrategy } from "../utils/autoLayout/types";
 import { STRATEGY_LABELS, ALL_STRATEGIES } from "../utils/autoLayout/types";
 import type { DielineModelId, DielineModelMetadata } from "../types";
+import { ZoomableImage } from "./ZoomableImage";
 
 const LIBRARY_MODELS = getDielineModels();
 
@@ -27,6 +28,7 @@ const FLAT_LAYOUT_META: DielineModelMetadata = {
 const MODEL_METADATA: readonly DielineModelMetadata[] = [...LIBRARY_MODELS, FLAT_LAYOUT_META];
 
 const PAPER_PRESETS = [
+  { label: "A1 (594\u00d7841)", name: "A1", width: 594, height: 841 },
   { label: "A2 (420\u00d7594)", name: "A2", width: 420, height: 594 },
   { label: "A3 (420\u00d7297)", name: "A3", width: 420, height: 297 },
   { label: "A4 (210\u00d7297)", name: "A4", width: 210, height: 297 },
@@ -55,6 +57,7 @@ const STRATEGY_COLORS: Record<AutoLayoutStrategy, string> = {
   'shelf-standard': '#2563eb',
   'nfp-standard': '#9333ea',
   'guillotine': '#059669',
+  'guillotine-nest': '#047857',
   'maxrects': '#d97706',
   'skyline': '#0891b2',
   'bottom-left': '#be185d',

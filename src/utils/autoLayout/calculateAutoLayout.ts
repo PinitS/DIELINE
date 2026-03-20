@@ -9,6 +9,7 @@ import { guillotinePack } from "./guillotinePack";
 import { maxRectsPack } from "./maxRectsPack";
 import { skylinePack } from "./skylinePack";
 import { bottomLeftPack } from "./bottomLeftPack";
+import { guillotineNestPack } from "./guillotineNestPack";
 import { renderLayoutSvg, svgToBlob } from "./renderLayoutSvg";
 import type {
   AutoLayoutConfig,
@@ -36,6 +37,7 @@ const PACK_FUNCTIONS: Record<AutoLayoutStrategy, PackFn> = {
   'shelf-standard': shelfStandardPack,
   'nfp-standard': nfpStandardPack,
   'guillotine': guillotinePack,
+  'guillotine-nest': guillotineNestPack,
   'maxrects': maxRectsPack,
   'skyline': skylinePack,
   'bottom-left': bottomLeftPack,
