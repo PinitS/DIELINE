@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(wc -l /Users/com-003-018/Desktop/Library/react-dieline-with-3d/src/utils/autoLayout/*.ts)",
+      "Bash(npx vite:*)"
     ]
   }
 }

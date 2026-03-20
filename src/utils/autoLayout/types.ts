@@ -70,6 +70,9 @@ export type Placement = {
 
 export type AutoLayoutCalculatorEntry = {
   modelId: DielineModelId;
+  quantity: number;
+  perSheet: number;
+  totalProduced: number;
   excessCount: number;
 };
 

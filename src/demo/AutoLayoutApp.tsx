@@ -346,15 +346,20 @@ export const AutoLayoutApp = () => {
                     <strong>{result.summary.totalSheets} sheet{result.summary.totalSheets !== 1 ? "s" : ""}</strong>
                   </div>
 
-                  {result.summary.calculator.some((c) => c.excessCount > 0) && (
+                  {result.summary.calculator.length > 0 && (
                     <>
-                      <h4>Excess:</h4>
-                      {result.summary.calculator.filter((c) => c.excessCount > 0).map((calc) => {
+                      <h4>Per model:</h4>
+                      {result.summary.calculator.map((calc) => {
                         const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
                         return (
-                          <div key={calc.modelId} className="calc-row">
+                          <div key={calc.modelId} className="calc-row" style={{ flexWrap: "wrap" }}>
                             <span>{meta?.name ?? calc.modelId}</span>
-                            <span className="surplus-badge">+{calc.excessCount} pcs</span>
+                            <span>
+                              {calc.perSheet}/sheet × {result.summary.totalSheets} = {calc.totalProduced} pcs
+                              {calc.excessCount > 0 && (
+                                <span className="surplus-badge" style={{ marginLeft: 6 }}>+{calc.excessCount} excess</span>
+                              )}
+                            </span>
                           </div>
                         );
                       })}
