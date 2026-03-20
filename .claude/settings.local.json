@@ -6,7 +6,8 @@
       "Bash(npx tsc:*)",
       "Bash(wc -l /Users/com-003-018/Desktop/Library/react-dieline-with-3d/src/utils/autoLayout/*.ts)",
       "Bash(npx vite:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

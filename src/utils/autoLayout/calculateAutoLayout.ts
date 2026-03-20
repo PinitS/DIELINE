@@ -3,15 +3,43 @@ import type { DielineExportData, DielineModelId } from "../../types";
 import { offsetPolyline } from "./offsetPolyline";
 import { shelfPack } from "./shelfPack";
 import { nestPack } from "./nestPack";
+import { shelfStandardPack } from "./shelfStandardPack";
+import { nfpStandardPack } from "./nfpStandardPack";
+import { guillotinePack } from "./guillotinePack";
+import { maxRectsPack } from "./maxRectsPack";
+import { skylinePack } from "./skylinePack";
+import { bottomLeftPack } from "./bottomLeftPack";
 import { renderLayoutSvg, svgToBlob } from "./renderLayoutSvg";
 import type {
   AutoLayoutConfig,
   AutoLayoutPaperResult,
   AutoLayoutCalculatorEntry,
+  AutoLayoutStrategy,
   PreparedModel,
   ShapePolyline,
   Point,
+  Placement,
 } from "./types";
+
+// ---------- Strategy registry ----------
+
+type PackFn = (
+  items: PreparedModel[],
+  usableWidth: number,
+  usableHeight: number,
+  layoutDistance: number,
+) => Placement[];
+
+const PACK_FUNCTIONS: Record<AutoLayoutStrategy, PackFn> = {
+  'shelf': shelfPack,
+  'nest': nestPack,
+  'shelf-standard': shelfStandardPack,
+  'nfp-standard': nfpStandardPack,
+  'guillotine': guillotinePack,
+  'maxrects': maxRectsPack,
+  'skyline': skylinePack,
+  'bottom-left': bottomLeftPack,
+};
 
 // ---------- SVG parsing helpers ----------
 
@@ -245,7 +273,8 @@ export const calculateAutoLayout = async (
         paperName: paper.name,
         paperWidth: paper.width,
         paperHeight: paper.height,
-        summary: { paperLost: 100, totalSheets: 0, calculator: [] },
+        strategy,
+        summary: { paperLost: 100, totalSheets: 0, calculator: [], computeTimeMs: 0 },
         image: new Blob(),
       });
       continue;
@@ -269,11 +298,19 @@ export const calculateAutoLayout = async (
       return items;
     };
 
-    // Helper: pack items using best strategy
-    const bestPack = (items: PreparedModel[]) =>
-      strategy === 'nest'
-        ? bestStrategyPackNest(items, packWidth, packHeight, effectiveGap)
-        : bestStrategyPack(items, packWidth, packHeight, effectiveGap);
+    const t0 = performance.now();
+
+    // Helper: pack items using selected strategy
+    const bestPack = (items: PreparedModel[]) => {
+      if (strategy === 'shelf') {
+        return bestStrategyPack(items, packWidth, packHeight, effectiveGap);
+      }
+      if (strategy === 'nest') {
+        return bestStrategyPackNest(items, packWidth, packHeight, effectiveGap);
+      }
+      const packFn = PACK_FUNCTIONS[strategy];
+      return packFn(items, packWidth, packHeight, effectiveGap);
+    };
 
     // Step 1: Verify at least 1 of each model fits on the sheet
     const baseOneCounts = new Map(modelData.map((m) => [m.entry.id, 1] as const));
@@ -285,7 +322,8 @@ export const calculateAutoLayout = async (
         paperName: paper.name,
         paperWidth: paper.width,
         paperHeight: paper.height,
-        summary: { paperLost: 100, totalSheets: 0, calculator: [] },
+        strategy,
+        summary: { paperLost: 100, totalSheets: 0, calculator: [], computeTimeMs: 0 },
         image: new Blob(),
       });
       continue;
@@ -416,12 +454,15 @@ export const calculateAutoLayout = async (
     const heightPx = Math.round(paper.height * IMAGE_SCALE);
     const image = await svgToBlob(svgString, widthPx, heightPx);
 
+    const computeTimeMs = Math.round(performance.now() - t0);
+
     results.push({
       paperId: paper.id,
       paperName: paper.name,
       paperWidth: paper.width,
       paperHeight: paper.height,
-      summary: { paperLost, totalSheets, calculator },
+      strategy,
+      summary: { paperLost, totalSheets, calculator, computeTimeMs },
       image,
     });
   }

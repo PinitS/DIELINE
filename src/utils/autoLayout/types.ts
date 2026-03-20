@@ -16,7 +16,27 @@ export type AutoLayoutModelEntry = {
   quantity: number;
 };
 
-export type AutoLayoutStrategy = 'shelf' | 'nest';
+export type AutoLayoutStrategy =
+  | 'shelf' | 'nest'
+  | 'shelf-standard' | 'nfp-standard'
+  | 'guillotine' | 'maxrects' | 'skyline' | 'bottom-left';
+
+export const STRATEGY_LABELS: Record<AutoLayoutStrategy, string> = {
+  'shelf': 'Shelf (Custom)',
+  'nest': 'Nest (Custom)',
+  'shelf-standard': 'Shelf (FFDH)',
+  'nfp-standard': 'NFP (Standard)',
+  'guillotine': 'Guillotine',
+  'maxrects': 'MaxRects (BSSF)',
+  'skyline': 'Skyline (BL)',
+  'bottom-left': 'Bottom-Left',
+};
+
+export const ALL_STRATEGIES: AutoLayoutStrategy[] = [
+  'shelf', 'nest', 'shelf-standard', 'nfp-standard',
+  'guillotine', 'maxrects', 'skyline', 'bottom-left',
+];
+
 
 export type AutoLayoutConfig = {
   papers: AutoLayoutPaper[];
@@ -84,10 +104,12 @@ export type AutoLayoutPaperResult = {
   paperWidth: number;
   paperHeight: number;
   paperName: string;
+  strategy: AutoLayoutStrategy;
   summary: {
     paperLost: number; // percentage 0-100
     totalSheets: number;
     calculator: AutoLayoutCalculatorEntry[];
+    computeTimeMs: number;
   };
   image: Blob;
 };
