@@ -69,34 +69,19 @@ export type Placement = {
 // ---------- Output ----------
 
 export type AutoLayoutCalculatorEntry = {
-  modelEntryId: string;
-  modelId: DielineModelId;
-  countPerSheet: number;
-};
-
-export type AutoLayoutSurplusEntry = {
-  modelEntryId: string;
   modelId: DielineModelId;
   excessCount: number;
 };
 
-export type AutoLayoutVariation = {
-  placements: Placement[];
-  summary: {
-    paperLost: number; // percentage 0-100
-    calculator: AutoLayoutCalculatorEntry[];
-    totalSheets: number;
-    surplus: AutoLayoutSurplusEntry[];
-  };
-  image: Blob;
-};
-
 export type AutoLayoutPaperResult = {
   paperId: string;
-  paperName: string;
   paperWidth: number;
   paperHeight: number;
-  totalSheets: number;
-  surplus: AutoLayoutSurplusEntry[];
-  variations: AutoLayoutVariation[];
+  paperName: string;
+  summary: {
+    paperLost: number; // percentage 0-100
+    totalSheets: number;
+    calculator: AutoLayoutCalculatorEntry[];
+  };
+  image: Blob;
 };

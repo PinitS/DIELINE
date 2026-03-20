@@ -14,6 +14,8 @@ export {
 } from "./utils/export/exportPreviewLayout";
 export { FlatLayoutDieline } from "./components/TEST/FlatLayoutDieline";
 export { convertDielineToSvg } from "./utils/export/convertDielineToSvg";
+export { calculateAutoLayout } from "./utils/autoLayout/calculateAutoLayout";
+export type { AutoLayoutConfig, AutoLayoutPaper, AutoLayoutModelEntry, AutoLayoutPaperResult, AutoLayoutCalculatorEntry } from "./utils/autoLayout/types";
 export { openDielineExportPreview } from "./utils/export/openExportPreview";
 export { exportDielineToPdf } from "./utils/export/exportToPdf";
 export { convertDielineMillimeters, formatDielineDisplayValue } from "./utils/units";

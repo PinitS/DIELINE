@@ -6,9 +6,7 @@ import { renderLayoutSvg, svgToBlob } from "./renderLayoutSvg";
 import type {
   AutoLayoutConfig,
   AutoLayoutPaperResult,
-  AutoLayoutVariation,
   AutoLayoutCalculatorEntry,
-  AutoLayoutSurplusEntry,
   PreparedModel,
   ShapePolyline,
   Point,
@@ -196,14 +194,13 @@ export const calculateAutoLayout = async (
         paperName: paper.name,
         paperWidth: paper.width,
         paperHeight: paper.height,
-        totalSheets: 0,
-        surplus: [],
-        variations: [],
+        summary: { paperLost: 100, totalSheets: 0, calculator: [] },
+        image: new Blob(),
       });
       continue;
     }
 
-    // Try multiple sort strategies, keep the best result(s)
+    // Try multiple sort strategies, pick the best
     const strategies = [
       { name: "largestFirst", items: sortLargestFirst(allItems) },
       { name: "smallestFirst", items: sortSmallestFirst(allItems) },
@@ -217,117 +214,79 @@ export const calculateAutoLayout = async (
     const packWidth = usableWidth - 2 * edgeMargin;
     const packHeight = usableHeight - 2 * edgeMargin;
 
-    const layoutResults: { name: string; placements: ReturnType<typeof shelfPack> }[] = [];
+    let bestPlacements: ReturnType<typeof shelfPack> = [];
 
     for (const strategy of strategies) {
       const placements = shelfPack(strategy.items, packWidth, packHeight, effectiveGap);
-      for (const p of placements) {
-        p.x += edgeMargin;
-        p.y += edgeMargin;
-        for (const sp of p.shapePolylines) {
-          for (const pt of sp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
-        }
-        for (const bp of p.boundaryPolylines) {
-          for (const pt of bp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
-        }
+      if (placements.length > bestPlacements.length) {
+        bestPlacements = placements;
       }
-      layoutResults.push({ name: strategy.name, placements });
     }
 
-    // Sort by placement count (most items first)
-    layoutResults.sort((a, b) => b.placements.length - a.placements.length);
-
-    // Keep the best count, plus any ties
-    const bestCount = layoutResults[0]?.placements.length ?? 0;
-    const topLayouts = layoutResults.filter((r) => r.placements.length === bestCount);
-
-    // Deduplicate by placement signature
-    const seen = new Set<string>();
-    const uniqueLayouts: typeof topLayouts = [];
-    for (const layout of topLayouts) {
-      const sig = layout.placements
-        .map((p) => `${p.modelEntryId}:${p.x.toFixed(1)},${p.y.toFixed(1)}:${p.rotation}`)
-        .join("|");
-      if (seen.has(sig)) continue;
-      seen.add(sig);
-      uniqueLayouts.push(layout);
+    // Offset placements by edge margin
+    for (const p of bestPlacements) {
+      p.x += edgeMargin;
+      p.y += edgeMargin;
+      for (const sp of p.shapePolylines) {
+        for (const pt of sp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
+      }
+      for (const bp of p.boundaryPolylines) {
+        for (const pt of bp.points) { pt.x += edgeMargin; pt.y += edgeMargin; }
+      }
     }
 
-    const variations: AutoLayoutVariation[] = [];
+    // Count per model entry per sheet
+    const countMap = new Map<string, number>();
+    for (const pl of bestPlacements) {
+      countMap.set(pl.modelEntryId, (countMap.get(pl.modelEntryId) ?? 0) + 1);
+    }
 
-    for (const layout of uniqueLayouts) {
-      const placements = layout.placements;
+    // Paper utilization
+    const totalPaperArea = paper.width * paper.height;
+    const usedArea = bestPlacements.reduce((sum, pl) => sum + pl.widthMm * pl.heightMm, 0);
+    const paperLost = Number(((1 - usedArea / totalPaperArea) * 100).toFixed(2));
 
-      // Count per model entry per sheet
-      const countMap = new Map<string, number>();
-      for (const pl of placements) {
-        countMap.set(pl.modelEntryId, (countMap.get(pl.modelEntryId) ?? 0) + 1);
+    // Calculate total sheets needed
+    let totalSheets = 0;
+    for (const entry of models) {
+      const perSheet = countMap.get(entry.id) ?? 0;
+      if (perSheet > 0) {
+        totalSheets = Math.max(totalSheets, Math.ceil(entry.quantity / perSheet));
       }
+    }
 
-      const calculator: AutoLayoutCalculatorEntry[] = models.map((entry) => ({
-        modelEntryId: entry.id,
+    // Calculator with excess count
+    const calculator: AutoLayoutCalculatorEntry[] = models.map((entry) => {
+      const perSheet = countMap.get(entry.id) ?? 0;
+      const totalProduced = perSheet * totalSheets;
+      return {
         modelId: entry.modelId,
-        countPerSheet: countMap.get(entry.id) ?? 0,
-      }));
+        excessCount: totalProduced - entry.quantity,
+      };
+    });
 
-      // Paper utilization
-      const totalPaperArea = paper.width * paper.height;
-      const usedArea = placements.reduce((sum, pl) => sum + pl.widthMm * pl.heightMm, 0);
-      const paperLost = Number(((1 - usedArea / totalPaperArea) * 100).toFixed(2));
+    // Render SVG
+    const svgString = renderLayoutSvg({
+      paperWidth: paper.width,
+      paperHeight: paper.height,
+      spacingLeft,
+      spacingRight,
+      griper,
+      placements: bestPlacements,
+    });
 
-      // Calculate total sheets needed
-      let totalSheets = 0;
-      for (const entry of models) {
-        const perSheet = countMap.get(entry.id) ?? 0;
-        if (perSheet > 0) {
-          totalSheets = Math.max(totalSheets, Math.ceil(entry.quantity / perSheet));
-        }
-      }
-
-      // Surplus
-      const surplus: AutoLayoutSurplusEntry[] = models.map((entry) => {
-        const perSheet = countMap.get(entry.id) ?? 0;
-        const totalProduced = perSheet * totalSheets;
-        return {
-          modelEntryId: entry.id,
-          modelId: entry.modelId,
-          excessCount: totalProduced - entry.quantity,
-        };
-      });
-
-      // Render SVG
-      const svgString = renderLayoutSvg({
-        paperWidth: paper.width,
-        paperHeight: paper.height,
-        spacingLeft,
-        spacingRight,
-        griper,
-        placements,
-      });
-
-      // Convert to image blob
-      const widthPx = Math.round(paper.width * IMAGE_SCALE);
-      const heightPx = Math.round(paper.height * IMAGE_SCALE);
-      const image = await svgToBlob(svgString, widthPx, heightPx);
-
-      variations.push({
-        placements,
-        summary: { paperLost, calculator, totalSheets, surplus },
-        image,
-      });
-    }
-
-    // Use the best variation for the paper-level summary
-    const bestVariation = variations[0];
+    // Convert to image blob
+    const widthPx = Math.round(paper.width * IMAGE_SCALE);
+    const heightPx = Math.round(paper.height * IMAGE_SCALE);
+    const image = await svgToBlob(svgString, widthPx, heightPx);
 
     results.push({
       paperId: paper.id,
       paperName: paper.name,
       paperWidth: paper.width,
       paperHeight: paper.height,
-      totalSheets: bestVariation?.summary.totalSheets ?? 0,
-      surplus: bestVariation?.summary.surplus ?? [],
-      variations,
+      summary: { paperLost, totalSheets, calculator },
+      image,
     });
   }
 

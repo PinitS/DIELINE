@@ -119,15 +119,10 @@ export const AutoLayoutApp = () => {
         spacingRight,
         griper,
       });
-
       // Create object URLs for images
       const urls = new Map<string, string>();
       for (const result of layoutResults) {
-        for (let vi = 0; vi < result.variations.length; vi++) {
-          const variation = result.variations[vi];
-          const key = `${result.paperId}-v${vi}`;
-          urls.set(key, URL.createObjectURL(variation.image));
-        }
+        urls.set(result.paperId, URL.createObjectURL(result.image));
       }
 
       setResults(layoutResults);
@@ -333,78 +328,38 @@ export const AutoLayoutApp = () => {
                 <div className="paper-result-header">
                   <h2>{result.paperName}</h2>
                   <span className="muted">{result.paperWidth} x {result.paperHeight} mm</span>
-                  <span className="frame-badge">{result.totalSheets} sheet{result.totalSheets !== 1 ? "s" : ""}</span>
+                  <span className="frame-badge">{result.summary.totalSheets} sheet{result.summary.totalSheets !== 1 ? "s" : ""}</span>
+                  <span className="paper-lost-badge">
+                    Paper lost: {result.summary.paperLost.toFixed(1)}%
+                  </span>
                 </div>
 
-                {result.surplus.length > 0 && (
-                  <div className="surplus-info">
-                    {result.surplus.filter((s) => s.excessCount > 0).map((s) => {
-                      const meta = MODEL_METADATA.find((m) => m.id === s.modelId);
-                      return (
-                        <span key={s.modelEntryId} className="surplus-badge">
-                          {meta?.name ?? s.modelId}: +{s.excessCount} excess
-                        </span>
-                      );
-                    })}
+                {resultImageUrls.get(result.paperId) && (
+                  <div className="variation-image-wrapper">
+                    <img src={resultImageUrls.get(result.paperId)} alt={`Layout for ${result.paperName}`} className="variation-image" />
                   </div>
                 )}
 
-                <div className="variations-grid">
-                  {result.variations.map((variation, vi) => {
-                    const imageKey = `${result.paperId}-v${vi}`;
-                    const imageUrl = resultImageUrls.get(imageKey);
+                <div className="variation-summary">
+                  <div className="calc-row" style={{ fontWeight: 700 }}>
+                    <span>Total sheets needed</span>
+                    <strong>{result.summary.totalSheets} sheet{result.summary.totalSheets !== 1 ? "s" : ""}</strong>
+                  </div>
 
-                    return (
-                      <div key={vi} className="variation-card">
-                        <div className="variation-header">
-                          <h3>Variation {vi + 1}</h3>
-                          <span className="paper-lost-badge">
-                            Paper lost: {variation.summary.paperLost.toFixed(1)}%
-                          </span>
-                        </div>
-
-                        {imageUrl && (
-                          <div className="variation-image-wrapper">
-                            <img src={imageUrl} alt={`Layout variation ${vi + 1}`} className="variation-image" />
+                  {result.summary.calculator.some((c) => c.excessCount > 0) && (
+                    <>
+                      <h4>Excess:</h4>
+                      {result.summary.calculator.filter((c) => c.excessCount > 0).map((calc) => {
+                        const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
+                        return (
+                          <div key={calc.modelId} className="calc-row">
+                            <span>{meta?.name ?? calc.modelId}</span>
+                            <span className="surplus-badge">+{calc.excessCount} pcs</span>
                           </div>
-                        )}
-
-                        <div className="variation-summary">
-                          <div className="calc-row" style={{ fontWeight: 700 }}>
-                            <span>Total sheets needed</span>
-                            <strong>{variation.summary.totalSheets} sheet{variation.summary.totalSheets !== 1 ? "s" : ""}</strong>
-                          </div>
-
-                          <h4>Per sheet:</h4>
-                          {variation.summary.calculator.map((calc) => {
-                            const meta = MODEL_METADATA.find((m) => m.id === calc.modelId);
-                            return (
-                              <div key={calc.modelEntryId} className="calc-row">
-                                <span>{meta?.name ?? calc.modelId}</span>
-                                <strong>{calc.countPerSheet} pcs</strong>
-                              </div>
-                            );
-                          })}
-
-                          {variation.summary.surplus.some((s) => s.excessCount > 0) && (
-                            <>
-                              <h4>Surplus (excess):</h4>
-                              {variation.summary.surplus.filter((s) => s.excessCount > 0).map((s) => {
-                                const meta = MODEL_METADATA.find((m) => m.id === s.modelId);
-                                return (
-                                  <div key={s.modelEntryId} className="calc-row">
-                                    <span>{meta?.name ?? s.modelId}</span>
-                                    <span className="surplus-badge">+{s.excessCount} pcs</span>
-                                  </div>
-                                );
-                              })}
-                            </>
-                          )}
-
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               </div>
             ))}

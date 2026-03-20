@@ -5,9 +5,7 @@ export type {
   AutoLayoutPaper,
   AutoLayoutModelEntry,
   AutoLayoutPaperResult,
-  AutoLayoutVariation,
   AutoLayoutCalculatorEntry,
-  AutoLayoutSurplusEntry,
   Placement,
   PreparedModel,
 } from "./types";
