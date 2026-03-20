@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { getDielineModels } from "../lib/modelMetadata";
 import { calculateAutoLayout } from "../utils/autoLayout/calculateAutoLayout";
-import type { AutoLayoutPaper, AutoLayoutModelEntry, AutoLayoutPaperResult } from "../utils/autoLayout/types";
+import type { AutoLayoutPaper, AutoLayoutModelEntry, AutoLayoutPaperResult, AutoLayoutStrategy } from "../utils/autoLayout/types";
 import type { DielineModelId, DielineModelMetadata } from "../types";
 
 const LIBRARY_MODELS = getDielineModels();
@@ -101,7 +101,7 @@ export const AutoLayoutApp = () => {
     setPapers((prev) => prev.filter((p) => p.id !== paperId));
   };
 
-  const handleCalculate = useCallback(async () => {
+  const handleCalculate = useCallback(async (strategy: AutoLayoutStrategy = 'shelf') => {
     if (modelEntries.length === 0 || papers.length === 0) return;
 
     setIsCalculating(true);
@@ -118,6 +118,7 @@ export const AutoLayoutApp = () => {
         spacingLeft,
         spacingRight,
         griper,
+        strategy,
       });
       // Create object URLs for images
       const urls = new Map<string, string>();
@@ -295,14 +296,22 @@ export const AutoLayoutApp = () => {
         </div>
 
         {/* --- Calculate --- */}
-        <div className="toggle-row">
+        <div className="toggle-row" style={{ display: "flex", gap: 8 }}>
           <button
             type="button"
-            onClick={handleCalculate}
+            onClick={() => handleCalculate('nest')}
             disabled={isCalculating || modelEntries.length === 0 || papers.length === 0}
-            style={{ background: "#0f172a", color: "#fff", borderColor: "#0f172a", fontWeight: 700 }}
+            style={{ background: "#dc2626", color: "#fff", borderColor: "#dc2626", fontWeight: 700, flex: 1 }}
           >
-            {isCalculating ? "Calculating..." : "Calculate Layout"}
+            {isCalculating ? "Calculating..." : "Cal Layout(Nest)"}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCalculate('shelf')}
+            disabled={isCalculating || modelEntries.length === 0 || papers.length === 0}
+            style={{ background: "#0f172a", color: "#fff", borderColor: "#0f172a", fontWeight: 700, flex: 1 }}
+          >
+            {isCalculating ? "Calculating..." : "Cal Layout(Shelf)"}
           </button>
         </div>
       </aside>

@@ -16,6 +16,8 @@ export type AutoLayoutModelEntry = {
   quantity: number;
 };
 
+export type AutoLayoutStrategy = 'shelf' | 'nest';
+
 export type AutoLayoutConfig = {
   papers: AutoLayoutPaper[];
   models: AutoLayoutModelEntry[];
@@ -23,6 +25,7 @@ export type AutoLayoutConfig = {
   spacingLeft: number;    // mm
   spacingRight: number;   // mm
   griper: number;         // mm – bottom unusable zone
+  strategy?: AutoLayoutStrategy;
 };
 
 // ---------- Internal ----------

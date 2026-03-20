@@ -2,6 +2,7 @@ import { convertDielineToSvg } from "../export/convertDielineToSvg";
 import type { DielineExportData, DielineModelId } from "../../types";
 import { offsetPolyline } from "./offsetPolyline";
 import { shelfPack } from "./shelfPack";
+import { nestPack } from "./nestPack";
 import { renderLayoutSvg, svgToBlob } from "./renderLayoutSvg";
 import type {
   AutoLayoutConfig,
@@ -188,12 +189,37 @@ const bestStrategyPack = (
   return best;
 };
 
+/**
+ * Try all sorting strategies using NFP-based nesting and return the best.
+ */
+const bestStrategyPackNest = (
+  items: PreparedModel[],
+  packWidth: number,
+  packHeight: number,
+  effectiveGap: number,
+): ReturnType<typeof nestPack> => {
+  const strategies = [
+    sortLargestFirst(items),
+    sortSmallestFirst(items),
+    sortAlternateModels(items),
+    items,
+  ];
+  let best: ReturnType<typeof nestPack> = [];
+  for (const sorted of strategies) {
+    const placements = nestPack(sorted, packWidth, packHeight, effectiveGap);
+    if (placements.length > best.length) {
+      best = placements;
+    }
+  }
+  return best;
+};
+
 // ---------- Main ----------
 
 export const calculateAutoLayout = async (
   config: AutoLayoutConfig,
 ): Promise<AutoLayoutPaperResult[]> => {
-  const { papers, models, layoutDistance, spacingLeft, spacingRight, griper } = config;
+  const { papers, models, layoutDistance, spacingLeft, spacingRight, griper, strategy = 'shelf' } = config;
 
   // Prepare all model instances
   const preparedByEntry = new Map<string, PreparedModel>();
@@ -245,7 +271,9 @@ export const calculateAutoLayout = async (
 
     // Helper: pack items using best strategy
     const bestPack = (items: PreparedModel[]) =>
-      bestStrategyPack(items, packWidth, packHeight, effectiveGap);
+      strategy === 'nest'
+        ? bestStrategyPackNest(items, packWidth, packHeight, effectiveGap)
+        : bestStrategyPack(items, packWidth, packHeight, effectiveGap);
 
     // Step 1: Verify at least 1 of each model fits on the sheet
     const baseOneCounts = new Map(modelData.map((m) => [m.entry.id, 1] as const));
