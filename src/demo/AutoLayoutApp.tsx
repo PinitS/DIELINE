@@ -25,6 +25,13 @@ const FLAT_LAYOUT_META: DielineModelMetadata = {
 
 const MODEL_METADATA: readonly DielineModelMetadata[] = [...LIBRARY_MODELS, FLAT_LAYOUT_META];
 
+const PAPER_PRESETS = [
+  { label: "A2 (420×594)", name: "A2", width: 420, height: 594 },
+  { label: "A3 (420×297)", name: "A3", width: 420, height: 297 },
+  { label: "A4 (210×297)", name: "A4", width: 210, height: 297 },
+  { label: "Custom", name: "Custom", width: 0, height: 0 },
+] as const;
+
 let nextModelEntryId = 1;
 let nextPaperId = 1;
 
@@ -51,6 +58,7 @@ export const AutoLayoutApp = () => {
 
   // --- Papers ---
   const [papers, setPapers] = useState<AutoLayoutPaper[]>([]);
+  const [selectedPaperPreset, setSelectedPaperPreset] = useState("A3");
   const [paperName, setPaperName] = useState("A3");
   const [paperWidth, setPaperWidth] = useState(420);
   const [paperHeight, setPaperHeight] = useState(297);
@@ -85,6 +93,16 @@ export const AutoLayoutApp = () => {
 
   const handleRemoveModel = (entryId: string) => {
     setModelEntries((prev) => prev.filter((e) => e.id !== entryId));
+  };
+
+  const handlePaperPresetChange = (presetName: string) => {
+    setSelectedPaperPreset(presetName);
+    const preset = PAPER_PRESETS.find((p) => p.name === presetName);
+    if (preset && presetName !== "Custom") {
+      setPaperName(preset.name);
+      setPaperWidth(preset.width);
+      setPaperHeight(preset.height);
+    }
   };
 
   const handleAddPaper = () => {
@@ -218,6 +236,14 @@ export const AutoLayoutApp = () => {
         {/* --- Add Paper --- */}
         <div className="summary-card">
           <h2>Add Paper</h2>
+          <label className="field">
+            Paper size
+            <select value={selectedPaperPreset} onChange={(e) => handlePaperPresetChange(e.target.value)}>
+              {PAPER_PRESETS.map((p) => (
+                <option key={p.name} value={p.name}>{p.label}</option>
+              ))}
+            </select>
+          </label>
           <label className="field">
             Paper name
             <input
